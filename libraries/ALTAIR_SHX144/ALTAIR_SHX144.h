@@ -22,16 +22,16 @@
 
 class ALTAIR_SHX144 : public ALTAIR_GenTelInt {
   public:
-    bool    send(unsigned char aChar);
-    bool    send(const uint8_t* aString);
-    bool    sendAsIndivChars(const uint8_t* aString);
-    bool    available();                       // if a byte is available for reading, returns true
-    bool    isBusy();
-    bool    initialize(const char* aString = "");
-    byte    read();
-    char    lastRSSI();                        // The RSSI value of most recently received message,
-                                               // return value is in dBm, response of +127 means 
-                                               // failed to get the last RSSI value.
+    virtual bool    send(unsigned char aChar);
+    virtual bool    send(const uint8_t* aString);
+    virtual bool    sendAsIndivChars(const uint8_t* aString);
+    virtual bool    available();                              // if a byte is available for reading, returns true
+    virtual bool    isBusy();
+    virtual bool    initialize(const char* aString = "");
+    virtual byte    read();
+    virtual char    lastRSSI();                               // The RSSI value of most recently received message,
+                                                              // return value is in dBm, response of +127 means 
+                                                              // failed to get the last RSSI value.
     ALTAIR_SHX144(const char serialID, const char fakeShxProgramRxPin, const char shxProgramPin, const char shxBusyPin);
 
   protected:
