@@ -26,16 +26,16 @@
 
 class ALTAIR_GenTelInt {
   public:
-    bool    send(unsigned char aChar);
-    bool    send(const uint8_t* aString);
-    bool    sendAsIndivChars(const uint8_t* aString);
-    bool    available();                       // if a byte is available for reading, returns true
-    bool    isBusy();
-    bool    initialize(const char* aString = "");
-    byte    read();
-    char    lastRSSI();                        // The RSSI value of most recently received message,
-                                               // return value is in dBm, response of +127 means 
-                                               // failed to get the last RSSI value.
+    virtual bool    send(unsigned char aChar)                 = 0;
+    virtual bool    send(const uint8_t* aString)              = 0;
+    virtual bool    sendAsIndivChars(const uint8_t* aString)  = 0;
+    virtual bool    available()                               = 0; // if a byte is available for reading, returns true
+    virtual bool    isBusy()                                  = 0;
+    virtual bool    initialize(const char* aString = "")      = 0;
+    virtual byte    read()                                    = 0;
+    virtual char    lastRSSI()                                = 0; // The RSSI value of most recently received message,
+                                                                   // return value is in dBm, response of +127 means 
+                                                                   // failed to get the last RSSI value.
 
   protected:
     ALTAIR_GenTelInt();
