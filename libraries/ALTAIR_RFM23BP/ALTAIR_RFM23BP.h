@@ -21,12 +21,15 @@
 #include "ALTAIR_GenTelInt.h"
 #include <RH_RF22.h>
 
+#define  DEFAULT_RFM_CHIPSELECTPIN    26
+#define  DEFAULT_RFM_INTERRUPTPIN      2
+
 class ALTAIR_RFM23BP : public ALTAIR_GenTelInt {
   public:
     virtual bool    send(unsigned char aChar);
     virtual bool    send(const uint8_t* aString);
     virtual bool    sendAsIndivChars(const uint8_t* aString);
-    virtual bool    available();                              // if a byte is available for reading, returns true
+    virtual bool    available();                              // If a byte is available for reading, returns true.
     virtual bool    isBusy();
     virtual bool    initialize(const char* aString = "");
     virtual byte    read();
