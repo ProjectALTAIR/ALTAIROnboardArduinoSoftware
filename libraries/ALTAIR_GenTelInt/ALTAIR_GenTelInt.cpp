@@ -15,8 +15,6 @@
 
 #include "ALTAIR_GenTelInt.h"
 
-#define  FAKE_RSSI_VAL   127
-
 /**************************************************************************/
 /*!
  @brief  Constructor.  Like all the methods in this base class, this will

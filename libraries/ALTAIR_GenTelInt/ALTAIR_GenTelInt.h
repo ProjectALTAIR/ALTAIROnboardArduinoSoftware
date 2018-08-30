@@ -24,6 +24,8 @@
 
 #include "Arduino.h"
 
+#define  FAKE_RSSI_VAL   127
+
 class ALTAIR_GenTelInt {
   public:
     virtual bool    send(unsigned char aChar)                 = 0;
