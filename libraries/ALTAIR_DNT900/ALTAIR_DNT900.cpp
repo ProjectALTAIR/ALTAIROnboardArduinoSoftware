@@ -20,11 +20,6 @@
 #define  DNT900_SERIAL_BAUDRATE    38400
 #define  DNT_MAX_SEND_TRIES       500000
 
-#define  DEFAULT_SERIAL_ID             1
-#define  DEFAULT_DNTHWRESETPIN        27
-#define  DEFAULT_DNTCTSPIN            28
-#define  DEFAULT_DNTRTSPIN            29
-
 /**************************************************************************/
 /*!
  @brief  Constructor.
@@ -44,7 +39,7 @@ ALTAIR_DNT900::ALTAIR_DNT900(const char serialID, const char dntHwResetPin, cons
 */
 /**************************************************************************/
 ALTAIR_DNT900::ALTAIR_DNT900() :
-   _serialID(DEFAULT_SERIAL_ID),
+   _serialID(DEFAULT_DNT_SERIALID),
    _dntHwResetPin(DEFAULT_DNTHWRESETPIN),
    _dntCTSPin(DEFAULT_DNTCTSPIN),
    _dntRTSPin(DEFAULT_DNTRTSPIN)
@@ -261,7 +256,7 @@ byte ALTAIR_DNT900::read() {
 char ALTAIR_DNT900::lastRSSI() {
 
 // NEED TO IMPLEMENT THIS PROPERLY!!!
-    return 127;
+    return FAKE_RSSI_VAL;
 
 }
 
