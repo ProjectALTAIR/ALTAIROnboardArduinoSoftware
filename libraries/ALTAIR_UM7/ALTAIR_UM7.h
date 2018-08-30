@@ -25,6 +25,8 @@
 
 #include    "Arduino.h"
 
+#define  DEFAULT_UM7_SERIALID          3
+
 struct UM7packet {
              byte      Address;
              byte      PT;             // Packet Type
