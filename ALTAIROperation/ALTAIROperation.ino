@@ -14,6 +14,8 @@
 #include <ALTAIR_SHX144.h>
 #include <ALTAIR_RFM23BP.h>
 #include <ALTAIR_UM7.h>
+#include <ALTAIR_IntSphereLightSource.h>
+#include <ALTAIR_DiffLEDLightSource.h>
 
 #include <utility/imumaths.h>
 
@@ -35,23 +37,6 @@ const byte     axleRotAngSensePin       =    A3;
 const byte     cutdownAngSensePin       =    A4;
 const byte     helValveAngSensePin      =    A5;
 
-const byte     dntHwResetPin            =    27;
-const byte     dntCTSPin                =    28;
-const byte     dntRTSPin                =    29;
-const byte     fakeShxProgramRxPin      =    24;
-const byte     shxProgramPin            =    25;
-const byte     shxBusyPin               =    23;
-
-const byte     yellowLEDs               =    36;
-const byte     redLEDs                  =    37;
-const byte     blueLEDs                 =    38;
-const byte     greenLEDs                =    39;
-
-const byte     green532nmLaser          =    40;
-const byte     red635nmLaser            =    42;
-const byte     red670nmLaser            =    41;
-const byte     blue440nmLaser           =    43;
-
 const byte     gpsI2CAddress            =  0x42;               // U-blox NEO-M8N GPS     (in Hobbyking GPS/compass)
 const byte     compassmagI2CAddress     =  0x1E;               // HMC5883L magnetometer  (in Hobbyking GPS/compass)
 const byte     compassmagInitBytes[]    = {0x70, 0x20, 0x00};  // 0x70 = 8 samples averaged per output, default output rate of 15 Hz, no applied bias
@@ -60,8 +45,6 @@ const byte     compassmagInitBytes[]    = {0x70, 0x20, 0x00};  // 0x70 = 8 sampl
 const byte     I2CMUXADDR               =  0x70;
 
 const byte     SDcard_CS                =    24;
-const byte     RFM23_CS                 =    26;
-const byte     RFM23_INT                =     2;
 
 static const uint8_t rfm23SendString[]  = " VE7XJA STATION ALTAIR OVER";
 
@@ -91,23 +74,38 @@ long           previousMillis5          =     0;
 long           previousMillis6          =     0;
 int            count                    =     0;
 
-ALTAIR_DNT900      dnt900(1, dntHwResetPin,         // on Serial1 -- 910 MHz, 1/2-wave antenna on front of gondola
-                          dntCTSPin, dntRTSPin);
-ALTAIR_SHX144      shx144(2, fakeShxProgramRxPin,   // on Serial2 -- 144 MHz, 1/4-wave antenna on back  of gondola
-                          shxProgramPin, shxBusyPin);  // (and also on SoftwareSerial programming pins shxProgramPin and fakeShxProgramPin)
-ALTAIR_RFM23BP     rfm23bp(RFM23_CS, RFM23_INT);    // on SPI     -- 433 MHz, 1/2-wave antenna on top   of gondola
-ALTAIR_UM7         um7(   3 );                      // on Serial3 --                   CH Robotics 9-axis orientation fusion sensor, including DHRobot GPS data pass-through
+// All of the below DEFAULT_ pin locations are defined in the respective class header .h file in the library for each component.
+ALTAIR_DNT900               dnt900(               DEFAULT_DNT_SERIALID       ,  // on Serial1 -- 910 MHz, 1/2-wave antenna on front of gondola
+                                                  DEFAULT_DNTHWRESETPIN      ,         
+                                                  DEFAULT_DNTCTSPIN          , 
+                                                  DEFAULT_DNTRTSPIN          );
+ALTAIR_SHX144               shx144(               DEFAULT_SHX_SERIALID       ,  // on Serial2 -- 144 MHz, 1/4-wave antenna on back  of gondola
+                                                  DEFAULT_FAKESHXPROGRAMRXPIN,  // (and also on SoftwareSerial programming pins DEFAULT_SHXPROGRAMPIN and DEFAULT_FAKESHXPROGRAMRXPIN)
+                                                  DEFAULT_SHXPROGRAMPIN      , 
+                                                  DEFAULT_SHXBUSYPIN         );  
+ALTAIR_RFM23BP              rfm23bp(              DEFAULT_RFM_CHIPSELECTPIN  ,  // on SPI     -- 433 MHz, 1/2-wave antenna on top   of gondola
+                                                  DEFAULT_RFM_INTERRUPTPIN   );    
+ALTAIR_UM7                  um7(                  DEFAULT_UM7_SERIALID       ); // on Serial3 -- CH Robotics 9-axis orientation fusion sensor, including DHRobot GPS data pass-through
 
-Adafruit_BNO055    bno   = Adafruit_BNO055(55);     // on I2C      (default addr = 0x28), Adafruit 9-axis orientation fusion sensor
-Adafruit_BME280    bmeMast, bmeBalloon, bmePayload; // also on I2C (default addr = 0x77.  bmeMast [default addr] is on nav mast, bmeBalloon [w/ addr 0x76] is inside balloon, bmePayload [I2CMUXed, but default addr] inside gondola)
-Adafruit_ADS1115   ads1115ADC1;                     // also on I2C (default addr = 0x48), contains the 2 photodiode inputs
-Adafruit_ADS1115   ads1115ADC2(0x49);               // also on I2C         (addr = 0x49), contains 
-Adafruit_ADS1115   ads1115ADC3(0x4A);               // also on I2C         (addr = 0x4A), contains 
-SFE_HMC6343        hmc6343;                         // also on I2C         (addr = 0x19), SparkFun magnetometer(+accelerometer)
-TinyGPSPlus        gps;                             // nav mast GPS on I2C (addr = 0x42), and also UM7 with DFRobot GPS input on Serial3 (initialized later)
+ALTAIR_IntSphereLightSource intSphereLightSource( DEFAULT_BLUE440NMLASERPIN  ,
+                                                  DEFAULT_GREEN532NMLASERPIN ,
+                                                  DEFAULT_RED635NMLASERPIN   ,
+                                                  DEFAULT_RED670NMLASERPIN   );
+ALTAIR_DiffLEDLightSource   diffLEDLightSource(   DEFAULT_BLUELEDSPIN        ,
+                                                  DEFAULT_GREENLEDSPIN       ,
+                                                  DEFAULT_YELLOWLEDSPIN      ,
+                                                  DEFAULT_REDLEDSPIN         );                       
+
+Adafruit_BNO055             bno = Adafruit_BNO055(55);       // on I2C      (default addr = 0x28), Adafruit 9-axis orientation fusion sensor
+Adafruit_BME280             bmeMast, bmeBalloon, bmePayload; // also on I2C (default addr = 0x77.  bmeMast [default addr] is on nav mast, bmeBalloon [w/ addr 0x76] is inside balloon, bmePayload [I2CMUXed, but default addr] inside gondola)
+Adafruit_ADS1115            ads1115ADC1;                     // also on I2C (default addr = 0x48), contains the 2 photodiode inputs
+Adafruit_ADS1115            ads1115ADC2(0x49);               // also on I2C         (addr = 0x49), contains 
+Adafruit_ADS1115            ads1115ADC3(0x4A);               // also on I2C         (addr = 0x4A), contains 
+SFE_HMC6343                 hmc6343;                         // also on I2C         (addr = 0x19), SparkFun magnetometer(+accelerometer)
+TinyGPSPlus                 gps;                             // nav mast GPS on I2C (addr = 0x42), and also UM7 with DFRobot GPS input on Serial3 (initialized later)
 
 // SD card output file
-File               theSDcardFile;
+File                        theSDcardFile;
 
 
 void tcaselect(int8_t i) {
@@ -130,18 +128,9 @@ void setup() {
 // and perhaps try initializing SPI before DNT and SHX ...  and try SPI_HALF_SPEED initialization ... and try RFM23BP first again ... and try just straight ReadWrite
 //  pinMode(SDcard_CS,       OUTPUT);  // seems to sometimes cause SD.begin to have problems if SD.begin done immediately following it
   
-  pinMode(redLEDs,         OUTPUT);
-  pinMode(yellowLEDs,      OUTPUT);
-  pinMode(blueLEDs,        OUTPUT);
-  pinMode(greenLEDs,       OUTPUT);
-
-  pinMode(red635nmLaser,   OUTPUT);
-  pinMode(green532nmLaser, OUTPUT);
-  pinMode(red670nmLaser,   OUTPUT);
-  pinMode(blue440nmLaser,  OUTPUT);
-
 // normal situation: flash yellow LEDs then NO lights on (formerly it was yellow LEDs and green laser on, but that heats up the I-drive transistor too much)
-  setLightsNormal();
+  intSphereLightSource.initialize();
+  diffLEDLightSource.initialize();
   
   Serial.begin(9600);
 
@@ -168,7 +157,8 @@ void setup() {
   }
 
 
-/* jj */
+// try putting a delay here, and/or the other type of SD card initialization
+
   Serial.println(F("Initializing SPI bus SD card output ..."));
   if (!SD.begin(SDcard_CS)) {
     Serial.println(F("SD card output initialization failed!"));
@@ -181,6 +171,7 @@ void setup() {
     Serial.println(F("SD card file open failed."));
     while(1);
   }
+
 
 
   Serial.println(F("SPI bus and device initialization complete."));
@@ -730,7 +721,8 @@ void sendStationNameToSHXandRFMRadiosAtInterval(long interval)
   if (currentMillis - previousMillis3 > interval) { 
     Serial.println(F("Writing station name to SHX1"));
     previousMillis3 = currentMillis;
-    setLightsSHX();
+    intSphereLightSource.setLightsBackupRadio();
+    diffLEDLightSource.setLightsBackupRadio();
       
   //send my call sign (VE7XJA)
     shx144.send(byte('V'));
@@ -809,7 +801,8 @@ void sendStationNameToSHXandRFMRadiosAtInterval(long interval)
 */
 
     delay(40);
-    setLightsNormal();
+    intSphereLightSource.setLightsNormal();
+    diffLEDLightSource.setLightsNormal();
 
   } else if (shx144.available()) {
     byte shxTerm[maxTermLength];
@@ -842,16 +835,21 @@ void sendStatusToDNTRadioAndReadCommandsAtInterval(long interval)
 {
   unsigned long currentMillis = millis();
   if (!dnt900.isBusy() && currentMillis - previousMillis2 > interval) {
-    int32_t latitude  = gps.location.lat() * 1000000;  // latitude,  in millionths of a degree
-    int32_t longitude = gps.location.lng() * 1000000;  // longitude, in millionths of a degree
-    int16_t elevation = gps.altitude.meters();         // elevation above mean sea level in meters
+    int32_t latitude  = gps.location.lat() * 1000000;  // Latitude,  in millionths of a degree.
+    int32_t longitude = gps.location.lng() * 1000000;  // Longitude, in millionths of a degree.
+    int16_t elevation = gps.altitude.meters();         // Elevation above mean sea level in meters.  NOTE: as this is signed 16 bit, this will *turn over*
+                                                       // when above 32.77 km!  Would need to add & transmit an extra byte, if one preferred a higher limit.
+                                                       // (Or make it unsigned, which would cause issues for launches from Death Valley or the Dead Sea. :)
+                                                       // (One could get clever, and make it unsigned, but add, then later remove, 1000 meters, but I'm not 
+                                                       //  that clever.)
     
     Serial.println(F("*** Writing status to DNT ***"));
     previousMillis2 = currentMillis;
-    setLightsDNT();
+    intSphereLightSource.setLightsPrimaryRadio();
+    diffLEDLightSource.setLightsPrimaryRadio();
 
     dnt900.send(0xFA);
-    dnt900.send(0x07);
+    dnt900.send(0x0B);
 
   //send latitude
     dnt900.send(byte(( latitude >> 24) & 0xFF));
@@ -867,16 +865,11 @@ void sendStatusToDNTRadioAndReadCommandsAtInterval(long interval)
     dnt900.send(byte((elevation >>  8) & 0xFF));
     dnt900.send(byte( elevation        & 0xFF));
 
-    dnt900.send(byte('A'));
-    dnt900.send(byte('L'));
-    dnt900.send(byte('T'));
-    dnt900.send(byte('A'));
-    dnt900.send(byte('I'));
-    dnt900.send(byte('R'));
     dnt900.send(infoByte);
 
     delay(40);
-    setLightsNormal();
+    intSphereLightSource.setLightsNormal();
+    diffLEDLightSource.setLightsNormal();
 
   long dntReadTry = 0;
   termIndex = termLength = 0;
@@ -898,7 +891,7 @@ void sendStatusToDNTRadioAndReadCommandsAtInterval(long interval)
           byte b = dnt900.read();
 //        term[termIndex++] = b;
     
-          if (b == (byte)0xFA && hasBegun == 0) {
+          if (b == (byte)0xFC && hasBegun == 0) {
             hasBegun = 1;
           }
           else if (hasBegun == 1) {
@@ -950,12 +943,13 @@ void sendStatusToDNTRadioAndReadCommandsAtInterval(long interval)
 
 void RxDataTransparent (byte term[], int termLength) {
 
-    byte    inputByte         = term[0];
+    byte    inputByte         = term[1];
     boolean thingsHaveChanged = true;
     int     channelToModify   = 0;
 
     infoByte = 'S';
 
+      if (term[0] == 's') {
         switch(inputByte) {
           case 'A' :
             channelToModify = 0;
@@ -1099,6 +1093,7 @@ void RxDataTransparent (byte term[], int termLength) {
             thingsHaveChanged = false;
             break;
         }
+      }
 
     if (thingsHaveChanged) {
       ++infoByte;
@@ -1113,80 +1108,6 @@ void RxDataTransparent (byte term[], int termLength) {
   
 }
 
-void setLightsNormal() {
-//  turnOnYellowLEDs();
-//  turnOnGreenLaser();
-  flashYellowThenTurnOffLEDs();
-  turnOffLasers();
-}
-
-void setLightsSHX() {
-  turnOnBlueLEDs();
-  turnOnRed635nmLaser();
-}
-
-void setLightsDNT() {
-  turnOnRedLEDs();
-  turnOnBlueLaser();
-}
-
-void flashYellowThenTurnOffLEDs() {
-  digitalWrite(redLEDs,         LOW);   // turn these LEDs off (LOW is the voltage level)
-  digitalWrite(yellowLEDs,      HIGH);  // turn these LEDs on (HIGH is the voltage level)
-  digitalWrite(blueLEDs,        LOW);   // turn these LEDs off (LOW is the voltage level)
-  digitalWrite(greenLEDs,       LOW);   // turn these LEDs off (LOW is the voltage level)
-  delay(20);
-  digitalWrite(yellowLEDs,      LOW);   // turn these LEDs off (LOW is the voltage level)  
-}
-
-void turnOnYellowLEDs() {
-  digitalWrite(redLEDs,         LOW);   // turn these LEDs off (LOW is the voltage level)
-  digitalWrite(yellowLEDs,      HIGH);  // turn these LEDs on (HIGH is the voltage level)
-  digitalWrite(blueLEDs,        LOW);   // turn these LEDs off (LOW is the voltage level)
-  digitalWrite(greenLEDs,       LOW);   // turn these LEDs off (LOW is the voltage level) 
-}
-
-void turnOnBlueLEDs() {
-  digitalWrite(redLEDs,         LOW);   // turn these LEDs off (LOW is the voltage level)
-  digitalWrite(yellowLEDs,      LOW);   // turn these LEDs off (LOW is the voltage level)
-  digitalWrite(blueLEDs,        HIGH);  // turn these LEDs on (HIGH is the voltage level)
-  digitalWrite(greenLEDs,       LOW);   // turn these LEDs off (LOW is the voltage level) 
-}
-
-void turnOnRedLEDs() {
-  digitalWrite(redLEDs,         HIGH);  // turn these LEDs on (HIGH is the voltage level)
-  digitalWrite(yellowLEDs,      LOW);   // turn these LEDs off (LOW is the voltage level)
-  digitalWrite(blueLEDs,        LOW);   // turn these LEDs off (LOW is the voltage level)
-  digitalWrite(greenLEDs,       LOW);   // turn these LEDs off (LOW is the voltage level) 
-}
-
-void turnOffLasers() {
-  digitalWrite(red635nmLaser,   LOW);   // turn this LD off (LOW is the voltage level)
-  digitalWrite(green532nmLaser, LOW);   // turn this laser off by making the voltage LOW
-  digitalWrite(red670nmLaser,   LOW);   // turn this LD off (LOW is the voltage level)
-  digitalWrite(blue440nmLaser,  LOW);   // turn this LD off (LOW is the voltage level)   
-}
-
-void turnOnGreenLaser() {
-  digitalWrite(red635nmLaser,   LOW);   // turn this LD off (LOW is the voltage level)
-  digitalWrite(green532nmLaser, HIGH);  // turn this laser on by making the voltage HIGH
-  digitalWrite(red670nmLaser,   LOW);   // turn this LD off (LOW is the voltage level)
-  digitalWrite(blue440nmLaser,  LOW);   // turn this LD off (LOW is the voltage level)  
-}
-
-void turnOnRed635nmLaser() {
-  digitalWrite(red635nmLaser,   HIGH);  // turn this LD on (HIGH is the voltage level)
-  digitalWrite(green532nmLaser, LOW);   // turn this laser off by making the voltage LOW
-  digitalWrite(red670nmLaser,   LOW);   // turn this LD off (LOW is the voltage level)
-  digitalWrite(blue440nmLaser,  LOW);   // turn this LD off (LOW is the voltage level)    
-}
-
-void turnOnBlueLaser() {
-  digitalWrite(red635nmLaser,   LOW);   // turn this LD off (LOW is the voltage level)
-  digitalWrite(green532nmLaser, LOW);   // turn this laser off by making the voltage LOW
-  digitalWrite(red670nmLaser,   LOW);   // turn this LD off (LOW is the voltage level)
-  digitalWrite(blue440nmLaser,  HIGH);  // turn this LD on (HIGH is the voltage level)  
-}
 
 void sendGPSCompassStatusToComputerAtInterval(long interval) {
 
@@ -1216,4 +1137,5 @@ void sendGPSCompassStatusToComputerAtInterval(long interval) {
 
 
 }
+
 
