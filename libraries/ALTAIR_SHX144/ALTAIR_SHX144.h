@@ -20,12 +20,20 @@
 
 #include "ALTAIR_GenTelInt.h"
 
+#define  SHX144_PROGRAM_BAUDRATE    2400
+#define  SHX144_SERIAL_BAUDRATE     1200
+
+#define  DEFAULT_SHX_SERIALID          2
+#define  DEFAULT_FAKESHXPROGRAMRXPIN  24
+#define  DEFAULT_SHXPROGRAMPIN        25
+#define  DEFAULT_SHXBUSYPIN           23
+
 class ALTAIR_SHX144 : public ALTAIR_GenTelInt {
   public:
     virtual bool    send(unsigned char aChar);
     virtual bool    send(const uint8_t* aString);
     virtual bool    sendAsIndivChars(const uint8_t* aString);
-    virtual bool    available();                              // if a byte is available for reading, returns true
+    virtual bool    available();                              // If a byte is available for reading, returns true.
     virtual bool    isBusy();
     virtual bool    initialize(const char* aString = "");
     virtual byte    read();

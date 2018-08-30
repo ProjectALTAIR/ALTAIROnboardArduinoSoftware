@@ -18,14 +18,6 @@
 #include "ALTAIR_SHX144.h"
 #include <SoftwareSerial.h>
 
-#define  SHX144_PROGRAM_BAUDRATE    2400
-#define  SHX144_SERIAL_BAUDRATE     1200
-
-#define  DEFAULT_SERIALID              2
-#define  DEFAULT_FAKESHXPROGRAMRXPIN  24
-#define  DEFAULT_SHXPROGRAMPIN        25
-#define  DEFAULT_SHXBUSYPIN           23
-
 /**************************************************************************/
 /*!
  @brief  Constructor.
@@ -45,7 +37,7 @@ ALTAIR_SHX144::ALTAIR_SHX144(const char serialID, const char fakeShxProgramRxPin
 */
 /**************************************************************************/
 ALTAIR_SHX144::ALTAIR_SHX144() :
-    _serialID(DEFAULT_SERIALID) ,
+    _serialID(DEFAULT_SHX_SERIALID) ,
     _fakeShxProgramRxPin(DEFAULT_FAKESHXPROGRAMRXPIN) ,
     _shxProgramPin(DEFAULT_SHXPROGRAMPIN) ,
     _shxBusyPin(DEFAULT_SHXBUSYPIN)
@@ -275,8 +267,6 @@ byte ALTAIR_SHX144::read() {
 char ALTAIR_SHX144::lastRSSI() {
 
 // NEED TO IMPLEMENT THIS PROPERLY!!!
-    return 127;
+    return FAKE_RSSI_VAL;
 
 }
-
-
