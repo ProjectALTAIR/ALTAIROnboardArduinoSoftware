@@ -10,12 +10,19 @@
 #include <Adafruit_BNO055.h>
 #include <Adafruit_ADS1015.h>
 #include <SFE_HMC6343.h>
+
 #include <ALTAIR_DNT900.h>
 #include <ALTAIR_SHX144.h>
 #include <ALTAIR_RFM23BP.h>
 #include <ALTAIR_UM7.h>
+
 #include <ALTAIR_IntSphereLightSource.h>
 #include <ALTAIR_DiffLEDLightSource.h>
+
+#include <ALTAIR_PropulsionSystem.h>
+#include <ALTAIR_BleedSystem.h>
+#include <ALTAIR_CutdownSystem.h>
+#include <ALTAIR_GlobalMotorControl.h>
 
 #include <utility/imumaths.h>
 
@@ -94,7 +101,9 @@ ALTAIR_IntSphereLightSource intSphereLightSource( DEFAULT_BLUE440NMLASERPIN  ,
 ALTAIR_DiffLEDLightSource   diffLEDLightSource(   DEFAULT_BLUELEDSPIN        ,
                                                   DEFAULT_GREENLEDSPIN       ,
                                                   DEFAULT_YELLOWLEDSPIN      ,
-                                                  DEFAULT_REDLEDSPIN         );                       
+                                                  DEFAULT_REDLEDSPIN         );
+
+ALTAIR_GlobalMotorControl   motorControl                                     ;
 
 Adafruit_BNO055             bno = Adafruit_BNO055(55);       // on I2C      (default addr = 0x28), Adafruit 9-axis orientation fusion sensor
 Adafruit_BME280             bmeMast, bmeBalloon, bmePayload; // also on I2C (default addr = 0x77.  bmeMast [default addr] is on nav mast, bmeBalloon [w/ addr 0x76] is inside balloon, bmePayload [I2CMUXed, but default addr] inside gondola)
@@ -835,37 +844,12 @@ void sendStatusToDNTRadioAndReadCommandsAtInterval(long interval)
 {
   unsigned long currentMillis = millis();
   if (!dnt900.isBusy() && currentMillis - previousMillis2 > interval) {
-    int32_t latitude  = gps.location.lat() * 1000000;  // Latitude,  in millionths of a degree.
-    int32_t longitude = gps.location.lng() * 1000000;  // Longitude, in millionths of a degree.
-    int16_t elevation = gps.altitude.meters();         // Elevation above mean sea level in meters.  NOTE: as this is signed 16 bit, this will *turn over*
-                                                       // when above 32.77 km!  Would need to add & transmit an extra byte, if one preferred a higher limit.
-                                                       // (Or make it unsigned, which would cause issues for launches from Death Valley or the Dead Sea. :)
-                                                       // (One could get clever, and make it unsigned, but add, then later remove, 1000 meters, but I'm not 
-                                                       //  that clever.)
-    
-    Serial.println(F("*** Writing status to DNT ***"));
     previousMillis2 = currentMillis;
+    Serial.println(F("*** Writing status to DNT ***"));
     intSphereLightSource.setLightsPrimaryRadio();
     diffLEDLightSource.setLightsPrimaryRadio();
 
-    dnt900.send(0xFA);
-    dnt900.send(0x0B);
-
-  //send latitude
-    dnt900.send(byte(( latitude >> 24) & 0xFF));
-    dnt900.send(byte(( latitude >> 16) & 0xFF));
-    dnt900.send(byte(( latitude >>  8) & 0xFF));
-    dnt900.send(byte(  latitude        & 0xFF));
-  //send longitude
-    dnt900.send(byte((longitude >> 24) & 0xFF));
-    dnt900.send(byte((longitude >> 16) & 0xFF));
-    dnt900.send(byte((longitude >>  8) & 0xFF));
-    dnt900.send(byte( longitude        & 0xFF));
-  //send elevation
-    dnt900.send(byte((elevation >>  8) & 0xFF));
-    dnt900.send(byte( elevation        & 0xFF));
-
-    dnt900.send(infoByte);
+    dnt900.sendGPS(gps);
 
     delay(40);
     intSphereLightSource.setLightsNormal();
@@ -1138,4 +1122,24 @@ void sendGPSCompassStatusToComputerAtInterval(long interval) {
 
 }
 
+void performCommand(byte byte0, byte byte1) {
+  switch(byte0) {
+// a motor or servo command
+    case 's':
+      motorControl.performCommand(byte1);
+      break;
+// a device (that is not a servo, motor, or light source) command
+    case 'd':
+      break;
+// a light source command
+    case 'l':
+      break;
+// shut down all propulsion motors immediately
+    case 'x':
+    case 'X':
+      break;
+    default:
+      break;
+  }
+}
 
