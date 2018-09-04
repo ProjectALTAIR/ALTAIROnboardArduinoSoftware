@@ -34,6 +34,7 @@ ALTAIR_CutdownSystem::ALTAIR_CutdownSystem(                             ) :
     _isCutdown(                    false                                )
 {
     setPWMPin(                     CUTDOWN_SERVO_PWM_PIN                ) ;
+    initializeSetting(             DEFAULT_CUTDOWN_SETTING              ) ;
 }
 
 /**************************************************************************/
