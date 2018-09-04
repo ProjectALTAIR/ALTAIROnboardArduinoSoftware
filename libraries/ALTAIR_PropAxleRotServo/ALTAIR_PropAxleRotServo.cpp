@@ -34,6 +34,7 @@
 ALTAIR_PropAxleRotServo::ALTAIR_PropAxleRotServo(                           )
 {
     setPWMPin(                         PROPAXLEROT_SERVO_PWM_PIN            ) ;
+    initializeSetting(                 DEFAULT_PROPAXLEROT_SETTING          ) ;
 }
 
 /**************************************************************************/
