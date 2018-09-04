@@ -131,8 +131,7 @@ void tcaselect(int8_t i) {
 
 
 void setup() {
-  for (int i = 0; i < 7; ++i) 
-  pinMode(pwmPin[i],       OUTPUT);
+//  for (int i = 0; i < 7; ++i)   pinMode(pwmPin[i],       OUTPUT);
 
 // and perhaps try initializing SPI before DNT and SHX ...  and try SPI_HALF_SPEED initialization ... and try RFM23BP first again ... and try just straight ReadWrite
 //  pinMode(SDcard_CS,       OUTPUT);  // seems to sometimes cause SD.begin to have problems if SD.begin done immediately following it
@@ -249,9 +248,11 @@ void setup() {
   ads1115ADC2.begin();
   ads1115ADC3.begin();
   
-  Serial.println(F("I2C/TWI bus and device initialization complete.  Now initializing PWM outputs ..."));
+  Serial.println(F("I2C/TWI bus and device initialization complete.  Now initializing all motors ..."));
 
+  motorControl.initializeAllMotors();
 
+/*
   // start up the PWM outputs
 //  TCCR3A = _BV(COM3A1) | _BV(COM3B1) | _BV(COM3C1) | _BV(WGM32) | _BV(WGM31);
 //  TCCR3B = _BV(CS32);
@@ -273,6 +274,7 @@ void setup() {
   OCR5A = 34 + 2*setting[4];
   OCR1A = 34 + 2*setting[5];
   OCR1B = 34 + 2*setting[6];
+*/
 
   Serial.println(F("Setup complete."));
  
