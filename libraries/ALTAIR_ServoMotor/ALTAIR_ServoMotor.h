@@ -34,22 +34,23 @@
 class ALTAIR_ServoMotor {
   public:
 
-    ALTAIR_ServoMotor(                                                )                           ;
+    ALTAIR_ServoMotor(                                                   )                                   ;
 
-    bool                     isInitialized(                           ) { return _isInitialized   ; }
+    bool                     isInitialized(                              ) {  return         _isInitialized  ; }
 
-    float                    reportSetting(                           ) { return _setting         ; }
-    float                    determinePosition(                       )                           ;   // Determine and report present position.
+    float                    reportSetting(                              ) {  return         _setting        ; }
+    float                    determinePosition(                          )                                   ;   // Determine and report present position.
 
-    bool                     updateSetting(         float newSetting  )                           ;   // Move the servo motor!  Return true if successful.
+    bool                     moveServoTo(           float newSetting     )                                   ;   // Move the servo motor!  Return true if successful.
 
-    void                     initializePinMode(                       )                           ;
-    void                     initializePWMRegister(                   )                           ;
+    void                     initializePinMode(                          )                                   ;
+    void                     initializePWMRegister(                      )                                   ;
 
   protected:
-    void                     setPWMPin(             byte  pwmPin      ) { _pwmPin        = pwmPin ; }
-    virtual void             resetPWMRegister     (                   )                  = 0      ;
-    void                     setInitialized(                          ) { _isInitialized = true   ; }
+    void                     setPWMPin(             byte  pwmPin         ) { _pwmPin        = pwmPin         ; }
+    virtual void             resetPWMRegister     (                      )                  = 0              ;
+    void                     initializeSetting(     float initialSetting ) { _setting       = initialSetting ; }
+    void                     setInitialized(                             ) { _isInitialized = true           ; }
 
   private:
     bool                     _isInitialized              ;

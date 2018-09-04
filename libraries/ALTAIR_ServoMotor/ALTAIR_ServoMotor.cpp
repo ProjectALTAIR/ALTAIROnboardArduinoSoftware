@@ -53,13 +53,14 @@ float ALTAIR_ServoMotor::determinePosition()
 
 /**************************************************************************/
 /*!
- @brief  Move the servo motor!  Return true if successful.
+ @brief  Move the servo to a new setting.
 */
 /**************************************************************************/
-bool ALTAIR_ServoMotor::updateSetting( float newSetting ) 
+bool ALTAIR_ServoMotor::moveServoTo(   float  newSetting  )
 {
-    return true                 ;  // implement this later
+    return true;    // implement this later
 }
+
 
 /**************************************************************************/
 /*!
