@@ -34,10 +34,12 @@
  @brief  Constructor.  
 */
 /**************************************************************************/
-ALTAIR_BleedSystem::ALTAIR_BleedSystem( ) :
-    _isOpen(   false                    )
+ALTAIR_BleedSystem::ALTAIR_BleedSystem(                                    ) :
+    _isOpen(                          false                                )
 {
-    setPWMPin( BLEEDVALVE_SERVO_PWM_PIN ) ;
+    setPWMPin(                        BLEEDVALVE_SERVO_PWM_PIN             ) ;
+    initializeSetting(                DEFAULT_BLEEDVALVE_SETTING           ) ;
+
 }
 
 /**************************************************************************/
