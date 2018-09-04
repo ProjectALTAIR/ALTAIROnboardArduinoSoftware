@@ -29,6 +29,18 @@
 #define   BLEEDVALVE_SERVO_PWM_PIN       7
 #define   CUTDOWN_SERVO_PWM_PIN          8
 
+#define   DEFAULT_PROPAXLEROT_SETTING    6.
+#define   DEFAULT_BLEEDVALVE_SETTING    15.
+#define   DEFAULT_CUTDOWN_SETTING        6.
+
+#define   MAX_SAFE_PROPAXLEROT_SETTING  15.
+#define   MAX_SAFE_BLEEDVALVE_SETTING   16.
+#define   MAX_SAFE_CUTDOWN_SETTING      15.
+
+#define   MIN_SAFE_PROPAXLEROT_SETTING   0.
+#define   MIN_SAFE_BLEEDVALVE_SETTING    0.
+#define   MIN_SAFE_CUTDOWN_SETTING       0.
+
 #define   MAX_SAFE_PROPMOTOR_SETTING     2.5       // A very important floating-point number btw 0 and 10.
 
 #define   PWM_PEDESTAL_VALUE            34         // If the content of the PWM output register is increased
