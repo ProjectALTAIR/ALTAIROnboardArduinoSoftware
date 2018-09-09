@@ -31,11 +31,11 @@ ALTAIR_RFM23BP::ALTAIR_RFM23BP(byte RFM23_chipselectpin, byte RFM23_interruptpin
 
 /**************************************************************************/
 /*!
- @brief  Default constructor (unused).
+ @brief  Default constructor.
 */
 /**************************************************************************/
 ALTAIR_RFM23BP::ALTAIR_RFM23BP() :
-  _theRFM23BP()
+  _theRFM23BP(DEFAULT_RFM_CHIPSELECTPIN, DEFAULT_RFM_INTERRUPTPIN)
 {
 }
 
