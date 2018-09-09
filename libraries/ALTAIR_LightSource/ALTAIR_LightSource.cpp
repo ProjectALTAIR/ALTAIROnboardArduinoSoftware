@@ -34,8 +34,7 @@
 */
 /**************************************************************************/
 ALTAIR_LightSource::ALTAIR_LightSource() :
-  _isInitialized( false                ) ,
-  _isOn(          false                )
+  _isInitialized(   false              )
 {
 
 }

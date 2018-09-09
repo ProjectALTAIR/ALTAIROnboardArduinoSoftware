@@ -31,22 +31,18 @@
 class ALTAIR_LightSource {
   public:
     virtual void    initialize()            = 0                                 ;
-    virtual void    setLightsNormal()       = 0                                 ;
+    virtual void    resetLights()           = 0                                 ;
     virtual void    setLightsPrimaryRadio() = 0                                 ;   // test flash pattern when primary  radio is transmitting
     virtual void    setLightsBackupRadio()  = 0                                 ;   // test flash pattern when a backup radio is transmitting
     virtual bool    isInitialized()         { return _isInitialized             ; }
-    virtual bool    isOn()                  { return _isOn                      ; }
 
   protected:
     ALTAIR_LightSource()                                                        ;
 
-    virtual void    turnOn()                { if (_isInitialized) _isOn = true  ; }
-    virtual void    turnOff()               { if (_isInitialized) _isOn = false ; }
     virtual void    setInitialized()        { _isInitialized            = true  ; }
 
   private:
     bool            _isInitialized                                              ;
-    bool            _isOn                                                       ;
 };
 #endif    //   ifndef ALTAIR_LightSource_h
 
