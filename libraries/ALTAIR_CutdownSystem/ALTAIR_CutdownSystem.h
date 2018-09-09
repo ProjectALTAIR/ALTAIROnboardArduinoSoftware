@@ -37,6 +37,9 @@ class ALTAIR_CutdownSystem : public ALTAIR_ServoMotor {
 
     void                     setCutdown(       )      {        _isCutdown = true ; }
 
+    virtual float            maxSafeSetting(   )                                 ;
+    virtual float            minSafeSetting(   )                                 ;
+
   protected:
     virtual void             resetPWMRegister( )                                 ;
 

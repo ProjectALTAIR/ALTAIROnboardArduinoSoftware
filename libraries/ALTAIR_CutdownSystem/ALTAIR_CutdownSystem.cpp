@@ -39,6 +39,26 @@ ALTAIR_CutdownSystem::ALTAIR_CutdownSystem(                             ) :
 
 /**************************************************************************/
 /*!
+ @brief  Return the maximum safe setting.
+*/
+/**************************************************************************/
+float ALTAIR_CutdownSystem::maxSafeSetting(                             )
+{
+    return                         MAX_SAFE_CUTDOWN_SETTING               ;
+}
+
+/**************************************************************************/
+/*!
+ @brief  Return the minimum safe setting.
+*/
+/**************************************************************************/
+float ALTAIR_CutdownSystem::minSafeSetting(                             )
+{
+    return                         MIN_SAFE_CUTDOWN_SETTING               ;
+}
+
+/**************************************************************************/
+/*!
  @brief  (Re-)set the PWM output register.
 */
 /**************************************************************************/
