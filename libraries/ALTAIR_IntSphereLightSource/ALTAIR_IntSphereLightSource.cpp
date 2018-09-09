@@ -33,23 +33,29 @@ ALTAIR_IntSphereLightSource::ALTAIR_IntSphereLightSource(const char blue440nmLas
   _green532nmLaserPin(                                              green532nmLaserPin ) ,
   _red670nmLaserPin(                                                red670nmLaserPin   ) ,
   _red635nmLaserPin(                                                red635nmLaserPin   ) ,
-  _blue440nmLaserPin(                                               blue440nmLaserPin  )
+  _blue440nmLaserPin(                                               blue440nmLaserPin  ) ,
+  _green532nmLaserState(                                            LOW                ) ,
+  _red670nmLaserState(                                              LOW                ) ,
+  _red635nmLaserState(                                              LOW                ) ,
+  _blue440nmLaserState(                                             LOW                )
 {
-
 }
 
 /**************************************************************************/
 /*!
- @brief  Default constructor (unused).  
+ @brief  Default constructor.  
 */
 /**************************************************************************/
 ALTAIR_IntSphereLightSource::ALTAIR_IntSphereLightSource(                              ) :
   _green532nmLaserPin(                                     DEFAULT_GREEN532NMLASERPIN  ) ,
   _red670nmLaserPin(                                       DEFAULT_RED670NMLASERPIN    ) ,
   _red635nmLaserPin(                                       DEFAULT_RED635NMLASERPIN    ) ,
-  _blue440nmLaserPin(                                      DEFAULT_BLUE440NMLASERPIN   )
+  _blue440nmLaserPin(                                      DEFAULT_BLUE440NMLASERPIN   ) ,
+  _green532nmLaserState(                                   LOW                         ) ,
+  _red670nmLaserState(                                     LOW                         ) ,
+  _red635nmLaserState(                                     LOW                         ) ,
+  _blue440nmLaserState(                                    LOW                         )
 {
-
 }
 
 /**************************************************************************/
@@ -66,22 +72,24 @@ void ALTAIR_IntSphereLightSource::initialize(                                   
 
   setInitialized(                    );
 
-// normal situation: flash yellow LEDs then NO lights on (formerly it was yellow LEDs and green  
-// laser on, but that heats up the I-drive transistor too much)
-  setLightsNormal(                   );
+  resetLights(                       );
 }
 
 
 /**************************************************************************/
 /*!
- @brief  Set the light source output to its normal state.
+ @brief  Set the light source output to its steady state.
 */
 /**************************************************************************/
-void ALTAIR_IntSphereLightSource::setLightsNormal(                                     )
+void ALTAIR_IntSphereLightSource::resetLights(                                         )
 {
-// Normal situation: turn off the lasers (and flash yellow LEDs then NO LEDs on -- formerly 
-// it was yellow LEDs and green laser on, but that heats up the I-drive transistor too much).
-  turnOffLasers(                 );
+  if (isInitialized(                       )) {
+      digitalWrite(_green532nmLaserPin, _green532nmLaserState );
+      digitalWrite(_red670nmLaserPin,   _red670nmLaserState   );
+      digitalWrite(_red635nmLaserPin,   _red635nmLaserState   );
+      digitalWrite(_blue440nmLaserPin,  _blue440nmLaserState  );
+  }
+// There probably should be some sort of error if the light source is not initialized yet...
 }
 
 /**************************************************************************/
@@ -92,8 +100,8 @@ void ALTAIR_IntSphereLightSource::setLightsNormal(                              
 /**************************************************************************/
 void ALTAIR_IntSphereLightSource::setLightsPrimaryRadio(                               )
 {
-// Primary radio is transmitting: turn on the blue laser (and the red LEDs).
-  turnOnBlueLaser();
+// Primary radio is transmitting: temporarily turn on the blue laser (and the red LEDs).
+  flashBlueLaser();
 }
 
 /**************************************************************************/
@@ -104,8 +112,8 @@ void ALTAIR_IntSphereLightSource::setLightsPrimaryRadio(                        
 /**************************************************************************/
 void ALTAIR_IntSphereLightSource::setLightsBackupRadio(                                )
 {
-// A backup radio is transmitting: turn on the red 635 nm laser (and the blue LEDs).
-  turnOnRed635nmLaser();
+// A backup radio is transmitting: temporarily turn on the red 635 nm laser (and the blue LEDs).
+  flashRed635nmLaser();
 }
 
 /**************************************************************************/
@@ -116,11 +124,37 @@ void ALTAIR_IntSphereLightSource::setLightsBackupRadio(                         
 void ALTAIR_IntSphereLightSource::turnOffLasers(                                       )
 {
   if (isInitialized(                       )) {
-      digitalWrite(_green532nmLaserPin, LOW);   // turn this laser off by making the voltage LOW
-      digitalWrite(_red670nmLaserPin,   LOW);   // turn this LD off (LOW is the voltage level)
-      digitalWrite(_red635nmLaserPin,   LOW);   // turn this LD off (LOW is the voltage level)
-      digitalWrite(_blue440nmLaserPin,  LOW);   // turn this LD off (LOW is the voltage level)   
-      turnOff(                             );
+     _green532nmLaserState    = LOW ;
+     _red670nmLaserState      = LOW ;
+     _red635nmLaserState      = LOW ;
+     _blue440nmLaserState     = LOW ;
+      resetLights();    
+  }
+// There probably should be some sort of error if the light source is not initialized yet...
+}
+
+/**************************************************************************/
+/*!
+ @brief  Flash the blue laser (and only the blue laser).
+*/
+/**************************************************************************/
+void ALTAIR_IntSphereLightSource::flashBlueLaser(                                     )
+{
+  if (isInitialized(                        )) {
+      digitalWrite(_blue440nmLaserPin,  !_blue440nmLaserState); 
+  }
+// There probably should be some sort of error if the light source is not initialized yet...
+}
+
+/**************************************************************************/
+/*!
+ @brief  Flash the red 635 nm laser (and only the red 635 nm laser).
+*/
+/**************************************************************************/
+void ALTAIR_IntSphereLightSource::flashRed635nmLaser(                                 )
+{
+  if (isInitialized(                        )) {
+      digitalWrite(_red635nmLaserPin,  !_red635nmLaserState); 
   }
 // There probably should be some sort of error if the light source is not initialized yet...
 }
@@ -130,14 +164,53 @@ void ALTAIR_IntSphereLightSource::turnOffLasers(                                
  @brief  Turn on the blue laser (and only the blue laser).
 */
 /**************************************************************************/
-void ALTAIR_IntSphereLightSource::turnOnBlueLaser(                                     )
+void ALTAIR_IntSphereLightSource::turnOnBlueLaser(           )
 {
-  if (isInitialized(                        )) {
-      turnOn(                               );
-      digitalWrite(_green532nmLaserPin, LOW );  // turn this laser off by making the voltage LOW
-      digitalWrite(_red670nmLaserPin,   LOW );  // turn this LD off (LOW is the voltage level)
-      digitalWrite(_red635nmLaserPin,   LOW );  // turn this LD off (LOW is the voltage level)
-      digitalWrite(_blue440nmLaserPin,  HIGH);  // turn this LD on (HIGH is the voltage level)   
+  if (isInitialized(                                        )) {
+     _blue440nmLaserState              = HIGH                 ;  // turn this laser on (HIGH is the voltage level)
+      digitalWrite(_blue440nmLaserPin,  _blue440nmLaserState ); 
+  }
+// There probably should be some sort of error if the light source is not initialized yet...
+}
+
+/**************************************************************************/
+/*!
+ @brief  Turn off the blue laser (and only the blue laser).
+*/
+/**************************************************************************/
+void ALTAIR_IntSphereLightSource::turnOffBlueLaser(          )
+{
+  if (isInitialized(                                        )) {
+     _blue440nmLaserState              = LOW                  ;  // turn this laser off (LOW is the voltage level)
+      digitalWrite(_blue440nmLaserPin,  _blue440nmLaserState ); 
+  }
+// There probably should be some sort of error if the light source is not initialized yet...
+}
+
+/**************************************************************************/
+/*!
+ @brief  Turn on the green laser (and only the green laser).
+*/
+/**************************************************************************/
+void ALTAIR_IntSphereLightSource::turnOnGreenLaser(          )
+{
+  if (isInitialized(                                        )) {
+     _green532nmLaserState             = HIGH                 ;  // turn this laser on (HIGH is the voltage level)
+      digitalWrite(_green532nmLaserPin, _green532nmLaserState); 
+  }
+// There probably should be some sort of error if the light source is not initialized yet...
+}
+
+/**************************************************************************/
+/*!
+ @brief  Turn off the green laser (and only the green laser).
+*/
+/**************************************************************************/
+void ALTAIR_IntSphereLightSource::turnOffGreenLaser(         )
+{
+  if (isInitialized(                                        )) {
+     _green532nmLaserState             = LOW                  ;  // turn this laser off (LOW is the voltage level)
+      digitalWrite(_green532nmLaserPin, _green532nmLaserState); 
   }
 // There probably should be some sort of error if the light source is not initialized yet...
 }
@@ -147,14 +220,53 @@ void ALTAIR_IntSphereLightSource::turnOnBlueLaser(                              
  @brief  Turn on the red 635 nm laser (and only the red 635 nm laser).
 */
 /**************************************************************************/
-void ALTAIR_IntSphereLightSource::turnOnRed635nmLaser(                                 )
+void ALTAIR_IntSphereLightSource::turnOnRed635nmLaser(       )
 {
-  if (isInitialized(                        )) {
-      turnOn(                               );
-      digitalWrite(_green532nmLaserPin, LOW );  // turn this laser off by making the voltage LOW
-      digitalWrite(_red670nmLaserPin,   LOW );  // turn this LD off (LOW is the voltage level)
-      digitalWrite(_red635nmLaserPin,   HIGH);  // turn this LD on (HIGH is the voltage level)
-      digitalWrite(_blue440nmLaserPin,  LOW );  // turn this LD off (LOW is the voltage level)   
+  if (isInitialized(                                        )) {
+     _red635nmLaserState               = HIGH                 ;  // turn this laser on (HIGH is the voltage level)
+      digitalWrite(_red635nmLaserPin,   _red635nmLaserState  ); 
+  }
+// There probably should be some sort of error if the light source is not initialized yet...
+}
+
+/**************************************************************************/
+/*!
+ @brief  Turn off the red 635 nm laser (and only the red 635 nm laser).
+*/
+/**************************************************************************/
+void ALTAIR_IntSphereLightSource::turnOffRed635nmLaser(      )
+{
+  if (isInitialized(                                        )) {
+     _red635nmLaserState               = LOW                  ;  // turn this laser off (LOW is the voltage level)
+      digitalWrite(_red635nmLaserPin,   _red635nmLaserState  ); 
+  }
+// There probably should be some sort of error if the light source is not initialized yet...
+}
+
+/**************************************************************************/
+/*!
+ @brief  Turn on the red 670 nm laser (and only the red 670 nm laser).
+*/
+/**************************************************************************/
+void ALTAIR_IntSphereLightSource::turnOnRed670nmLaser(       )
+{
+  if (isInitialized(                                        )) {
+     _red670nmLaserState               = HIGH                 ;  // turn this laser on (HIGH is the voltage level)
+      digitalWrite(_red670nmLaserPin,   _red670nmLaserState  ); 
+  }
+// There probably should be some sort of error if the light source is not initialized yet...
+}
+
+/**************************************************************************/
+/*!
+ @brief  Turn off the red 670 nm laser (and only the red 670 nm laser).
+*/
+/**************************************************************************/
+void ALTAIR_IntSphereLightSource::turnOffRed670nmLaser(      )
+{
+  if (isInitialized(                                        )) {
+     _red670nmLaserState               = LOW                  ;  // turn this laser off (LOW is the voltage level)
+      digitalWrite(_red670nmLaserPin,   _red670nmLaserState  ); 
   }
 // There probably should be some sort of error if the light source is not initialized yet...
 }

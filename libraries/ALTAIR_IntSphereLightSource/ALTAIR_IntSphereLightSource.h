@@ -31,29 +31,41 @@
 class ALTAIR_IntSphereLightSource : public ALTAIR_LightSource {
   public:
     virtual void    initialize()                                                             ;
-    virtual void    setLightsNormal()                                                        ;
+    virtual void    resetLights()                                                            ;   // set lights to their previous state (before flash start)
     virtual void    setLightsPrimaryRadio()                                                  ;   // test flash pattern when primary  radio is transmitting
     virtual void    setLightsBackupRadio()                                                   ;   // test flash pattern when a backup radio is transmitting
 
     virtual void    turnOffLasers()                                                          ;
-    virtual void    turnOnBlueLaser()                                                        ;
-    virtual void    turnOnRed635nmLaser()                                                    ;
+    virtual void    flashBlueLaser()                                                         ;
+    virtual void    flashRed635nmLaser()                                                     ;
 
+    void            turnOnBlueLaser()                                                        ;
+    void            turnOffBlueLaser()                                                       ;
+    void            turnOnGreenLaser()                                                       ;
+    void            turnOffGreenLaser()                                                      ;
+    void            turnOnRed635nmLaser()                                                    ;
+    void            turnOffRed635nmLaser()                                                   ;
+    void            turnOnRed670nmLaser()                                                    ;
+    void            turnOffRed670nmLaser()                                                   ;
 
     ALTAIR_IntSphereLightSource(const char blue440nmLaserPin                               , 
                                 const char green532nmLaserPin = DEFAULT_GREEN532NMLASERPIN ,
                                 const char red635nmLaserPin   = DEFAULT_RED635NMLASERPIN   ,
                                 const char red670nmLaserPin   = DEFAULT_RED670NMLASERPIN   ) ;
+    ALTAIR_IntSphereLightSource()                                                            ;  // Default constructor => all default arguments
 
   protected:
-    ALTAIR_IntSphereLightSource()                                                            ;
-
 
   private:
     char  _green532nmLaserPin;
     char  _red670nmLaserPin;
     char  _red635nmLaserPin;
     char  _blue440nmLaserPin;
+
+    bool  _green532nmLaserState;
+    bool  _red670nmLaserState;
+    bool  _red635nmLaserState;
+    bool  _blue440nmLaserState;
 };
 #endif    //   ifndef ALTAIR_IntSphereLightSource_h
 
