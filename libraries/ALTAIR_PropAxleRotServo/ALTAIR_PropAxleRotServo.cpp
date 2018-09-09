@@ -39,6 +39,26 @@ ALTAIR_PropAxleRotServo::ALTAIR_PropAxleRotServo(                           )
 
 /**************************************************************************/
 /*!
+ @brief  Return the maximum safe setting.
+*/
+/**************************************************************************/
+float ALTAIR_PropAxleRotServo::maxSafeSetting(                              )
+{
+    return                         MAX_SAFE_PROPAXLEROT_SETTING               ;
+}
+
+/**************************************************************************/
+/*!
+ @brief  Return the minimum safe setting.
+*/
+/**************************************************************************/
+float ALTAIR_PropAxleRotServo::minSafeSetting(                              )
+{
+    return                         MIN_SAFE_PROPAXLEROT_SETTING               ;
+}
+
+/**************************************************************************/
+/*!
  @brief  (Re-)set the PWM output register.
 */
 /**************************************************************************/
