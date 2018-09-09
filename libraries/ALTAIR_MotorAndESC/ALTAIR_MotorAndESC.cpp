@@ -36,7 +36,7 @@
 /**************************************************************************/
 ALTAIR_MotorAndESC::ALTAIR_MotorAndESC() :
   _powerSetting(  0.0                  ) ,
-  _isInitialized(  false               )
+  _isInitialized(   false              )
 {
 }
 
@@ -167,7 +167,7 @@ bool ALTAIR_MotorAndESC::decrementPower(                            )
 /**************************************************************************/
 bool ALTAIR_MotorAndESC::halfIncrementPower(                        )
 {
-   if ( powerSetting() + 0.5 <= MAX_SAFE_PROPMOTOR_SETTING ) {
+   if ( powerSetting() + 0.5  <= MAX_SAFE_PROPMOTOR_SETTING ) {
        _powerSetting          += 0.5 ;
        resetPWMRegister()            ;  
        return true                   ;
