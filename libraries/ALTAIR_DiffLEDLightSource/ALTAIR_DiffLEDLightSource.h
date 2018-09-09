@@ -29,29 +29,42 @@
 class ALTAIR_DiffLEDLightSource : public ALTAIR_LightSource {
   public:
     virtual void    initialize()                                                ;
-    virtual void    setLightsNormal()                                           ;
+    virtual void    resetLights()                                               ;
     virtual void    setLightsPrimaryRadio()                                     ;   // test flash pattern when primary  radio is transmitting
     virtual void    setLightsBackupRadio()                                      ;   // test flash pattern when a backup radio is transmitting
 
     virtual void    turnOffLEDs()                                               ;
-    virtual void    flashYellowThenTurnOffLEDs()                                ;
-    virtual void    turnOnRedLEDs()                                             ;
-    virtual void    turnOnBlueLEDs()                                            ;
+    virtual void    flashYellowLEDs()                                           ;
+    virtual void    flashRedLEDs()                                              ;
+    virtual void    flashBlueLEDs()                                             ;
+
+    void            turnOnBlueLEDs()                                            ;
+    void            turnOffBlueLEDs()                                           ;
+    void            turnOnGreenLEDs()                                           ;
+    void            turnOffGreenLEDs()                                          ;
+    void            turnOnYellowLEDs()                                          ;
+    void            turnOffYellowLEDs()                                         ;
+    void            turnOnRedLEDs()                                             ;
+    void            turnOffRedLEDs()                                            ;
 
     ALTAIR_DiffLEDLightSource(const char blueLEDsPin                            , 
                               const char greenLEDsPin  = DEFAULT_GREENLEDSPIN   ,
                               const char yellowLEDsPin = DEFAULT_YELLOWLEDSPIN  ,
                               const char redLEDsPin    = DEFAULT_REDLEDSPIN   ) ;
+    ALTAIR_DiffLEDLightSource()                                                 ;  // Default constructor => all default arguments
 
   protected:
-    ALTAIR_DiffLEDLightSource()                                                 ;
-
 
   private:
-    char  _yellowLEDsPin;
-    char  _redLEDsPin;
-    char  _blueLEDsPin;
-    char  _greenLEDsPin;
+    char           _yellowLEDsPin                                               ;
+    char           _redLEDsPin                                                  ;
+    char           _blueLEDsPin                                                 ;
+    char           _greenLEDsPin                                                ;
+
+    bool           _yellowLEDsState                                             ;
+    bool           _redLEDsState                                                ;
+    bool           _blueLEDsState                                               ;
+    bool           _greenLEDsState                                              ;
 };
 #endif    //   ifndef ALTAIR_DiffLEDLightSource_h
 

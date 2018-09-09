@@ -31,23 +31,29 @@ ALTAIR_DiffLEDLightSource::ALTAIR_DiffLEDLightSource(const char blueLEDsPin     
   _yellowLEDsPin(                                               yellowLEDsPin ) ,
   _redLEDsPin(                                                  redLEDsPin    ) ,
   _blueLEDsPin(                                                 blueLEDsPin   ) ,
-  _greenLEDsPin(                                                greenLEDsPin  )
+  _greenLEDsPin(                                                greenLEDsPin  ) ,
+  _yellowLEDsState(                                             LOW           ) ,
+  _redLEDsState(                                                LOW           ) ,
+  _blueLEDsState(                                               LOW           ) ,
+  _greenLEDsState(                                              LOW           )
 {
-
 }
 
 /**************************************************************************/
 /*!
- @brief  Default constructor (unused).  
+ @brief  Default constructor.  
 */
 /**************************************************************************/
-ALTAIR_DiffLEDLightSource::ALTAIR_DiffLEDLightSource(                         ) :
-  _yellowLEDsPin(                                    DEFAULT_YELLOWLEDSPIN    ) ,
-  _redLEDsPin(                                       DEFAULT_REDLEDSPIN       ) ,
-  _blueLEDsPin(                                      DEFAULT_BLUELEDSPIN      ) ,
-  _greenLEDsPin(                                     DEFAULT_GREENLEDSPIN     )
+ALTAIR_DiffLEDLightSource::ALTAIR_DiffLEDLightSource(                          ) :
+  _yellowLEDsPin(                                     DEFAULT_YELLOWLEDSPIN    ) ,
+  _redLEDsPin(                                        DEFAULT_REDLEDSPIN       ) ,
+  _blueLEDsPin(                                       DEFAULT_BLUELEDSPIN      ) ,
+  _greenLEDsPin(                                      DEFAULT_GREENLEDSPIN     ) ,
+  _yellowLEDsState(                                   LOW                      ) ,
+  _redLEDsState(                                      LOW                      ) ,
+  _blueLEDsState(                                     LOW                      ) ,
+  _greenLEDsState(                                    LOW                      )
 {
-
 }
 
 /**************************************************************************/
@@ -64,22 +70,27 @@ void ALTAIR_DiffLEDLightSource::initialize(                                   )
 
   setInitialized(               );
 
-// normal situation: flash yellow LEDs then NO lights on (formerly it was yellow LEDs and green  
-// laser on, but that heats up the I-drive transistor too much)
-  setLightsNormal(              );
+// Normal situation: flash yellow LEDs then NO lights on (formerly it was yellow LEDs and green  
+// laser on, but that heats up the I-drive transistor too much).
+  flashYellowLEDs(              );
+  delay(                  20    );
+  resetLights(                  );
 }
 
 
 /**************************************************************************/
 /*!
- @brief  Set the light source output to its normal state.
+ @brief  Set the light source output to its steady state.
 */
 /**************************************************************************/
-void ALTAIR_DiffLEDLightSource::setLightsNormal(                              )
+void ALTAIR_DiffLEDLightSource::resetLights(                              )
 {
-// Normal situation: flash yellow LEDs then NO lights on (formerly it was yellow LEDs and green  
-// laser on, but that heats up the I-drive transistor too much).
-  flashYellowThenTurnOffLEDs();
+  if (isInitialized(                   )) {
+      digitalWrite(_yellowLEDsPin, _yellowLEDsState ); 
+      digitalWrite(_redLEDsPin,    _redLEDsState    ); 
+      digitalWrite(_blueLEDsPin,   _blueLEDsState   ); 
+      digitalWrite(_greenLEDsPin,  _greenLEDsState  ); 
+  }
 }
 
 /**************************************************************************/
@@ -91,7 +102,7 @@ void ALTAIR_DiffLEDLightSource::setLightsNormal(                              )
 void ALTAIR_DiffLEDLightSource::setLightsPrimaryRadio(                        )
 {
 // Primary radio is transmitting: turn on the red LEDs (and the blue laser).
-  turnOnRedLEDs();
+  flashRedLEDs();
 }
 
 /**************************************************************************/
@@ -103,7 +114,7 @@ void ALTAIR_DiffLEDLightSource::setLightsPrimaryRadio(                        )
 void ALTAIR_DiffLEDLightSource::setLightsBackupRadio(                         )
 {
 // A backup radio is transmitting: turn on the blue LEDs (and the red 635 nm laser).
-  turnOnBlueLEDs();
+  flashBlueLEDs();
 }
 
 /**************************************************************************/
@@ -114,65 +125,163 @@ void ALTAIR_DiffLEDLightSource::setLightsBackupRadio(                         )
 void ALTAIR_DiffLEDLightSource::turnOffLEDs(                                  )
 {
   if (isInitialized(                  )) {
-      digitalWrite(_yellowLEDsPin, LOW);   // turn these LEDs off (LOW is the voltage level)
-      digitalWrite(_redLEDsPin,    LOW);   // turn these LEDs off (LOW is the voltage level)
-      digitalWrite(_blueLEDsPin,   LOW);   // turn these LEDs off (LOW is the voltage level)
-      digitalWrite(_greenLEDsPin,  LOW);   // turn these LEDs off (LOW is the voltage level)   
-      turnOff(                        );
+     _yellowLEDsState = LOW ;   // turn these LEDs off (LOW is the voltage level)
+     _redLEDsState    = LOW ;   // turn these LEDs off (LOW is the voltage level)
+     _blueLEDsState   = LOW ;   // turn these LEDs off (LOW is the voltage level)
+     _greenLEDsState  = LOW ;   // turn these LEDs off (LOW is the voltage level)   
+
+      resetLights()         ;
   }
 // There probably should be some sort of error if the light source is not initialized yet...
 }
 
 /**************************************************************************/
 /*!
- @brief  Flash yellow (for 20 ms) then turn off all the LED light sources.
+ @brief  Flash yellow LED light sources.
 */
 /**************************************************************************/
-void ALTAIR_DiffLEDLightSource::flashYellowThenTurnOffLEDs(                   )
+void ALTAIR_DiffLEDLightSource::flashYellowLEDs(                   )
 {
   if (isInitialized(                   )) {
-      turnOn(                          );
-      digitalWrite(_yellowLEDsPin, HIGH);  // turn these LEDs on (HIGH is the voltage level)
-      digitalWrite(_redLEDsPin,    LOW );  // turn these LEDs off (LOW is the voltage level)
-      digitalWrite(_blueLEDsPin,   LOW );  // turn these LEDs off (LOW is the voltage level)
-      digitalWrite(_greenLEDsPin,  LOW );  // turn these LEDs off (LOW is the voltage level)
-      delay(20);
-      digitalWrite(_yellowLEDsPin, LOW );  // turn these LEDs off (LOW is the voltage level)
-      turnOff(                         );
+      digitalWrite(_yellowLEDsPin, !_yellowLEDsState ); 
   }
 // There probably should be some sort of error if the light source is not initialized yet...
 }
 
 /**************************************************************************/
 /*!
- @brief  Turn on the red (and only the red) LEDs.
+ @brief  Flash red LEDs.
 */
 /**************************************************************************/
-void ALTAIR_DiffLEDLightSource::turnOnRedLEDs(                                )
+void ALTAIR_DiffLEDLightSource::flashRedLEDs(                                )
 {
   if (isInitialized(                   )) {
-      turnOn(                          );
-      digitalWrite(_yellowLEDsPin, LOW );  // turn these LEDs off (LOW is the voltage level)
-      digitalWrite(_redLEDsPin,    HIGH);  // turn these LEDs on (HIGH is the voltage level)
-      digitalWrite(_blueLEDsPin,   LOW );  // turn these LEDs off (LOW is the voltage level)
-      digitalWrite(_greenLEDsPin,  LOW );  // turn these LEDs off (LOW is the voltage level)
+      digitalWrite(_redLEDsPin,    !_redLEDsState    );
   }
 // There probably should be some sort of error if the light source is not initialized yet...
 }
 
 /**************************************************************************/
 /*!
- @brief  Turn on the blue (and only the blue) LEDs.
+ @brief  Flash blue LEDs.
 */
 /**************************************************************************/
-void ALTAIR_DiffLEDLightSource::turnOnBlueLEDs(                                )
+void ALTAIR_DiffLEDLightSource::flashBlueLEDs(                                )
 {
   if (isInitialized(                   )) {
-      turnOn(                          );
-      digitalWrite(_yellowLEDsPin, LOW );  // turn these LEDs off (LOW is the voltage level)
-      digitalWrite(_redLEDsPin,    LOW );  // turn these LEDs off (LOW is the voltage level)
-      digitalWrite(_blueLEDsPin,   HIGH);  // turn these LEDs on (HIGH is the voltage level)
-      digitalWrite(_greenLEDsPin,  LOW );  // turn these LEDs off (LOW is the voltage level)
+      digitalWrite(_blueLEDsPin,   !_blueLEDsState  ); 
+  }
+// There probably should be some sort of error if the light source is not initialized yet...
+}
+
+/**************************************************************************/
+/*!
+ @brief  Turn on the blue LEDs.
+*/
+/**************************************************************************/
+void ALTAIR_DiffLEDLightSource::turnOnBlueLEDs(     )
+{
+  if (isInitialized(                               )) {
+     _blueLEDsState   = HIGH ;   // turn these LEDs on (HIGH is the voltage level)
+      digitalWrite(_blueLEDsPin,   _blueLEDsState   );
+  }
+// There probably should be some sort of error if the light source is not initialized yet...
+}
+
+/**************************************************************************/
+/*!
+ @brief  Turn off the blue LEDs.
+*/
+/**************************************************************************/
+void ALTAIR_DiffLEDLightSource::turnOffBlueLEDs(    )
+{
+  if (isInitialized(                               )) {
+     _blueLEDsState   = LOW  ;   // turn these LEDs off (LOW is the voltage level)
+      digitalWrite(_blueLEDsPin,   _blueLEDsState   );
+  }
+// There probably should be some sort of error if the light source is not initialized yet...
+}
+
+/**************************************************************************/
+/*!
+ @brief  Turn on the green LEDs.
+*/
+/**************************************************************************/
+void ALTAIR_DiffLEDLightSource::turnOnGreenLEDs(     )
+{
+  if (isInitialized(                                )) {
+     _greenLEDsState   = HIGH ;   // turn these LEDs on (HIGH is the voltage level)
+      digitalWrite(_greenLEDsPin,   _greenLEDsState  );
+  }
+// There probably should be some sort of error if the light source is not initialized yet...
+}
+
+/**************************************************************************/
+/*!
+ @brief  Turn off the green LEDs.
+*/
+/**************************************************************************/
+void ALTAIR_DiffLEDLightSource::turnOffGreenLEDs(    )
+{
+  if (isInitialized(                                )) {
+     _greenLEDsState   = LOW  ;   // turn these LEDs off (LOW is the voltage level)
+      digitalWrite(_greenLEDsPin,   _greenLEDsState  );
+  }
+// There probably should be some sort of error if the light source is not initialized yet...
+}
+
+/**************************************************************************/
+/*!
+ @brief  Turn on the yellow LEDs.
+*/
+/**************************************************************************/
+void ALTAIR_DiffLEDLightSource::turnOnYellowLEDs(     )
+{
+  if (isInitialized(                                )) {
+     _yellowLEDsState   = HIGH ;   // turn these LEDs on (HIGH is the voltage level)
+      digitalWrite(_yellowLEDsPin,   _yellowLEDsState  );
+  }
+// There probably should be some sort of error if the light source is not initialized yet...
+}
+
+/**************************************************************************/
+/*!
+ @brief  Turn off the yellow LEDs.
+*/
+/**************************************************************************/
+void ALTAIR_DiffLEDLightSource::turnOffYellowLEDs(    )
+{
+  if (isInitialized(                                )) {
+     _yellowLEDsState   = LOW  ;   // turn these LEDs off (LOW is the voltage level)
+      digitalWrite(_yellowLEDsPin,   _yellowLEDsState  );
+  }
+// There probably should be some sort of error if the light source is not initialized yet...
+}
+
+/**************************************************************************/
+/*!
+ @brief  Turn on the red LEDs.
+*/
+/**************************************************************************/
+void ALTAIR_DiffLEDLightSource::turnOnRedLEDs(     )
+{
+  if (isInitialized(                                )) {
+     _redLEDsState   = HIGH ;   // turn these LEDs on (HIGH is the voltage level)
+      digitalWrite(_redLEDsPin,   _redLEDsState  );
+  }
+// There probably should be some sort of error if the light source is not initialized yet...
+}
+
+/**************************************************************************/
+/*!
+ @brief  Turn off the red LEDs.
+*/
+/**************************************************************************/
+void ALTAIR_DiffLEDLightSource::turnOffRedLEDs(    )
+{
+  if (isInitialized(                                )) {
+     _redLEDsState   = LOW  ;   // turn these LEDs off (LOW is the voltage level)
+      digitalWrite(_redLEDsPin,   _redLEDsState  );
   }
 // There probably should be some sort of error if the light source is not initialized yet...
 }
