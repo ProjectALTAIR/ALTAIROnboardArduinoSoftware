@@ -30,25 +30,26 @@
 class ALTAIR_GlobalMotorControl {
   public:
 
-    ALTAIR_GlobalMotorControl(                                                  ) ;
+    ALTAIR_GlobalMotorControl(                                                             ) ;
 
+    bool  initializeAllMotors(                                                             ) ;
 
-    void  initializeAllMotors(                                                  ) ;
+    void  performCommand(             byte                     commandByte                 ) ;
 
-    void  performCommand(             byte                     commandByte      ) ;
+    ALTAIR_PropulsionSystem& propSystem( )        { return    _propSystem                    ; }
+    ALTAIR_BleedSystem&     bleedSystem( )        { return   _bleedSystem                    ; }
+    ALTAIR_CutdownSystem& cutdownSystem( )        { return _cutdownSystem                    ; }
 
-    ALTAIR_PropulsionSystem& propSystem( )        { return    _propSystem         ; }
-    ALTAIR_BleedSystem&     bleedSystem( )        { return   _bleedSystem         ; }
-    ALTAIR_CutdownSystem& cutdownSystem( )        { return _cutdownSystem         ; }
+    bool               shutDownAllProps( )        { return    _propSystem.shutDownAllProps() ; }   // Return power setting of all props to 0.  Returns true if successful.
 
   protected:
-    void  initializeServoControlRegisters(                                      ) ;
+    void  initializeServoControlRegisters(                                                 ) ;
 
 
   private:
-    ALTAIR_PropulsionSystem  _propSystem                                          ;
-    ALTAIR_BleedSystem       _bleedSystem                                         ;
-    ALTAIR_CutdownSystem     _cutdownSystem                                       ;
+    ALTAIR_PropulsionSystem  _propSystem                                                     ;
+    ALTAIR_BleedSystem       _bleedSystem                                                    ;
+    ALTAIR_CutdownSystem     _cutdownSystem                                                  ;
 
 };
 #endif    //   ifndef ALTAIR_GlobalMotorControl_h
