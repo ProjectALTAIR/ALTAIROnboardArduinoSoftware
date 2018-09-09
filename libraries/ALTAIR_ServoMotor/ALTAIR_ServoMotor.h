@@ -39,9 +39,15 @@ class ALTAIR_ServoMotor {
     bool                     isInitialized(                              ) {  return         _isInitialized  ; }
 
     float                    reportSetting(                              ) {  return         _setting        ; }
-    float                    determinePosition(                          )                                   ;   // Determine and report present position.
+    virtual float            maxSafeSetting(                             )                  = 0              ;
+    virtual float            minSafeSetting(                             )                  = 0              ;
+    bool                     incrementSetting()                                                              ;   // Increase setting by 1.    Returns true if successful.
+    bool                     decrementSetting()                                                              ;   // Decrease setting by 1.    Returns true if successful.
+    bool                     halfIncrementSetting()                                                          ;   // Increase setting by 0.5.  Returns true if successful.
+    bool                     halfDecrementSetting()                                                          ;   // Decrease setting by 0.5.  Returns true if successful.
+    bool                     setSettingTo(          float newSetting     )                                   ;   // Returns true if successful.
 
-    bool                     moveServoTo(           float newSetting     )                                   ;   // Move the servo motor!  Return true if successful.
+    float                    determinePosition(                          )                                   ;   // Determine and report present position.
 
     void                     initializePinMode(                          )                                   ;
     void                     initializePWMRegister(                      )                                   ;

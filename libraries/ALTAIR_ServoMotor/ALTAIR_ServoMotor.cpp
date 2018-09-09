@@ -53,12 +53,82 @@ float ALTAIR_ServoMotor::determinePosition()
 
 /**************************************************************************/
 /*!
+ @brief  Increases the setting by 1.
+*/
+/**************************************************************************/
+bool ALTAIR_ServoMotor::incrementSetting(                            )
+{
+   if ( reportSetting() + 1.  <= maxSafeSetting() ) {
+       _setting++                    ;
+       resetPWMRegister()            ;
+       return true                   ;
+   } else {
+       return false                  ;
+   }
+}
+
+/**************************************************************************/
+/*!
+ @brief  Decreases the setting by 1.
+*/
+/**************************************************************************/
+bool ALTAIR_ServoMotor::decrementSetting(                            )
+{
+   if ( reportSetting() - 1.  >= minSafeSetting() ) {
+       _setting--                    ;
+       resetPWMRegister()            ;
+       return true                   ;
+   } else {
+       return false                  ;
+   }
+}
+
+/**************************************************************************/
+/*!
+ @brief  Increases the setting by 0.5.
+*/
+/**************************************************************************/
+bool ALTAIR_ServoMotor::halfIncrementSetting(                        )
+{
+   if ( reportSetting() + 0.5 <= maxSafeSetting() ) {
+       _setting               += 0.5 ;
+       resetPWMRegister()            ;
+       return true                   ;
+   } else {
+       return false                  ;
+   }
+}
+
+/**************************************************************************/
+/*!
+ @brief  Decreases the setting by 0.5.
+*/
+/**************************************************************************/
+bool ALTAIR_ServoMotor::halfDecrementSetting(                        )
+{
+   if ( reportSetting() - 0.5 >= minSafeSetting() ) {
+       _setting               -= 0.5 ;
+       resetPWMRegister()            ;
+       return true                   ;
+   } else {
+       return false                  ;
+   }
+}
+
+/**************************************************************************/
+/*!
  @brief  Move the servo to a new setting.
 */
 /**************************************************************************/
-bool ALTAIR_ServoMotor::moveServoTo(   float  newSetting  )
+bool ALTAIR_ServoMotor::setSettingTo(   float  newSetting  )
 {
-    return true;    // implement this later
+   if ( newSetting >= minSafeSetting() && newSetting <= maxSafeSetting() ) {
+       _setting            = newSetting  ;
+       resetPWMRegister()                ;
+       return true                       ;
+   } else {
+       return false                      ;
+   }
 }
 
 
