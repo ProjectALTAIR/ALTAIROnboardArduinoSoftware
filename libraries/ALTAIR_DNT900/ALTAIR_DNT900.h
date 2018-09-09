@@ -40,8 +40,9 @@ class ALTAIR_DNT900 : public ALTAIR_GenTelInt {
     ALTAIR_DNT900(const char serialID, const char     dntHwResetPin = DEFAULT_DNTHWRESETPIN, 
                                        const char     dntCTSPin     = DEFAULT_DNTCTSPIN, 
                                        const char     dntRTSPin     = DEFAULT_DNTRTSPIN      );
+    ALTAIR_DNT900();                                          // No arguments => all default values.
+
   protected:
-    ALTAIR_DNT900();
 
   private:
     char _serialID;

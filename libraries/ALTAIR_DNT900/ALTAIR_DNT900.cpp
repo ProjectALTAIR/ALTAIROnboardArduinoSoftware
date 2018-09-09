@@ -35,7 +35,7 @@ ALTAIR_DNT900::ALTAIR_DNT900(const char serialID, const char dntHwResetPin, cons
 
 /**************************************************************************/
 /*!
- @brief  Default constructor (unused).
+ @brief  Default constructor.
 */
 /**************************************************************************/
 ALTAIR_DNT900::ALTAIR_DNT900() :
