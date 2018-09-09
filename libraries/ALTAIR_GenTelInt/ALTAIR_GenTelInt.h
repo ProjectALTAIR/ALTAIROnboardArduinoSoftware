@@ -19,19 +19,24 @@
 */
 /**************************************************************************/
 
-#ifndef ALTAIR_GenTelInt_h
-#define ALTAIR_GenTelInt_h
+#ifndef  ALTAIR_GenTelInt_h
+#define  ALTAIR_GenTelInt_h
 
 #include "Arduino.h"
 
 #define  FAKE_RSSI_VAL   127
+#define  TX_START_BYTE   0xFA
+
+class    TinyGPSPlus;
 
 class ALTAIR_GenTelInt {
   public:
     virtual bool    send(unsigned char aChar)                 = 0;
     virtual bool    send(const uint8_t* aString)              = 0;
+            bool    sendGPS(TinyGPSPlus& gps)                    ;
+    virtual bool    sendStart()                               { return send((unsigned char) TX_START_BYTE); }
     virtual bool    sendAsIndivChars(const uint8_t* aString)  = 0;
-    virtual bool    available()                               = 0; // if a byte is available for reading, returns true
+    virtual bool    available()                               = 0; // If a byte is available for reading, returns true.
     virtual bool    isBusy()                                  = 0;
     virtual bool    initialize(const char* aString = "")      = 0;
     virtual byte    read()                                    = 0;
