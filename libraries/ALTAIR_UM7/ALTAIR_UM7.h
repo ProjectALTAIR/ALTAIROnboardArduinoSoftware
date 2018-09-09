@@ -24,8 +24,9 @@
 #define      ALTAIR_UM7_h
 
 #include    "Arduino.h"
+#include    "ALTAIR_OrientSensor.h"
 
-#define  DEFAULT_UM7_SERIALID          3
+#define      DEFAULT_UM7_SERIALID         3
 
 struct UM7packet {
              byte      Address;
@@ -41,30 +42,36 @@ typedef union {
 } ByteToFloat;
 
 
-class ALTAIR_UM7 {
+class ALTAIR_UM7 : public ALTAIR_OrientSensor {
   public:
-    ALTAIR_UM7(                           const  char      serialID     );
+    ALTAIR_UM7(                           const  char       serialID           );
+    ALTAIR_UM7(                                                                );  // default constructor => default argument to constructor
 
-    struct   UM7packet getDataPacket();
-    struct   UM7packet getHealthPacket();
-
-
-    static   float     getYaw(            struct UM7packet dataPacket   );
-    static   float     getPitch(          struct UM7packet dataPacket   );
-    static   float     getRoll(           struct UM7packet dataPacket   );
-    static   float     getXAccel(         struct UM7packet dataPacket   );
-    static   float     getYAccel(         struct UM7packet dataPacket   );
-    static   float     getZAccel(         struct UM7packet dataPacket   );
-
-    static   byte      getnSatsUsed(      struct UM7packet healthPacket );
-    static   byte      getnSatsInView(    struct UM7packet healthPacket );
-    static   byte      getHDOP(           struct UM7packet healthPacket );
-    static   byte      getnSensors(       struct UM7packet healthPacket );
-
-    static   float     convertBytesToFloat(      byte*     data );
+    struct   UM7packet getDataPacket(                                          );
+    struct   UM7packet getHealthPacket(                                        );
 
 
-             byte      parse_serial_data( const  byte*     rx_data,   byte rx_length, byte requestedAddress, struct UM7packet* packet );
+    static   float     getYaw(            struct UM7packet  dataPacket         );
+    static   float     getPitch(          struct UM7packet  dataPacket         );
+    static   float     getRoll(           struct UM7packet  dataPacket         );
+    static   float     getXAccel(         struct UM7packet  dataPacket         );
+    static   float     getYAccel(         struct UM7packet  dataPacket         );
+    static   float     getZAccel(         struct UM7packet  dataPacket         );
+
+    static   byte      getnSatsUsed(      struct UM7packet  healthPacket       );
+    static   byte      getnSatsInView(    struct UM7packet  healthPacket       );
+    static   byte      getHDOP(           struct UM7packet  healthPacket       );
+    static   byte      getnSensors(       struct UM7packet  healthPacket       );
+
+    static   float     convertBytesToFloat(      byte*      data               );
+
+
+             byte      parse_serial_data( const  byte*      rx_data         ,   
+                                                 byte       rx_length       , 
+                                                 byte       requestedAddress, 
+                                          struct UM7packet* packet            );
+
+    void               initialize(                                            );
 
   protected:
 

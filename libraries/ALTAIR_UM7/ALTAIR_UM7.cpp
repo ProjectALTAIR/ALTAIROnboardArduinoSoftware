@@ -26,8 +26,27 @@
  @brief  Constructor.  
 */
 /**************************************************************************/
-ALTAIR_UM7::ALTAIR_UM7(const char serialID) :
-    _serialID(serialID)
+ALTAIR_UM7::ALTAIR_UM7(  const char serialID ) :
+    _serialID(                      serialID )
+{
+}
+
+/**************************************************************************/
+/*!
+ @brief  Default constructor.  
+*/
+/**************************************************************************/
+ALTAIR_UM7::ALTAIR_UM7(                      ) :
+    _serialID(          DEFAULT_UM7_SERIALID )
+{
+}
+
+/**************************************************************************/
+/*!
+ @brief  Initialization (does not need to do anything to initialize).  
+*/
+/**************************************************************************/
+void ALTAIR_UM7::initialize()
 {
 }
 
