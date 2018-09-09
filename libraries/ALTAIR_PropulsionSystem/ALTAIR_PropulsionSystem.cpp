@@ -111,3 +111,30 @@ bool ALTAIR_PropulsionSystem::isInitialized(                                    
              stbdInnerMotor().isInitialized() &&
              stbdOuterMotor().isInitialized()   );
 }
+
+/**************************************************************************/
+/*!
+ @brief  Change the power setting of all prop motors by deltaPower.
+*/
+/**************************************************************************/
+bool ALTAIR_PropulsionSystem::changePower(            float                 deltaPower )
+{
+    return ( portOuterMotor().setPowerTo( portOuterMotor().powerSetting() + deltaPower ) &&
+             portInnerMotor().setPowerTo( portInnerMotor().powerSetting() + deltaPower ) &&
+             stbdInnerMotor().setPowerTo( stbdInnerMotor().powerSetting() + deltaPower ) &&
+             stbdOuterMotor().setPowerTo( stbdOuterMotor().powerSetting() + deltaPower )    );
+}
+
+/**************************************************************************/
+/*!
+ @brief  Change the power setting of all prop motors to 0.
+*/
+/**************************************************************************/
+bool ALTAIR_PropulsionSystem::shutDownAllProps(   )
+{
+    return ( portOuterMotor().setPowerTo( 0. ) &&
+             portInnerMotor().setPowerTo( 0. ) &&
+             stbdInnerMotor().setPowerTo( 0. ) &&
+             stbdOuterMotor().setPowerTo( 0. )    );
+}
+

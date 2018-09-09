@@ -45,9 +45,18 @@ class ALTAIR_PropulsionSystem {
 
     ALTAIR_PropAxleRotServo& axleRotServo()        { return _propAxleRotServo ; }
 
+    bool                     incrementPower()      { return changePower( 1. ) ; } // Increase power to all props by 1.        Returns true if successful.
+    bool                     decrementPower()      { return changePower(-1. ) ; } // Decrease power to all props by 1.        Returns true if successful.
+    bool                     halfIncrementPower()  { return changePower( 0.5) ; } // Increase power to all props by 0.5.      Returns true if successful.
+    bool                     halfDecrementPower()  { return changePower(-0.5) ; } // Decrease power to all props by 0.5.      Returns true if successful.
+    bool                     shutDownAllProps()                               ;   // Return power setting of all props to 0.  Returns true if successful.
+
     void                     initializePinModes()                             ;
     void                     initializePropControlRegisters()                 ;
     void                     initializePWMOutputRegisters()                   ;
+
+  protected:
+    bool                     changePower(            float  deltaPower      ) ;
 
   private:
     ALTAIR_MotorAndESC       _motorAndESC[4]                                  ;
