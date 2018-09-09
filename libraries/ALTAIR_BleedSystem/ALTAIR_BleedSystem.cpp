@@ -44,6 +44,26 @@ ALTAIR_BleedSystem::ALTAIR_BleedSystem(                                    ) :
 
 /**************************************************************************/
 /*!
+ @brief  Return the maximum safe setting.
+*/
+/**************************************************************************/
+float ALTAIR_BleedSystem::maxSafeSetting(                                  )
+{
+    return                         MAX_SAFE_BLEEDVALVE_SETTING               ;
+}
+
+/**************************************************************************/
+/*!
+ @brief  Return the minimum safe setting.
+*/
+/**************************************************************************/
+float ALTAIR_BleedSystem::minSafeSetting(                                  )
+{
+    return                         MIN_SAFE_BLEEDVALVE_SETTING               ;
+}
+
+/**************************************************************************/
+/*!
  @brief  (Re-)set the PWM output register.
 */
 /**************************************************************************/

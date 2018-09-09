@@ -42,6 +42,9 @@ class ALTAIR_BleedSystem : public ALTAIR_ServoMotor {
 //    void                     openBleedValve(  )                      ;    will implement later!
 //    void                     closeBleedValve( )                      ;
 
+    virtual float            maxSafeSetting(  )                        ;
+    virtual float            minSafeSetting(  )                        ;
+
   protected:
     virtual void             resetPWMRegister()                        ;
 
