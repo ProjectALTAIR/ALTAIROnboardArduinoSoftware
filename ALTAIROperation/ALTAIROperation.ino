@@ -8,7 +8,6 @@
 #include <Adafruit_Sensor.h>
 #include <Adafruit_BME280.h>
 #include <Adafruit_BNO055.h>
-#include <Adafruit_ADS1015.h>
 #include <SFE_HMC6343.h>
 
 #include <ALTAIR_DNT900.h>
@@ -16,13 +15,9 @@
 #include <ALTAIR_RFM23BP.h>
 #include <ALTAIR_UM7.h>
 
-#include <ALTAIR_IntSphereLightSource.h>
-#include <ALTAIR_DiffLEDLightSource.h>
-
-#include <ALTAIR_PropulsionSystem.h>
-#include <ALTAIR_BleedSystem.h>
-#include <ALTAIR_CutdownSystem.h>
 #include <ALTAIR_GlobalMotorControl.h>
+#include <ALTAIR_GlobalDeviceControl.h>
+#include <ALTAIR_GlobalLightControl.h>
 
 #include <utility/imumaths.h>
 
@@ -94,22 +89,12 @@ ALTAIR_RFM23BP              rfm23bp(              DEFAULT_RFM_CHIPSELECTPIN  ,  
                                                   DEFAULT_RFM_INTERRUPTPIN   );    
 ALTAIR_UM7                  um7(                  DEFAULT_UM7_SERIALID       ); // on Serial3 -- CH Robotics 9-axis orientation fusion sensor, including DHRobot GPS data pass-through
 
-ALTAIR_IntSphereLightSource intSphereLightSource( DEFAULT_BLUE440NMLASERPIN  ,
-                                                  DEFAULT_GREEN532NMLASERPIN ,
-                                                  DEFAULT_RED635NMLASERPIN   ,
-                                                  DEFAULT_RED670NMLASERPIN   );
-ALTAIR_DiffLEDLightSource   diffLEDLightSource(   DEFAULT_BLUELEDSPIN        ,
-                                                  DEFAULT_GREENLEDSPIN       ,
-                                                  DEFAULT_YELLOWLEDSPIN      ,
-                                                  DEFAULT_REDLEDSPIN         );
-
 ALTAIR_GlobalMotorControl   motorControl                                     ;
+ALTAIR_GlobalDeviceControl  deviceControl                                    ;
+ALTAIR_GlobalLightControl   lightControl                                     ;
 
 Adafruit_BNO055             bno = Adafruit_BNO055(55);       // on I2C      (default addr = 0x28), Adafruit 9-axis orientation fusion sensor
 Adafruit_BME280             bmeMast, bmeBalloon, bmePayload; // also on I2C (default addr = 0x77.  bmeMast [default addr] is on nav mast, bmeBalloon [w/ addr 0x76] is inside balloon, bmePayload [I2CMUXed, but default addr] inside gondola)
-Adafruit_ADS1115            ads1115ADC1;                     // also on I2C (default addr = 0x48), contains the 2 photodiode inputs
-Adafruit_ADS1115            ads1115ADC2(0x49);               // also on I2C         (addr = 0x49), contains 
-Adafruit_ADS1115            ads1115ADC3(0x4A);               // also on I2C         (addr = 0x4A), contains 
 SFE_HMC6343                 hmc6343;                         // also on I2C         (addr = 0x19), SparkFun magnetometer(+accelerometer)
 TinyGPSPlus                 gps;                             // nav mast GPS on I2C (addr = 0x42), and also UM7 with DFRobot GPS input on Serial3 (initialized later)
 
@@ -131,17 +116,12 @@ void tcaselect(int8_t i) {
 
 
 void setup() {
-//  for (int i = 0; i < 7; ++i)   pinMode(pwmPin[i],       OUTPUT);
+
+  Serial.begin(9600);
 
 // and perhaps try initializing SPI before DNT and SHX ...  and try SPI_HALF_SPEED initialization ... and try RFM23BP first again ... and try just straight ReadWrite
 //  pinMode(SDcard_CS,       OUTPUT);  // seems to sometimes cause SD.begin to have problems if SD.begin done immediately following it
-  
-// normal situation: flash yellow LEDs then NO lights on (formerly it was yellow LEDs and green laser on, but that heats up the I-drive transistor too much)
-  intSphereLightSource.initialize();
-  diffLEDLightSource.initialize();
-  
-  Serial.begin(9600);
-
+    
   Serial.println(F("Starting DNT900 radio setup..."));
   if (!dnt900.initialize()) {
     Serial.println(F("DNT900 radio init failed"));
@@ -243,38 +223,16 @@ void setup() {
     while(1);
   } 
 
-  Serial.println(F("Initializing the three ADS1115 4-channel ADC breakout boards ..."));
-  ads1115ADC1.begin();
-  ads1115ADC2.begin();
-  ads1115ADC3.begin();
+// normal situation: flash yellow LEDs then NO lights on (formerly it was yellow LEDs and green laser on, but that heats up the I-drive transistor too much)
+  lightControl.initializeAllLightSources();
   
   Serial.println(F("I2C/TWI bus and device initialization complete.  Now initializing all motors ..."));
 
-  motorControl.initializeAllMotors();
-
-/*
-  // start up the PWM outputs
-//  TCCR3A = _BV(COM3A1) | _BV(COM3B1) | _BV(COM3C1) | _BV(WGM32) | _BV(WGM31);
-//  TCCR3B = _BV(CS32);
-  TCCR4A = _BV(COM4A1) | _BV(COM4B1) | _BV(COM4C1) | _BV(WGM42) | _BV(WGM41);
-  TCCR4B = _BV(CS42);
-  TCCR5A = _BV(COM5A1) | _BV(COM5B1) |               _BV(WGM52) | _BV(WGM51);
-  TCCR5B = _BV(CS52);                                    
-  TCCR1A = _BV(COM1A1) | _BV(COM1B1) |               _BV(WGM12) | _BV(WGM11);
-  TCCR1B = _BV(CS12);
-  
-
-//  OCR3A = 32 + 2*setting[0];
-//  OCR3B = 32 + 2*setting[1];
-//  OCR3C = 32 + 2*setting[2];
-  OCR4A = 34 + 2*setting[0];
-  OCR4B = 34 + 2*setting[1];
-  OCR4C = 34 + 2*setting[2];
-  OCR5B = 34 + 2*setting[3];
-  OCR5A = 34 + 2*setting[4];
-  OCR1A = 34 + 2*setting[5];
-  OCR1B = 34 + 2*setting[6];
-*/
+  if (!motorControl.initializeAllMotors())
+  {
+    Serial.println("Initialization of motors failed\n\r");
+    while(1);
+  } 
 
   Serial.println(F("Setup complete."));
  
@@ -407,174 +365,22 @@ void printNavMastSensorValsAndAdjSettingsAtInterval(long interval) {
 
 // Now, see if there is serial input for settings adjustment
 
-    byte    inputByte;
+    byte    inputByte, inputByte2;
     boolean thingsHaveChanged = false;
     int     channelToModify   = 0;
     if (Serial.available()) {
         inputByte = Serial.read();
-        thingsHaveChanged = true;
-        switch(inputByte) {
-          case 'A' :
-            channelToModify = 0;
-            ++setting[channelToModify];
-            if (setting[channelToModify] > settingSafeMax[channelToModify]) --setting[channelToModify];
-            break;
-          case 'B' :
-            channelToModify = 1;
-            ++setting[channelToModify];
-            if (setting[channelToModify] > settingSafeMax[channelToModify]) --setting[channelToModify];
-            break;       
-          case 'C' :
-            channelToModify = 2;
-            ++setting[channelToModify];
-            if (setting[channelToModify] > settingSafeMax[channelToModify]) --setting[channelToModify];
-            break;       
-          case 'D' :
-            channelToModify = 3;
-            ++setting[channelToModify];
-            if (setting[channelToModify] > settingSafeMax[channelToModify]) --setting[channelToModify];
-            break;
-          case 'E' :
-            channelToModify = 4;
-            ++setting[channelToModify];
-            if (setting[channelToModify] > settingSafeMax[channelToModify]) --setting[channelToModify];
-            break;              
-          case 'F' :
-            channelToModify = 5;
-            ++setting[channelToModify];
-            if (setting[channelToModify] > settingSafeMax[channelToModify]) --setting[channelToModify];
-            break;
-          case 'G' :
-            channelToModify = 6;
-            ++setting[channelToModify];
-            if (setting[channelToModify] > settingSafeMax[channelToModify]) --setting[channelToModify];
-            break;
-          case 'H' :
-            channelToModify = 3;
-            setting[channelToModify] += 0.5;
-            if (setting[channelToModify] > settingSafeMax[channelToModify])   setting[channelToModify] -= 0.5;
-            channelToModify = 4;
-            setting[channelToModify] += 0.5;
-            if (setting[channelToModify] > settingSafeMax[channelToModify])   setting[channelToModify] -= 0.5;
-            channelToModify = 5;
-            setting[channelToModify] += 0.5;
-            if (setting[channelToModify] > settingSafeMax[channelToModify])   setting[channelToModify] -= 0.5;
-            channelToModify = 6;
-            setting[channelToModify] += 0.5;
-            if (setting[channelToModify] > settingSafeMax[channelToModify])   setting[channelToModify] -= 0.5;
-            break;
-          case 'N' :
-          case 'n' :
-            backupRadiosOn = true;
-            break;
-          case 'O' :
-          case 'o' :
-            backupRadiosOn = false;
-            break;
-          case 'U' :
-            channelToModify = 3;
-            ++setting[channelToModify];
-            if (setting[channelToModify] > settingSafeMax[channelToModify]) --setting[channelToModify];
-            channelToModify = 4;
-            ++setting[channelToModify];
-            if (setting[channelToModify] > settingSafeMax[channelToModify]) --setting[channelToModify];
-            channelToModify = 5;
-            ++setting[channelToModify];
-            if (setting[channelToModify] > settingSafeMax[channelToModify]) --setting[channelToModify];
-            channelToModify = 6;
-            ++setting[channelToModify];
-            if (setting[channelToModify] > settingSafeMax[channelToModify]) --setting[channelToModify];
-            break;             
-          case 'a' :
-            channelToModify = 0;
-            --setting[channelToModify];
-            if (setting[channelToModify] < settingSafeMin[channelToModify]) ++setting[channelToModify];
-            break;
-          case 'b' :
-            channelToModify = 1;
-            --setting[channelToModify];
-            if (setting[channelToModify] < settingSafeMin[channelToModify]) ++setting[channelToModify];
-            break;       
-          case 'c' :
-            channelToModify = 2;
-            --setting[channelToModify];
-            if (setting[channelToModify] < settingSafeMin[channelToModify]) ++setting[channelToModify];
-            break;       
-          case 'd' :
-            channelToModify = 3;
-            --setting[channelToModify];
-            if (setting[channelToModify] < settingSafeMin[channelToModify]) ++setting[channelToModify];
-            break;
-          case 'e' :
-            channelToModify = 4;
-            --setting[channelToModify];
-            if (setting[channelToModify] < settingSafeMin[channelToModify]) ++setting[channelToModify];
-            break;              
-          case 'f' :
-            channelToModify = 5;
-            --setting[channelToModify];
-            if (setting[channelToModify] < settingSafeMin[channelToModify]) ++setting[channelToModify];
-            break; 
-          case 'g' :
-            channelToModify = 6;
-            --setting[channelToModify];
-            if (setting[channelToModify] < settingSafeMin[channelToModify]) ++setting[channelToModify];
-            break;
-          case 'h' :
-            channelToModify = 3;
-            setting[channelToModify] -= 0.5;
-            if (setting[channelToModify] < settingSafeMin[channelToModify])   setting[channelToModify] += 0.5;
-            channelToModify = 4;
-            setting[channelToModify] -= 0.5;
-            if (setting[channelToModify] < settingSafeMin[channelToModify])   setting[channelToModify] += 0.5;
-            channelToModify = 5;
-            setting[channelToModify] -= 0.5;
-            if (setting[channelToModify] < settingSafeMin[channelToModify])   setting[channelToModify] += 0.5;
-            channelToModify = 6;
-            setting[channelToModify] -= 0.5;
-            if (setting[channelToModify] < settingSafeMin[channelToModify])   setting[channelToModify] += 0.5;
-            break; 
-          case 'u' :
-            channelToModify = 3;
-            --setting[channelToModify];
-            if (setting[channelToModify] < settingSafeMin[channelToModify]) ++setting[channelToModify];
-            channelToModify = 4;
-            --setting[channelToModify];
-            if (setting[channelToModify] < settingSafeMin[channelToModify]) ++setting[channelToModify];
-            channelToModify = 5;
-            --setting[channelToModify];
-            if (setting[channelToModify] < settingSafeMin[channelToModify]) ++setting[channelToModify];
-            channelToModify = 6;
-            --setting[channelToModify];
-            if (setting[channelToModify] < settingSafeMin[channelToModify]) ++setting[channelToModify];
-            break;
-          case 'X' :                
-          case 'x' :
-            for (int i = 0; i < 7; ++i)    setting[i] = settingNominal[i];
-            break;
-          default :
-            thingsHaveChanged = false;
-            break;
-        }
+        if (Serial.available()) inputByte2 = Serial.read();
+        performCommand(inputByte, inputByte2);
+ 
+
     } 
 
         Serial.print("Present settings: "); Serial.print(setting[0]); Serial.print(" "); Serial.print(setting[1]);
         Serial.print(" "); Serial.print(setting[2]); Serial.print(" "); Serial.print(setting[3]);
         Serial.print(" "); Serial.print(setting[4]); Serial.print(" "); Serial.print(setting[5]);
         Serial.print(" "); Serial.println(setting[6]);
-
-// send the info via the DNT
-   if (thingsHaveChanged) {
-      OCR4A = 34 + 2*setting[0];
-      OCR4B = 34 + 2*setting[1];
-      OCR4C = 34 + 2*setting[2];
-      OCR5B = 34 + 2*setting[3];
-      OCR5A = 34 + 2*setting[4];
-      OCR1A = 34 + 2*setting[5];
-      OCR1B = 34 + 2*setting[6];
-   }
-
-  
+ 
   }
 
 }
@@ -732,8 +538,8 @@ void sendStationNameToSHXandRFMRadiosAtInterval(long interval)
   if (currentMillis - previousMillis3 > interval) { 
     Serial.println(F("Writing station name to SHX1"));
     previousMillis3 = currentMillis;
-    intSphereLightSource.setLightsBackupRadio();
-    diffLEDLightSource.setLightsBackupRadio();
+    lightControl.intSphereSource().setLightsBackupRadio();
+    lightControl.diffLEDSource().setLightsBackupRadio();
       
   //send my call sign (VE7XJA)
     shx144.send(byte('V'));
@@ -812,8 +618,8 @@ void sendStationNameToSHXandRFMRadiosAtInterval(long interval)
 */
 
     delay(40);
-    intSphereLightSource.setLightsNormal();
-    diffLEDLightSource.setLightsNormal();
+    lightControl.intSphereSource().resetLights();
+    lightControl.diffLEDSource().resetLights();
 
   } else if (shx144.available()) {
     byte shxTerm[maxTermLength];
@@ -848,14 +654,14 @@ void sendStatusToDNTRadioAndReadCommandsAtInterval(long interval)
   if (!dnt900.isBusy() && currentMillis - previousMillis2 > interval) {
     previousMillis2 = currentMillis;
     Serial.println(F("*** Writing status to DNT ***"));
-    intSphereLightSource.setLightsPrimaryRadio();
-    diffLEDLightSource.setLightsPrimaryRadio();
+    lightControl.intSphereSource().setLightsPrimaryRadio();
+    lightControl.diffLEDSource().setLightsPrimaryRadio();
 
     dnt900.sendGPS(gps);
 
     delay(40);
-    intSphereLightSource.setLightsNormal();
-    diffLEDLightSource.setLightsNormal();
+    lightControl.intSphereSource().resetLights();
+    lightControl.diffLEDSource().resetLights();
 
   long dntReadTry = 0;
   termIndex = termLength = 0;
@@ -903,9 +709,7 @@ void sendStatusToDNTRadioAndReadCommandsAtInterval(long interval)
     }
 
     if (termLength == termIndex && termLength > 0) {
-      Serial.println("RxDataTransparent");
-      RxDataTransparent(term, termLength);
-
+      performCommand(term[0], term[1]);
       termLength = termIndex = hasBegun = 0;    
     }
 
@@ -925,173 +729,6 @@ void sendStatusToDNTRadioAndReadCommandsAtInterval(long interval)
 
 
 
-}
-
-void RxDataTransparent (byte term[], int termLength) {
-
-    byte    inputByte         = term[1];
-    boolean thingsHaveChanged = true;
-    int     channelToModify   = 0;
-
-    infoByte = 'S';
-
-      if (term[0] == 's') {
-        switch(inputByte) {
-          case 'A' :
-            channelToModify = 0;
-            ++setting[channelToModify];
-            if (setting[channelToModify] > settingSafeMax[channelToModify]) --setting[channelToModify];
-            break;
-          case 'B' :
-            channelToModify = 1;
-            ++setting[channelToModify];
-            if (setting[channelToModify] > settingSafeMax[channelToModify]) --setting[channelToModify];
-            break;       
-          case 'C' :
-            channelToModify = 2;
-            ++setting[channelToModify];
-            if (setting[channelToModify] > settingSafeMax[channelToModify]) --setting[channelToModify];
-            break;       
-          case 'D' :
-            channelToModify = 3;
-            ++setting[channelToModify];
-            if (setting[channelToModify] > settingSafeMax[channelToModify]) --setting[channelToModify];
-            break;
-          case 'E' :
-            channelToModify = 4;
-            ++setting[channelToModify];
-            if (setting[channelToModify] > settingSafeMax[channelToModify]) --setting[channelToModify];
-            break;              
-          case 'F' :
-            channelToModify = 5;
-            ++setting[channelToModify];
-            if (setting[channelToModify] > settingSafeMax[channelToModify]) --setting[channelToModify];
-            break;
-          case 'G' :
-            channelToModify = 6;
-            ++setting[channelToModify];
-            if (setting[channelToModify] > settingSafeMax[channelToModify]) --setting[channelToModify];
-            break;
-          case 'H' :
-            channelToModify = 3;
-            setting[channelToModify] += 0.5;
-            if (setting[channelToModify] > settingSafeMax[channelToModify])   setting[channelToModify] -= 0.5;
-            channelToModify = 4;
-            setting[channelToModify] += 0.5;
-            if (setting[channelToModify] > settingSafeMax[channelToModify])   setting[channelToModify] -= 0.5;
-            channelToModify = 5;
-            setting[channelToModify] += 0.5;
-            if (setting[channelToModify] > settingSafeMax[channelToModify])   setting[channelToModify] -= 0.5;
-            channelToModify = 6;
-            setting[channelToModify] += 0.5;
-            if (setting[channelToModify] > settingSafeMax[channelToModify])   setting[channelToModify] -= 0.5;
-            break;
-          case 'N' :
-          case 'n' :
-            backupRadiosOn = true;
-            break;
-          case 'O' :
-          case 'o' :
-            backupRadiosOn = false;
-            break;
-          case 'U' :
-            channelToModify = 3;
-            ++setting[channelToModify];
-            if (setting[channelToModify] > settingSafeMax[channelToModify]) --setting[channelToModify];
-            channelToModify = 4;
-            ++setting[channelToModify];
-            if (setting[channelToModify] > settingSafeMax[channelToModify]) --setting[channelToModify];
-            channelToModify = 5;
-            ++setting[channelToModify];
-            if (setting[channelToModify] > settingSafeMax[channelToModify]) --setting[channelToModify];
-            channelToModify = 6;
-            ++setting[channelToModify];
-            if (setting[channelToModify] > settingSafeMax[channelToModify]) --setting[channelToModify];
-            break;
-          case 'a' :
-            channelToModify = 0;
-            --setting[channelToModify];
-            if (setting[channelToModify] < settingSafeMin[channelToModify]) ++setting[channelToModify];
-            break;
-          case 'b' :
-            channelToModify = 1;
-            --setting[channelToModify];
-            if (setting[channelToModify] < settingSafeMin[channelToModify]) ++setting[channelToModify];
-            break;       
-          case 'c' :
-            channelToModify = 2;
-            --setting[channelToModify];
-            if (setting[channelToModify] < settingSafeMin[channelToModify]) ++setting[channelToModify];
-            break;       
-          case 'd' :
-            channelToModify = 3;
-            --setting[channelToModify];
-            if (setting[channelToModify] < settingSafeMin[channelToModify]) ++setting[channelToModify];
-            break;
-          case 'e' :
-            channelToModify = 4;
-            --setting[channelToModify];
-            if (setting[channelToModify] < settingSafeMin[channelToModify]) ++setting[channelToModify];
-            break;              
-          case 'f' :
-            channelToModify = 5;
-            --setting[channelToModify];
-            if (setting[channelToModify] < settingSafeMin[channelToModify]) ++setting[channelToModify];
-            break;
-          case 'g' :
-            channelToModify = 6;
-            --setting[channelToModify];
-            if (setting[channelToModify] < settingSafeMin[channelToModify]) ++setting[channelToModify];
-            break;
-          case 'h' :
-            channelToModify = 3;
-            setting[channelToModify] -= 0.5;
-            if (setting[channelToModify] < settingSafeMin[channelToModify])   setting[channelToModify] += 0.5;
-            channelToModify = 4;
-            setting[channelToModify] -= 0.5;
-            if (setting[channelToModify] < settingSafeMin[channelToModify])   setting[channelToModify] += 0.5;
-            channelToModify = 5;
-            setting[channelToModify] -= 0.5;
-            if (setting[channelToModify] < settingSafeMin[channelToModify])   setting[channelToModify] += 0.5;
-            channelToModify = 6;
-            setting[channelToModify] -= 0.5;
-            if (setting[channelToModify] < settingSafeMin[channelToModify])   setting[channelToModify] += 0.5;
-            break; 
-          case 'u' :
-            channelToModify = 3;
-            --setting[channelToModify];
-            if (setting[channelToModify] < settingSafeMin[channelToModify]) ++setting[channelToModify];
-            channelToModify = 4;
-            --setting[channelToModify];
-            if (setting[channelToModify] < settingSafeMin[channelToModify]) ++setting[channelToModify];
-            channelToModify = 5;
-            --setting[channelToModify];
-            if (setting[channelToModify] < settingSafeMin[channelToModify]) ++setting[channelToModify];
-            channelToModify = 6;
-            --setting[channelToModify];
-            if (setting[channelToModify] < settingSafeMin[channelToModify]) ++setting[channelToModify];
-            break;
-          case 'X' :
-          case 'x' :
-            for (int i = 0; i < 7; ++i)    setting[i] = settingNominal[i];
-            break;
-          default :
-            thingsHaveChanged = false;
-            break;
-        }
-      }
-
-    if (thingsHaveChanged) {
-      ++infoByte;
-      OCR4A = 34 + 2*setting[0];
-      OCR4B = 34 + 2*setting[1];
-      OCR4C = 34 + 2*setting[2];
-      OCR5B = 34 + 2*setting[3];
-      OCR5A = 34 + 2*setting[4];
-      OCR1A = 34 + 2*setting[5];
-      OCR1B = 34 + 2*setting[6];
-    }
-  
 }
 
 
@@ -1132,13 +769,16 @@ void performCommand(byte byte0, byte byte1) {
       break;
 // a device (that is not a servo, motor, or light source) command
     case 'd':
+      deviceControl.performCommand(byte1);
       break;
 // a light source command
     case 'l':
+      lightControl.performCommand(byte1);
       break;
 // shut down all propulsion motors immediately
     case 'x':
     case 'X':
+      motorControl.shutDownAllProps();
       break;
     default:
       break;
