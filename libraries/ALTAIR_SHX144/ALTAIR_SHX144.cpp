@@ -33,7 +33,7 @@ ALTAIR_SHX144::ALTAIR_SHX144(const char serialID, const char fakeShxProgramRxPin
 
 /**************************************************************************/
 /*!
- @brief  Default constructor (unused).
+ @brief  Default constructor.
 */
 /**************************************************************************/
 ALTAIR_SHX144::ALTAIR_SHX144() :
