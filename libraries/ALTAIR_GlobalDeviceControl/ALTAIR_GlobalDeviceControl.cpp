@@ -41,10 +41,11 @@ ALTAIR_GlobalDeviceControl::ALTAIR_GlobalDeviceControl(                         
 /**************************************************************************/
 bool ALTAIR_GlobalDeviceControl::initializeAllDevices(                                       )
 {
-       _telemSystem.initialize()                   ;
-    _sitAwareSystem.initialize()                   ;
+        _telemSystem.initialize()                   ;
+    _dataStoreSystem.initialize()                   ;
+     _sitAwareSystem.initialize()                   ;
 
-        return      true                           ;
+         return      true                           ;
 }
 
 /**************************************************************************/
