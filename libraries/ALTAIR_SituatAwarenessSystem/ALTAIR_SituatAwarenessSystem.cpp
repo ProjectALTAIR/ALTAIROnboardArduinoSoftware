@@ -25,6 +25,7 @@
 /**************************************************************************/
 
 #include "ALTAIR_SituatAwarenessSystem.h"
+#include "ALTAIR_TCA9548A.h"
 
 /**************************************************************************/
 /*!
@@ -46,11 +47,11 @@ void ALTAIR_SituatAwarenessSystem::initialize(             )
 
      Serial.println(F("BME280 pressure/temp/humidity sensors initialization..."));
      bool status1, status2, status3, statusall;    
-     status1 = _bmeMast.begin();
-     status2 = _bmeBalloon.begin(0x76);
-//     tcaselect(0);
-//     status3 = bmePayload.begin();
-//     tcaselect(-1);
+     status1 = _bmeMast.begin(                            );
+     status2 = _bmeBalloon.begin( 0x76                    );
+     ALTAIR_TCA9548A::tcaselect(  TCA9548A_BME280PAYLOAD  );
+     status3 = _bmePayload.begin(                         );
+     ALTAIR_TCA9548A::tcaselect(  TCA9548A_EVERYTHINGELSE );
      statusall = status1 && status3; // && status2;
      if (!statusall) {
          Serial.print(F("Could not find one of the 3 BME280 sensors, check wiring!  BME280 on nav mast: ")); Serial.print(status1); 
