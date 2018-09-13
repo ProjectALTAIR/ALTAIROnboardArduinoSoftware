@@ -35,6 +35,7 @@ ALTAIR_HMC5883L::ALTAIR_HMC5883L(                               )
 /**************************************************************************/
 void ALTAIR_HMC5883L::initialize(                              ) 
 {
+    Serial.println(F("Starting I2C/TWI bus..."));
     Wire.begin();
     Serial.println(F("Initializing and calibrating I2C/TWI compass magnetometer..."));
 /*
