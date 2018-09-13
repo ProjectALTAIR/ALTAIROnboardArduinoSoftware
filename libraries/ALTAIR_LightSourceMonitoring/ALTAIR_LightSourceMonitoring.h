@@ -31,9 +31,9 @@ class ALTAIR_LightSourceMonitoring {
   public:
     virtual void         initialize(  )                           ;
 
-    Adafruit_ADS1115&    ads1115ADC1( )    { return  _ads1115ADC1 ; }
-    Adafruit_ADS1115&    ads1115ADC2( )    { return  _ads1115ADC2 ; }
-    Adafruit_ADS1115&    ads1115ADC3( )    { return  _ads1115ADC3 ; }
+    Adafruit_ADS1115*    ads1115ADC1( )    { return &_ads1115ADC1 ; }
+    Adafruit_ADS1115*    ads1115ADC2( )    { return &_ads1115ADC2 ; }
+    Adafruit_ADS1115*    ads1115ADC3( )    { return &_ads1115ADC3 ; }
 
     ALTAIR_LightSourceMonitoring(     )                           ;
 
