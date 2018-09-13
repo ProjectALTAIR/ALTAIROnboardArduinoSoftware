@@ -24,16 +24,16 @@
 class ALTAIR_HMC6343 : public ALTAIR_OrientSensor {
   public:
 
-    ALTAIR_HMC6343(                   )                      ;
+    ALTAIR_HMC6343(                   )                       ;
 
-    virtual void      initialize(     )                      ;
+    virtual void      initialize(     )                       ;
 
-    SFE_HMC6343&      theHMC6343(     ) { return _theHMC6343 ; }
+    SFE_HMC6343*      theHMC6343(     ) { return &_theHMC6343 ; }
 
   protected:
 
   private:
     // this class is basically just a container for the Sparkfun SFE_HMC6343 class
-    SFE_HMC6343      _theHMC6343                             ;
+    SFE_HMC6343      _theHMC6343                              ;
 };
 #endif
