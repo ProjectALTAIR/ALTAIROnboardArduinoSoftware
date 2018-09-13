@@ -36,10 +36,10 @@ ALTAIR_OrientSensors::ALTAIR_OrientSensors(       )
 /**************************************************************************/
 void ALTAIR_OrientSensors::initialize(            )
 {
+    _hmc5883l.initialize(                         )     ;
       _bno055.initialize(                         )     ;
          _um7.initialize(                         )     ;
      _hmc6343.initialize(                         )     ;
-    _hmc5883l.initialize(                         )     ;
 }
 
 /**************************************************************************/
