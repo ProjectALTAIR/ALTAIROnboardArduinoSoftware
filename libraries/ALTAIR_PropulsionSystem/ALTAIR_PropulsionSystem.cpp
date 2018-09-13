@@ -30,7 +30,7 @@
  @brief  Constructor.  
 */
 /**************************************************************************/
-ALTAIR_PropulsionSystem::ALTAIR_PropulsionSystem()
+ALTAIR_PropulsionSystem::ALTAIR_PropulsionSystem(                                        )
 {
     (_motorAndESC[0]).makePortOuter();
     (_motorAndESC[1]).makePortInner();
@@ -44,7 +44,7 @@ ALTAIR_PropulsionSystem::ALTAIR_PropulsionSystem()
          power-on (within the setup routine).
 */
 /**************************************************************************/
-void ALTAIR_PropulsionSystem::initializePinModes(                                   )
+void ALTAIR_PropulsionSystem::initializePinModes(                                        )
 {
     _propAxleRotServo.initializePinMode();
     for (int i = 0; i < 4; ++i) (_motorAndESC[i]).initializePinMode();
@@ -61,7 +61,7 @@ void ALTAIR_PropulsionSystem::initializePinModes(                               
          ALTAIR_MotorControl class.
 */
 /**************************************************************************/
-void ALTAIR_PropulsionSystem::initializePropControlRegisters(                      )
+void ALTAIR_PropulsionSystem::initializePropControlRegisters(                            )
 {
     PORT_MOTOR_PWMTIMER_REG_A = _BV(COM5A1) | _BV(COM5B1) | _BV(WGM52) | _BV(WGM51);
     PORT_MOTOR_PWMTIMER_REG_B = _BV(CS52);                                    
@@ -77,7 +77,7 @@ void ALTAIR_PropulsionSystem::initializePropControlRegisters(                   
          setup routine).
 */
 /**************************************************************************/
-void ALTAIR_PropulsionSystem::initializePWMOutputRegisters(                        )
+void ALTAIR_PropulsionSystem::initializePWMOutputRegisters(                              )
 {
     _propAxleRotServo.initializePWMRegister();
     for (int i = 0; i < 4; ++i) (_motorAndESC[i]).initializePWMRegister();
@@ -90,12 +90,12 @@ void ALTAIR_PropulsionSystem::initializePWMOutputRegisters(                     
          is rotating, however none of the propulsion motors is spinning.)
 */
 /**************************************************************************/
-bool ALTAIR_PropulsionSystem::isRunning(                                          )
+bool ALTAIR_PropulsionSystem::isRunning(                                                 )
 {
-    return ( portOuterMotor().isRunning()     || 
-             portInnerMotor().isRunning()     ||
-             stbdInnerMotor().isRunning()     ||
-             stbdOuterMotor().isRunning()       );
+    return ( portOuterMotor()->isRunning()     || 
+             portInnerMotor()->isRunning()     ||
+             stbdInnerMotor()->isRunning()     ||
+             stbdOuterMotor()->isRunning()       );
 }
 
 /**************************************************************************/
@@ -103,13 +103,13 @@ bool ALTAIR_PropulsionSystem::isRunning(                                        
  @brief  Returns true _only_ if _all_ of the motors are initialized.  
 */
 /**************************************************************************/
-bool ALTAIR_PropulsionSystem::isInitialized(                                      )
+bool ALTAIR_PropulsionSystem::isInitialized(                                             )
 {
-    return (   axleRotServo().isInitialized() &&
-             portOuterMotor().isInitialized() && 
-             portInnerMotor().isInitialized() &&
-             stbdInnerMotor().isInitialized() &&
-             stbdOuterMotor().isInitialized()   );
+    return (   axleRotServo()->isInitialized() &&
+             portOuterMotor()->isInitialized() && 
+             portInnerMotor()->isInitialized() &&
+             stbdInnerMotor()->isInitialized() &&
+             stbdOuterMotor()->isInitialized()   );
 }
 
 /**************************************************************************/
@@ -117,12 +117,12 @@ bool ALTAIR_PropulsionSystem::isInitialized(                                    
  @brief  Change the power setting of all prop motors by deltaPower.
 */
 /**************************************************************************/
-bool ALTAIR_PropulsionSystem::changePower(            float                 deltaPower )
+bool ALTAIR_PropulsionSystem::changePower(              float                 deltaPower )
 {
-    return ( portOuterMotor().setPowerTo( portOuterMotor().powerSetting() + deltaPower ) &&
-             portInnerMotor().setPowerTo( portInnerMotor().powerSetting() + deltaPower ) &&
-             stbdInnerMotor().setPowerTo( stbdInnerMotor().powerSetting() + deltaPower ) &&
-             stbdOuterMotor().setPowerTo( stbdOuterMotor().powerSetting() + deltaPower )    );
+    return ( portOuterMotor()->setPowerTo( portOuterMotor()->powerSetting() + deltaPower ) &&
+             portInnerMotor()->setPowerTo( portInnerMotor()->powerSetting() + deltaPower ) &&
+             stbdInnerMotor()->setPowerTo( stbdInnerMotor()->powerSetting() + deltaPower ) &&
+             stbdOuterMotor()->setPowerTo( stbdOuterMotor()->powerSetting() + deltaPower )    );
 }
 
 /**************************************************************************/
@@ -130,11 +130,11 @@ bool ALTAIR_PropulsionSystem::changePower(            float                 delt
  @brief  Change the power setting of all prop motors to 0.
 */
 /**************************************************************************/
-bool ALTAIR_PropulsionSystem::shutDownAllProps(   )
+bool ALTAIR_PropulsionSystem::shutDownAllProps(                                          )
 {
-    return ( portOuterMotor().setPowerTo( 0. ) &&
-             portInnerMotor().setPowerTo( 0. ) &&
-             stbdInnerMotor().setPowerTo( 0. ) &&
-             stbdOuterMotor().setPowerTo( 0. )    );
+    return ( portOuterMotor()->setPowerTo( 0. ) &&
+             portInnerMotor()->setPowerTo( 0. ) &&
+             stbdInnerMotor()->setPowerTo( 0. ) &&
+             stbdOuterMotor()->setPowerTo( 0. )    );
 }
 
