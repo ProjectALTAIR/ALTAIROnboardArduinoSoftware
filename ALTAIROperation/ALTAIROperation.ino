@@ -163,23 +163,23 @@ void printNavMastSensorValsAndAdjSettingsAtInterval(long interval) {
     previousMillis5 = currentMillis;
 
 // First, the BME280 temp/pres/hum
-    Adafruit_BME280 bmeMast = deviceControl.sitAwareSystem().bmeMast();
+    Adafruit_BME280* bmeMast = deviceControl.sitAwareSystem()->bmeMast();
 
     Serial.print(F("Mast Temperature = "));
-    Serial.print(bmeMast.readTemperature());
+    Serial.print(bmeMast->readTemperature());
     Serial.println(F(" *C"));
 
     Serial.print(F("Mast Pressure = "));
 
-    Serial.print(bmeMast.readPressure() / 100.0F);
+    Serial.print(bmeMast->readPressure() / 100.0F);
     Serial.println(F(" hPa"));
 
     Serial.print(F("Mast Approx. Altitude = "));
-    Serial.print(bmeMast.readAltitude(SEALEVELPRESSURE_HPA));
+    Serial.print(bmeMast->readAltitude(SEALEVELPRESSURE_HPA));
     Serial.println(F(" m"));
 
     Serial.print(F("Mast Humidity = "));
-    Serial.print(bmeMast.readHumidity());
+    Serial.print(bmeMast->readHumidity());
     Serial.println(F(" %"));
 /*
     Serial.print(F("Balloon Temperature = "));
@@ -205,10 +205,10 @@ void printNavMastSensorValsAndAdjSettingsAtInterval(long interval) {
 
 // Next, the BNO055 orientation
 
-    Adafruit_BNO055 bno = deviceControl.sitAwareSystem().orientSensors().bno055().theBNO055();
+    Adafruit_BNO055* bno = deviceControl.sitAwareSystem()->orientSensors()->bno055()->theBNO055();
     /* Get a new sensor event */ 
     sensors_event_t event; 
-    bno.getEvent(&event);
+    bno->getEvent(&event);
   
     /* Display the floating point data */
     Serial.print(F("X: "));
@@ -221,10 +221,10 @@ void printNavMastSensorValsAndAdjSettingsAtInterval(long interval) {
 
 // And lastly, the Sparkfun HMC6343 magnetometer
 
-    SFE_HMC6343 hmc6343 = deviceControl.sitAwareSystem().orientSensors().hmc6343().theHMC6343();
-    hmc6343.readHeading();
+    SFE_HMC6343* hmc6343 = deviceControl.sitAwareSystem()->orientSensors()->hmc6343()->theHMC6343();
+    hmc6343->readHeading();
     printHMC6343HeadingData();
-    hmc6343.readAccel();
+    hmc6343->readAccel();
     printHMC6343AccelData();
 
 // Now, see if there is serial input for settings adjustment
@@ -250,25 +250,25 @@ void printNavMastSensorValsAndAdjSettingsAtInterval(long interval) {
 }
 
 void printHMC6343HeadingData() {
-  SFE_HMC6343 hmc6343 = deviceControl.sitAwareSystem().orientSensors().hmc6343().theHMC6343();
+  SFE_HMC6343* hmc6343 = deviceControl.sitAwareSystem()->orientSensors()->hmc6343()->theHMC6343();
 
   Serial.print(F("Heading: "));
-  Serial.print(hmc6343.heading); Serial.print(F("  ")); // Print raw heading value
-  Serial.print((float) hmc6343.heading/10.0);Serial.print(F(" degrees"));Serial.println(); // Print heading in degrees
+  Serial.print(hmc6343->heading); Serial.print(F("  ")); // Print raw heading value
+  Serial.print((float) hmc6343->heading/10.0);Serial.print(F(" degrees"));Serial.println(); // Print heading in degrees
 }
 
 void printHMC6343AccelData() {
-  SFE_HMC6343 hmc6343 = deviceControl.sitAwareSystem().orientSensors().hmc6343().theHMC6343();
+  SFE_HMC6343* hmc6343 = deviceControl.sitAwareSystem()->orientSensors()->hmc6343()->theHMC6343();
   
   Serial.print(F("HMC6343 X: "));
-  Serial.print(hmc6343.accelX); Serial.print(F("  ")); // Print raw acceleration measurement on x axis
-  Serial.print((float) hmc6343.accelX/1024.0);Serial.println(F("g")); // Print x axis acceleration measurement in g forces
+  Serial.print(hmc6343->accelX); Serial.print(F("  ")); // Print raw acceleration measurement on x axis
+  Serial.print((float) hmc6343->accelX/1024.0);Serial.println(F("g")); // Print x axis acceleration measurement in g forces
   Serial.print(F("HMC6343 Y: "));
-  Serial.print(hmc6343.accelY); Serial.print(F("  ")); // Print raw acceleration measurement on y axis
-  Serial.print((float) hmc6343.accelY/1024.0);Serial.println(F("g")); // Print y axis acceleration measurement in g forces
+  Serial.print(hmc6343->accelY); Serial.print(F("  ")); // Print raw acceleration measurement on y axis
+  Serial.print((float) hmc6343->accelY/1024.0);Serial.println(F("g")); // Print y axis acceleration measurement in g forces
   Serial.print(F("HMC6343 Z: "));
-  Serial.print(hmc6343.accelZ); Serial.print(F("  ")); // Print raw acceleration measurement on z axis
-  Serial.print((float) hmc6343.accelZ/1024.0);Serial.println(F("g")); // Print z axis acceleration measurement in g forces
+  Serial.print(hmc6343->accelZ); Serial.print(F("  ")); // Print raw acceleration measurement on z axis
+  Serial.print((float) hmc6343->accelZ/1024.0);Serial.println(F("g")); // Print z axis acceleration measurement in g forces
 }
 
 void getCompassmagData() {
@@ -402,13 +402,13 @@ bool getGPSandHeadingAtInterval(long interval)
 void sendStationNameToSHXandRFMRadiosAtInterval(long interval)
 {
   unsigned long currentMillis = millis();
-  ALTAIR_SHX144* shx144 = &(deviceControl.telemSystem().shx144());
+  ALTAIR_SHX144* shx144 = deviceControl.telemSystem()->shx144();
 //  if (digitalRead(shxBusyPin) == LOW && currentMillis - previousMillis3 > interval) {
   if (currentMillis - previousMillis3 > interval) { 
     Serial.println(F("Writing station name to SHX1"));
     previousMillis3 = currentMillis;
-    lightControl.intSphereSource().setLightsBackupRadio();
-    lightControl.diffLEDSource().setLightsBackupRadio();
+    lightControl.intSphereSource()->setLightsBackupRadio();
+    lightControl.diffLEDSource()->setLightsBackupRadio();
       
   //send my call sign (VE7XJA)
     shx144->send(byte('V'));
@@ -446,7 +446,7 @@ void sendStationNameToSHXandRFMRadiosAtInterval(long interval)
     delay(20);
 
 
-    ALTAIR_RFM23BP* rfm23bp = &(deviceControl.telemSystem().rfm23bp());
+    ALTAIR_RFM23BP* rfm23bp = deviceControl.telemSystem()->rfm23bp();
 //    unsigned char* rfm23SendString = new unsigned char[sizeof(" VE7XJA STATION ALTAIR OVER")]; 
 //    strcpy((char*) rfm23SendString, " VE7XJA STATION ALTAIR OVER");
 //    Serial.print("About to send to RFM23BP: "); Serial.println((char *) rfm23SendString);
@@ -489,8 +489,8 @@ void sendStationNameToSHXandRFMRadiosAtInterval(long interval)
 */
 
     delay(40);
-    lightControl.intSphereSource().resetLights();
-    lightControl.diffLEDSource().resetLights();
+    lightControl.intSphereSource()->resetLights();
+    lightControl.diffLEDSource()->resetLights();
 
   } else if (shx144->available()) {
     byte shxTerm[maxTermLength];
@@ -522,18 +522,18 @@ void sendStationNameToSHXandRFMRadiosAtInterval(long interval)
 void sendStatusToDNTRadioAndReadCommandsAtInterval(long interval)
 {
   unsigned long currentMillis = millis();
-  ALTAIR_DNT900* dnt900 = &(deviceControl.telemSystem().dnt900());
+  ALTAIR_DNT900* dnt900 = deviceControl.telemSystem()->dnt900();
   if (!dnt900->isBusy() && currentMillis - previousMillis2 > interval) {
     previousMillis2 = currentMillis;
     Serial.println(F("*** Writing status to DNT ***"));
-    lightControl.intSphereSource().setLightsPrimaryRadio();
-    lightControl.diffLEDSource().setLightsPrimaryRadio();
+    lightControl.intSphereSource()->setLightsPrimaryRadio();
+    lightControl.diffLEDSource()->setLightsPrimaryRadio();
 
     dnt900->sendGPS(gps);
 
     delay(40);
-    lightControl.intSphereSource().resetLights();
-    lightControl.diffLEDSource().resetLights();
+    lightControl.intSphereSource()->resetLights();
+    lightControl.diffLEDSource()->resetLights();
 
   long dntReadTry = 0;
   termIndex = termLength = 0;
