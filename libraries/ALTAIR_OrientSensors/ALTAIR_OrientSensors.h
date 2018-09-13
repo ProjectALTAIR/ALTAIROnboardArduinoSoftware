@@ -26,29 +26,29 @@
 class ALTAIR_OrientSensors {
   public:
 
-    ALTAIR_OrientSensors(                    )                    ;
+    ALTAIR_OrientSensors(                    )                     ;
 
-    ALTAIR_BNO055&          bno055(          ) { return _bno055   ; }
-    ALTAIR_UM7&             um7(             ) { return _um7      ; }
-    ALTAIR_HMC6343&         hmc6343(         ) { return _hmc6343  ; }
-    ALTAIR_HMC5883L&        hmc5883l(        ) { return _hmc5883l ; }
+    ALTAIR_BNO055*          bno055(          ) { return &_bno055   ; }
+    ALTAIR_UM7*             um7(             ) { return &_um7      ; }
+    ALTAIR_HMC6343*         hmc6343(         ) { return &_hmc6343  ; }
+    ALTAIR_HMC5883L*        hmc5883l(        ) { return &_hmc5883l ; }
 
-    ALTAIR_OrientSensor*    primary(         ) { return _primary  ; }
-    ALTAIR_OrientSensor*    backup1(         ) { return _backup1  ; }
-    ALTAIR_OrientSensor*    backup2(         ) { return _backup2  ; }
+    ALTAIR_OrientSensor*    primary(         ) { return  _primary  ; }
+    ALTAIR_OrientSensor*    backup1(         ) { return  _backup1  ; }
+    ALTAIR_OrientSensor*    backup2(         ) { return  _backup2  ; }
 
-    void                    initialize(      )                    ;
-    void                    switchToBackup1( )                    ;
-    void                    switchToBackup2( )                    ;
+    void                    initialize(      )                     ;
+    void                    switchToBackup1( )                     ;
+    void                    switchToBackup2( )                     ;
 
   private:
-    ALTAIR_BNO055          _bno055                                ;
-    ALTAIR_UM7             _um7                                   ;
-    ALTAIR_HMC6343         _hmc6343                               ;
-    ALTAIR_HMC5883L        _hmc5883l                              ;
+    ALTAIR_BNO055          _bno055                                 ;
+    ALTAIR_UM7             _um7                                    ;
+    ALTAIR_HMC6343         _hmc6343                                ;
+    ALTAIR_HMC5883L        _hmc5883l                               ;
 
-    ALTAIR_OrientSensor*   _primary                               ; 
-    ALTAIR_OrientSensor*   _backup1                               ; 
-    ALTAIR_OrientSensor*   _backup2                               ; 
+    ALTAIR_OrientSensor*   _primary                                ; 
+    ALTAIR_OrientSensor*   _backup1                                ; 
+    ALTAIR_OrientSensor*   _backup2                                ; 
 };
 #endif    //   ifndef ALTAIR_OrientSensors_h
