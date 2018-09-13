@@ -45,6 +45,7 @@ ALTAIR_BNO055::ALTAIR_BNO055(                                   ) :
 /**************************************************************************/
 void ALTAIR_BNO055::initialize(                                 ) 
 {
+    Serial.println(F("BNO055 orientation sensor initialization..."));
     if (!_theBNO055.begin()) {
         // There was a problem detecting the BNO055 ... check your connections 
         Serial.println(F("Ooops, no BNO055 detected ... Check your wiring or I2C ADDR!"));

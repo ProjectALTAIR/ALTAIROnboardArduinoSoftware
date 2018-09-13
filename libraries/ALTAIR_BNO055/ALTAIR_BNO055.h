@@ -27,15 +27,17 @@
 class ALTAIR_BNO055 : public ALTAIR_OrientSensor {
   public:
 
-    ALTAIR_BNO055(                byte    adafruitSensorID  );
-    ALTAIR_BNO055(                                          ); // No argument => default value.
+    ALTAIR_BNO055(                byte    adafruitSensorID  )                      ;
+    ALTAIR_BNO055(                                          )                      ; // No argument => default value.
 
-    virtual void      initialize(                           );
+    Adafruit_BNO055&  theBNO055(                            )  { return _theBNO055 ; }
+
+    virtual void      initialize(                           )                      ;
 
   protected:
 
   private:
     // this class is basically just a container for the Adafruit_BNO055 class
-    Adafruit_BNO055  _theBNO055                              ;
+    Adafruit_BNO055  _theBNO055                                                    ;
 };
 #endif
