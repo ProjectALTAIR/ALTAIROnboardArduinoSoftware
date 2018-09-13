@@ -61,10 +61,10 @@ void ALTAIR_GlobalMotorControl::performCommand(       byte                  comm
 {
   switch(commandByte) {
     case 'A':
-      _propSystem.axleRotServo().incrementSetting();
+      _propSystem.axleRotServo()->incrementSetting();
        break;
     case 'a':
-      _propSystem.axleRotServo().decrementSetting();
+      _propSystem.axleRotServo()->decrementSetting();
        break;
     case 'B':
       _bleedSystem.incrementSetting();
@@ -79,28 +79,28 @@ void ALTAIR_GlobalMotorControl::performCommand(       byte                  comm
       _cutdownSystem.decrementSetting();
        break;
     case 'D':
-      _propSystem.portOuterMotor().incrementPower();
+      _propSystem.portOuterMotor()->incrementPower();
        break;
     case 'd':
-      _propSystem.portOuterMotor().decrementPower();
+      _propSystem.portOuterMotor()->decrementPower();
        break;
     case 'E':
-      _propSystem.portInnerMotor().incrementPower();
+      _propSystem.portInnerMotor()->incrementPower();
        break;
     case 'e':
-      _propSystem.portInnerMotor().decrementPower();
+      _propSystem.portInnerMotor()->decrementPower();
        break;
     case 'F':
-      _propSystem.stbdInnerMotor().incrementPower();
+      _propSystem.stbdInnerMotor()->incrementPower();
        break;
     case 'f':
-      _propSystem.stbdInnerMotor().decrementPower();
+      _propSystem.stbdInnerMotor()->decrementPower();
        break;
     case 'G':
-      _propSystem.stbdOuterMotor().incrementPower();
+      _propSystem.stbdOuterMotor()->incrementPower();
        break;
     case 'g':
-      _propSystem.stbdOuterMotor().decrementPower();
+      _propSystem.stbdOuterMotor()->decrementPower();
        break;
     case 'H':
       _propSystem.halfIncrementPower();
