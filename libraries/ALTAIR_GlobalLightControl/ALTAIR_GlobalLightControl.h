@@ -40,9 +40,9 @@ class ALTAIR_GlobalLightControl {
 
     void                            performCommand(       byte  commandByte )                            ;
 
-    ALTAIR_IntSphereLightSource&    intSphereSource(                        ) { return  _intSphereSource ; }
-    ALTAIR_DiffLEDLightSource&      diffLEDSource(                          ) { return  _diffLEDSource   ; } 
-    ALTAIR_LightSourceMonitoring&   lightSourceMon(                         ) { return  _lightSourceMon  ; } // includes the amplifiers and ADC boards
+    ALTAIR_IntSphereLightSource*    intSphereSource(                        ) { return &_intSphereSource ; }
+    ALTAIR_DiffLEDLightSource*      diffLEDSource(                          ) { return &_diffLEDSource   ; } 
+    ALTAIR_LightSourceMonitoring*   lightSourceMon(                         ) { return &_lightSourceMon  ; } // includes the amplifiers and ADC boards
 
   protected:
 
