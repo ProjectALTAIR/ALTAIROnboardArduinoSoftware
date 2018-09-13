@@ -26,22 +26,22 @@
 class ALTAIR_GPSSensors {
   public:
 
-    ALTAIR_GPSSensors(                        )                    ;
+    ALTAIR_GPSSensors(                        )                     ;
 
-    ALTAIR_NEOM8N&          neom8n(           )  { return _neom8n  ; }
-    ALTAIR_DFRobotG6&       dfrobot(          )  { return _dfrobot ; }
+    ALTAIR_NEOM8N*          neom8n(           )  { return &_neom8n  ; }
+    ALTAIR_DFRobotG6*       dfrobot(          )  { return &_dfrobot ; }
 
-    ALTAIR_GPSSensor*       primary(          )  { return _primary ; }              
-    ALTAIR_GPSSensor*       backup(           )  { return _backup  ; } 
+    ALTAIR_GPSSensor*       primary(          )  { return  _primary ; }              
+    ALTAIR_GPSSensor*       backup(           )  { return  _backup  ; } 
 
-    void                    initialize(       )                    ;
-    void                    switchToOtherGPS( )                    ;
+    void                    initialize(       )                     ;
+    void                    switchToOtherGPS( )                     ;
 
   private:
-    ALTAIR_NEOM8N          _neom8n                                 ;
-    ALTAIR_DFRobotG6       _dfrobot                                ;
+    ALTAIR_NEOM8N          _neom8n                                  ;
+    ALTAIR_DFRobotG6       _dfrobot                                 ;
 
-    ALTAIR_GPSSensor*      _primary                                ; 
-    ALTAIR_GPSSensor*      _backup                                 ; 
+    ALTAIR_GPSSensor*      _primary                                 ; 
+    ALTAIR_GPSSensor*      _backup                                  ; 
 };
 #endif    //   ifndef ALTAIR_GPSSensors_h
