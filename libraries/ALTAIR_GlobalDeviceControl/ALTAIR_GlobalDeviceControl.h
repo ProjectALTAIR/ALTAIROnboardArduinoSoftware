@@ -36,22 +36,22 @@
 class ALTAIR_GlobalDeviceControl {
   public:
 
-    ALTAIR_GlobalDeviceControl(                                             )                           ;
+    ALTAIR_GlobalDeviceControl(                                             )                            ;
 
-    bool                            initializeAllDevices(                   )                           ;
+    bool                            initializeAllDevices(                   )                            ;
 
-    void                            performCommand(       byte  commandByte )                           ;
+    void                            performCommand(       byte  commandByte )                            ;
 
-    ALTAIR_TelemetrySystem&         telemSystem(                            ) { return     _telemSystem ; }
-    ALTAIR_DataStorageSystem&       dataStoreSystem(                        ) { return _dataStoreSystem ; } // onboard SD card data storage
-    ALTAIR_SituatAwarenessSystem&   sitAwareSystem(                         ) { return  _sitAwareSystem ; } // includes GPS, orientation, and environmental sensors
+    ALTAIR_TelemetrySystem*         telemSystem(                            ) { return     &_telemSystem ; }
+    ALTAIR_DataStorageSystem*       dataStoreSystem(                        ) { return &_dataStoreSystem ; } // onboard SD card data storage
+    ALTAIR_SituatAwarenessSystem*   sitAwareSystem(                         ) { return  &_sitAwareSystem ; } // includes GPS, orientation, and environmental sensors
 
   protected:
 
   private:
-    ALTAIR_TelemetrySystem         _telemSystem                                                         ;
-    ALTAIR_DataStorageSystem       _dataStoreSystem                                                     ;
-    ALTAIR_SituatAwarenessSystem   _sitAwareSystem                                                      ;
+    ALTAIR_TelemetrySystem         _telemSystem                                                          ;
+    ALTAIR_DataStorageSystem       _dataStoreSystem                                                      ;
+    ALTAIR_SituatAwarenessSystem   _sitAwareSystem                                                       ;
 
 };
 #endif    //   ifndef ALTAIR_GlobalDeviceControl_h
