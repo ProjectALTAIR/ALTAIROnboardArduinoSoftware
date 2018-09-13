@@ -44,10 +44,6 @@ const byte     compassmagI2CAddress     =  0x1E;               // HMC5883L magne
 const byte     compassmagInitBytes[]    = {0x70, 0x20, 0x00};  // 0x70 = 8 samples averaged per output, default output rate of 15 Hz, no applied bias
                                                                // 0x20 = default gain of 1090 LSB/Gauss
                                                                // 0x00 = continuous measurement mode 
-const byte     I2CMUXADDR               =  0x70;
-
-const byte     SDcard_CS                =    24;
-
 static const uint8_t rfm23SendString[]  = " VE7XJA STATION ALTAIR OVER";
 
 static int16_t magDataX,      magDataY,      magDataZ;
@@ -76,153 +72,18 @@ long           previousMillis5          =     0;
 long           previousMillis6          =     0;
 int            count                    =     0;
 
-// All of the below DEFAULT_ pin locations are defined in the respective class header .h file in the library for each component.
-ALTAIR_DNT900               dnt900(               DEFAULT_DNT_SERIALID       ,  // on Serial1 -- 910 MHz, 1/2-wave antenna on front of gondola
-                                                  DEFAULT_DNTHWRESETPIN      ,         
-                                                  DEFAULT_DNTCTSPIN          , 
-                                                  DEFAULT_DNTRTSPIN          );
-ALTAIR_SHX144               shx144(               DEFAULT_SHX_SERIALID       ,  // on Serial2 -- 144 MHz, 1/4-wave antenna on back  of gondola
-                                                  DEFAULT_FAKESHXPROGRAMRXPIN,  // (and also on SoftwareSerial programming pins DEFAULT_SHXPROGRAMPIN and DEFAULT_FAKESHXPROGRAMRXPIN)
-                                                  DEFAULT_SHXPROGRAMPIN      , 
-                                                  DEFAULT_SHXBUSYPIN         );  
-ALTAIR_RFM23BP              rfm23bp(              DEFAULT_RFM_CHIPSELECTPIN  ,  // on SPI     -- 433 MHz, 1/2-wave antenna on top   of gondola
-                                                  DEFAULT_RFM_INTERRUPTPIN   );    
-ALTAIR_UM7                  um7(                  DEFAULT_UM7_SERIALID       ); // on Serial3 -- CH Robotics 9-axis orientation fusion sensor, including DHRobot GPS data pass-through
-
 ALTAIR_GlobalMotorControl   motorControl                                     ;
 ALTAIR_GlobalDeviceControl  deviceControl                                    ;
 ALTAIR_GlobalLightControl   lightControl                                     ;
-
-Adafruit_BNO055             bno = Adafruit_BNO055(55);       // on I2C      (default addr = 0x28), Adafruit 9-axis orientation fusion sensor
-Adafruit_BME280             bmeMast, bmeBalloon, bmePayload; // also on I2C (default addr = 0x77.  bmeMast [default addr] is on nav mast, bmeBalloon [w/ addr 0x76] is inside balloon, bmePayload [I2CMUXed, but default addr] inside gondola)
-SFE_HMC6343                 hmc6343;                         // also on I2C         (addr = 0x19), SparkFun magnetometer(+accelerometer)
 TinyGPSPlus                 gps;                             // nav mast GPS on I2C (addr = 0x42), and also UM7 with DFRobot GPS input on Serial3 (initialized later)
-
-// SD card output file
-File                        theSDcardFile;
-
-
-void tcaselect(int8_t i) {
-  if (i > 7 || i < -1) return;
- 
-  Wire.beginTransmission(I2CMUXADDR);
-  if (i == -1) {
-    Wire.write(0);
-  } else {
-    Wire.write(1 << i);
-  }
-  Wire.endTransmission();  
-}
 
 
 void setup() {
 
   Serial.begin(9600);
 
-// and perhaps try initializing SPI before DNT and SHX ...  and try SPI_HALF_SPEED initialization ... and try RFM23BP first again ... and try just straight ReadWrite
-//  pinMode(SDcard_CS,       OUTPUT);  // seems to sometimes cause SD.begin to have problems if SD.begin done immediately following it
-    
-  Serial.println(F("Starting DNT900 radio setup..."));
-  if (!dnt900.initialize()) {
-    Serial.println(F("DNT900 radio init failed"));
-    while(1);
-  }
-  Serial.println(F("DNT900 radio setup complete."));
-
-  Serial.println(F("Starting SHX1 serial modem radio setup..."));
-  if (!shx144.initialize()) {
-    Serial.println(F("SHX1 radio init failed"));
-    while(1);
-  }
-  Serial.println(F("SHX1 serial modem radio setup complete."));
-
-  delay(100);
-
-  Serial.println(F("Initializing SPI bus RFM23BP radio (433 MHz, antenna on top of gondola) ..."));
-  if (!rfm23bp.initialize()) {
-    Serial.println(F("RFM23BP radio init failed"));
-    while(1);
-  }
-
-
-// try putting a delay here, and/or the other type of SD card initialization
-
-  Serial.println(F("Initializing SPI bus SD card output ..."));
-  if (!SD.begin(SDcard_CS)) {
-    Serial.println(F("SD card output initialization failed!"));
-    while(1);
-  }
-  theSDcardFile = SD.open("data.txt", FILE_WRITE);
-  if (theSDcardFile) {
-    Serial.println(F("SD card initialization complete."));
-  } else {
-    Serial.println(F("SD card file open failed."));
-    while(1);
-  }
-
-
-
-  Serial.println(F("SPI bus and device initialization complete."));
-
-  Serial.println(F("Starting I2C/TWI bus..."));
-  Wire.begin();
-  Serial.println(F("Initializing and calibrating I2C/TWI compass magnetometer..."));
-/*
-  const byte     compassmagCalibBytes[]    = { 0x71, 0x60, 0x01 };
-  twiWriteBytes(compassmagI2CAddress, 0x00, compassmagCalibBytes, 1);
-  delay(50);
-  twiWriteBytes(compassmagI2CAddress, 0x01, &compassmagCalibBytes[1], 2);
-  delay(100);
-  getCompassmagData();
-  const float    magScale[]                = { 1160.0, 1160.0, 1080 };
-  magCalX = magScale[0]/abs(magDataX);
-  magCalY = magScale[1]/abs(magDataY);
-  magCalZ = magScale[2]/abs(magDataZ);
-  twiWriteBytes(compassmagI2CAddress, 0x00, compassmagInitBytes, 3);
-*/
-  Wire.beginTransmission(compassmagI2CAddress);
-  Wire.write(0x02);
-  Wire.endTransmission();
-//  I2c.write(compassmagI2CAddress, 0x02, 0x00);
-//  I2c.end();
-
-
-/*  jj */
-  Serial.println(F("BME280 pressure/temp/humidity sensors initialization..."));
-
-  bool status1, status2, status3, statusall;    
-  status1 = bmeMast.begin();
-  status2 = bmeBalloon.begin(0x76);
-  tcaselect(0);
-  status3 = bmePayload.begin();
-  tcaselect(-1);
-  statusall = status1 && status3; // && status2;
-  if (!statusall) {
-      Serial.print(F("Could not find one of the 3 BME280 sensors, check wiring!  BME280 on nav mast: ")); Serial.print(status1); 
-      Serial.print(F("   BME280 in the balloon valve: ")); Serial.print(status2); 
-      Serial.print(F("   BME280 inside the gondola: ")); Serial.println(status3); 
-      while (1);
-  }
-
-  Serial.println(F("BNO055 orientation sensor initialization..."));
-
-  if (!bno.begin())
-  {
-    // There was a problem detecting the BNO055 ... check your connections 
-    Serial.println(F("Ooops, no BNO055 detected ... Check your wiring or I2C ADDR!"));
-    while(1);
-  }
-  delay(1000);
-  bno.setExtCrystalUse(true);
-
-  Serial.println(F("HMC6343 magnetometer initialization..."));
-
-  if (!hmc6343.init())
-  {
-    Serial.println("SparkFun HMC6343 magnetometer initialization failed\n\r"); // Report failure, is the sensor wiring correct?
-    while(1);
-  } 
-
+  deviceControl.initializeAllDevices();
+  
 // normal situation: flash yellow LEDs then NO lights on (formerly it was yellow LEDs and green laser on, but that heats up the I-drive transistor too much)
   lightControl.initializeAllLightSources();
   
@@ -302,6 +163,7 @@ void printNavMastSensorValsAndAdjSettingsAtInterval(long interval) {
     previousMillis5 = currentMillis;
 
 // First, the BME280 temp/pres/hum
+    Adafruit_BME280 bmeMast = deviceControl.sitAwareSystem().bmeMast();
 
     Serial.print(F("Mast Temperature = "));
     Serial.print(bmeMast.readTemperature());
@@ -343,6 +205,7 @@ void printNavMastSensorValsAndAdjSettingsAtInterval(long interval) {
 
 // Next, the BNO055 orientation
 
+    Adafruit_BNO055 bno = deviceControl.sitAwareSystem().orientSensors().bno055().theBNO055();
     /* Get a new sensor event */ 
     sensors_event_t event; 
     bno.getEvent(&event);
@@ -358,6 +221,7 @@ void printNavMastSensorValsAndAdjSettingsAtInterval(long interval) {
 
 // And lastly, the Sparkfun HMC6343 magnetometer
 
+    SFE_HMC6343 hmc6343 = deviceControl.sitAwareSystem().orientSensors().hmc6343().theHMC6343();
     hmc6343.readHeading();
     printHMC6343HeadingData();
     hmc6343.readAccel();
@@ -386,12 +250,16 @@ void printNavMastSensorValsAndAdjSettingsAtInterval(long interval) {
 }
 
 void printHMC6343HeadingData() {
+  SFE_HMC6343 hmc6343 = deviceControl.sitAwareSystem().orientSensors().hmc6343().theHMC6343();
+
   Serial.print(F("Heading: "));
   Serial.print(hmc6343.heading); Serial.print(F("  ")); // Print raw heading value
   Serial.print((float) hmc6343.heading/10.0);Serial.print(F(" degrees"));Serial.println(); // Print heading in degrees
 }
 
 void printHMC6343AccelData() {
+  SFE_HMC6343 hmc6343 = deviceControl.sitAwareSystem().orientSensors().hmc6343().theHMC6343();
+  
   Serial.print(F("HMC6343 X: "));
   Serial.print(hmc6343.accelX); Serial.print(F("  ")); // Print raw acceleration measurement on x axis
   Serial.print((float) hmc6343.accelX/1024.0);Serial.println(F("g")); // Print x axis acceleration measurement in g forces
@@ -534,6 +402,7 @@ bool getGPSandHeadingAtInterval(long interval)
 void sendStationNameToSHXandRFMRadiosAtInterval(long interval)
 {
   unsigned long currentMillis = millis();
+  ALTAIR_SHX144* shx144 = &(deviceControl.telemSystem().shx144());
 //  if (digitalRead(shxBusyPin) == LOW && currentMillis - previousMillis3 > interval) {
   if (currentMillis - previousMillis3 > interval) { 
     Serial.println(F("Writing station name to SHX1"));
@@ -542,45 +411,47 @@ void sendStationNameToSHXandRFMRadiosAtInterval(long interval)
     lightControl.diffLEDSource().setLightsBackupRadio();
       
   //send my call sign (VE7XJA)
-    shx144.send(byte('V'));
-    shx144.send(byte('E'));
-    shx144.send(byte('7'));
-    shx144.send(byte('X'));
-    shx144.send(byte('J'));
-    shx144.send(byte('A'));
+    shx144->send(byte('V'));
+    shx144->send(byte('E'));
+    shx144->send(byte('7'));
+    shx144->send(byte('X'));
+    shx144->send(byte('J'));
+    shx144->send(byte('A'));
 
   //send station name
-    shx144.send(byte(' '));
-    shx144.send(byte('S'));
-    shx144.send(byte('T'));
-    shx144.send(byte('A'));
-    shx144.send(byte('T'));
-    shx144.send(byte('I'));
-    shx144.send(byte('O'));
-    shx144.send(byte('N'));
-    shx144.send(byte(':'));
-    shx144.send(byte(' '));  
-    shx144.send(byte('A'));
-    shx144.send(byte('L'));
-    shx144.send(byte('T'));
-    shx144.send(byte('A'));
-    shx144.send(byte('I'));
-    shx144.send(byte('R'));
-    shx144.send(byte(' '));
-    shx144.send(byte('O'));
-    shx144.send(byte('V'));
-    shx144.send(byte('E'));
-    shx144.send(byte('R'));
-    shx144.send(byte(' '));
-    shx144.send(byte(' '));
+    shx144->send(byte(' '));
+    shx144->send(byte('S'));
+    shx144->send(byte('T'));
+    shx144->send(byte('A'));
+    shx144->send(byte('T'));
+    shx144->send(byte('I'));
+    shx144->send(byte('O'));
+    shx144->send(byte('N'));
+    shx144->send(byte(':'));
+    shx144->send(byte(' '));  
+    shx144->send(byte('A'));
+    shx144->send(byte('L'));
+    shx144->send(byte('T'));
+    shx144->send(byte('A'));
+    shx144->send(byte('I'));
+    shx144->send(byte('R'));
+    shx144->send(byte(' '));
+    shx144->send(byte('O'));
+    shx144->send(byte('V'));
+    shx144->send(byte('E'));
+    shx144->send(byte('R'));
+    shx144->send(byte(' '));
+    shx144->send(byte(' '));
 
     delay(20);
 
+
+    ALTAIR_RFM23BP* rfm23bp = &(deviceControl.telemSystem().rfm23bp());
 //    unsigned char* rfm23SendString = new unsigned char[sizeof(" VE7XJA STATION ALTAIR OVER")]; 
 //    strcpy((char*) rfm23SendString, " VE7XJA STATION ALTAIR OVER");
 //    Serial.print("About to send to RFM23BP: "); Serial.println((char *) rfm23SendString);
-    rfm23bp.send(rfm23SendString);
-//    rfm23bp.send((const unsigned char*) " VE7XJA STATION ALTAIR OVER");
+    rfm23bp->send(rfm23SendString);
+//    rfm23bp->send((const unsigned char*) " VE7XJA STATION ALTAIR OVER");
 
 /*
    //send my call sign (VE7XJA)
@@ -621,11 +492,11 @@ void sendStationNameToSHXandRFMRadiosAtInterval(long interval)
     lightControl.intSphereSource().resetLights();
     lightControl.diffLEDSource().resetLights();
 
-  } else if (shx144.available()) {
+  } else if (shx144->available()) {
     byte shxTerm[maxTermLength];
     int  shxTermIndex = 0;
-    while (shx144.available() && shxTermIndex < maxTermLength) {
-      shxTerm[shxTermIndex++] = shx144.read();
+    while (shx144->available() && shxTermIndex < maxTermLength) {
+      shxTerm[shxTermIndex++] = shx144->read();
       delay(5);
     }
     Serial.print(F("  Number of SHX bytes: "));    Serial.println(shxTermIndex);
@@ -641,7 +512,7 @@ void sendStationNameToSHXandRFMRadiosAtInterval(long interval)
       Serial.print(shxTerm[i], HEX); Serial.print(F(" "));
     }
     Serial.println(F("\""));  
-  } else if (shx144.isBusy()) {
+  } else if (shx144->isBusy()) {
 //    Serial.println(F("Cannot send the station name to SHX1, since the SHX1 Busy pin is HIGH, and the SHX1 is not available"));
   }
   
@@ -651,13 +522,14 @@ void sendStationNameToSHXandRFMRadiosAtInterval(long interval)
 void sendStatusToDNTRadioAndReadCommandsAtInterval(long interval)
 {
   unsigned long currentMillis = millis();
-  if (!dnt900.isBusy() && currentMillis - previousMillis2 > interval) {
+  ALTAIR_DNT900* dnt900 = &(deviceControl.telemSystem().dnt900());
+  if (!dnt900->isBusy() && currentMillis - previousMillis2 > interval) {
     previousMillis2 = currentMillis;
     Serial.println(F("*** Writing status to DNT ***"));
     lightControl.intSphereSource().setLightsPrimaryRadio();
     lightControl.diffLEDSource().setLightsPrimaryRadio();
 
-    dnt900.sendGPS(gps);
+    dnt900->sendGPS(gps);
 
     delay(40);
     lightControl.intSphereSource().resetLights();
@@ -670,7 +542,7 @@ void sendStatusToDNTRadioAndReadCommandsAtInterval(long interval)
   if (infoByte == '7') infoByte = 'r';
   
     while (true) {
-      while (!dnt900.available() && dntReadTry < dntMaxReadTries) {
+      while (!dnt900->available() && dntReadTry < dntMaxReadTries) {
         ++dntReadTry;
 //      delay(5);
       }
@@ -680,7 +552,7 @@ void sendStatusToDNTRadioAndReadCommandsAtInterval(long interval)
           Serial.println(F("Reading a byte from radio"));
           if (infoByte == 'r') infoByte = 's';
 
-          byte b = dnt900.read();
+          byte b = dnt900->read();
 //        term[termIndex++] = b;
     
           if (b == (byte)0xFC && hasBegun == 0) {
@@ -697,7 +569,7 @@ void sendStatusToDNTRadioAndReadCommandsAtInterval(long interval)
           if (termLength == termIndex && termLength > 0) break;
 
 //        if (termIndex == maxTermLength) break;
-        } while (dnt900.available());
+        } while (dnt900->available());
         
 //      if (termIndex == maxTermLength) break;
         if (termLength == termIndex && termLength > 0) break;
@@ -713,7 +585,7 @@ void sendStatusToDNTRadioAndReadCommandsAtInterval(long interval)
       termLength = termIndex = hasBegun = 0;    
     }
 
-  } else if (dnt900.isBusy()) {
+  } else if (dnt900->isBusy()) {
     Serial.println(F("Cannot send the GPS to DNT, since the DNT is busy"));
   }
 
