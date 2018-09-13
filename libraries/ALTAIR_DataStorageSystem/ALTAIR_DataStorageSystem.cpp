@@ -37,17 +37,18 @@ ALTAIR_DataStorageSystem::ALTAIR_DataStorageSystem()
 /**************************************************************************/
 void ALTAIR_DataStorageSystem::initialize(                                   )
 {
-  Serial.println(F(  "Initializing SPI bus SD card output ...")) ;
-  if (!SD.begin(      DEFAULT_SDCARD_CSPIN                    )) {
-    Serial.println(F("SD card output initialization failed!"  )) ;
-    while(1)                                                     ;
+  Serial.println(F(  "Initializing SPI bus SD card output ..."   )) ;
+  if (!SD.begin(      DEFAULT_SDCARD_CSPIN                       )) {
+    Serial.println(F("SD card output initialization failed!"     )) ;
+    while(1)                                                        ;
   }
-  _theSDCardFile = SD.open(DEFAULT_SDCARD_FILENAME, FILE_WRITE ) ;
-  if (_theSDCardFile                                           ) {
-    Serial.println(F("SD card initialization complete."       )) ;
-  } else                                                         {
-    Serial.println(F("SD card file open failed."              )) ;
-    while(1)                                                     ;
+  _theSDCardFile = SD.open(DEFAULT_SDCARD_FILENAME, FILE_WRITE    ) ;
+  if (_theSDCardFile                                              ) {
+    Serial.println(F("SD card initialization complete."          )) ;
+  } else                                                            {
+    Serial.println(F("SD card file open failed."                 )) ;
+    while(1)                                                        ;
   }
+  Serial.println(F("SPI bus and device initialization complete." )) ;
 }
 
