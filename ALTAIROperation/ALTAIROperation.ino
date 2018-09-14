@@ -15,14 +15,14 @@ float          setting[7]               = {   6., 15.,  6.,  0. ,  0. ,  0. ,  0
 const byte     gpsI2CAddress            =  0x42;               // U-blox NEO-M8N GPS     (in Hobbyking GPS/compass)
 const byte     compassmagI2CAddress     =  0x1E;               // HMC5883L magnetometer  (in Hobbyking GPS/compass)
 
-static const uint8_t rfm23SendString[]  = " VE7XJA STATION ALTAIR OVER";
+static const uint8_t backup2SendString[]  = " VE7XJA STATION ALTAIR OVER";
 
 static int16_t magDataX,      magDataY,      magDataZ;
 static float   magCalX = 1.0, magCalY = 1.0, magCalZ = 1.0;                                                        
 float          compassmagHeading        =  -999.;              // heading in degrees East of true North
 
-// const long     dntMaxReadTries          =  500000;
-const long     dntMaxReadTries          =   100;
+// const long     primaryMaxReadTries          =  500000;
+const long     primaryMaxReadTries          =   100;
 const int      maxTermLength            =   255;
 // const int      maxTermLength            =  5000;
 
@@ -83,10 +83,10 @@ void loop() {
 
   getPropMonInfoAtInterval(450);
 
-  sendStatusToDNTRadioAndReadCommandsAtInterval(1000);
+  sendStatusToPrimaryRadioAndReadCommandsAtInterval(1000);
 
 //  delay(100);
-  if (backupRadiosOn) sendStationNameToSHXandRFMRadiosAtInterval(1333);
+  if (backupRadiosOn) sendStationNameToBackupRadiosAtInterval(1333);
 //  delay(100);
 
   sendGPSCompassStatusToComputerAtInterval(5000);
@@ -368,160 +368,160 @@ bool getGPSandHeadingAtInterval(long interval)
   return retval;
 }
 
-void sendStationNameToSHXandRFMRadiosAtInterval(long interval)
+void sendStationNameToBackupRadiosAtInterval(long interval)
 {
   unsigned long currentMillis = millis();
-  ALTAIR_SHX144* shx144 = deviceControl.telemSystem()->shx144();
+  ALTAIR_GenTelInt* backup1 = deviceControl.telemSystem()->backup1();
 //  if (digitalRead(shxBusyPin) == LOW && currentMillis - previousMillis3 > interval) {
   if (currentMillis - previousMillis3 > interval) { 
-    Serial.println(F("Writing station name to SHX1"));
+    Serial.println(F("Writing station name to the first backup radio"));
     previousMillis3 = currentMillis;
     lightControl.intSphereSource()->setLightsBackupRadio();
     lightControl.diffLEDSource()->setLightsBackupRadio();
       
   //send my call sign (VE7XJA)
-    shx144->send(byte('V'));
-    shx144->send(byte('E'));
-    shx144->send(byte('7'));
-    shx144->send(byte('X'));
-    shx144->send(byte('J'));
-    shx144->send(byte('A'));
+    backup1->send(byte('V'));
+    backup1->send(byte('E'));
+    backup1->send(byte('7'));
+    backup1->send(byte('X'));
+    backup1->send(byte('J'));
+    backup1->send(byte('A'));
 
   //send station name
-    shx144->send(byte(' '));
-    shx144->send(byte('S'));
-    shx144->send(byte('T'));
-    shx144->send(byte('A'));
-    shx144->send(byte('T'));
-    shx144->send(byte('I'));
-    shx144->send(byte('O'));
-    shx144->send(byte('N'));
-    shx144->send(byte(':'));
-    shx144->send(byte(' '));  
-    shx144->send(byte('A'));
-    shx144->send(byte('L'));
-    shx144->send(byte('T'));
-    shx144->send(byte('A'));
-    shx144->send(byte('I'));
-    shx144->send(byte('R'));
-    shx144->send(byte(' '));
-    shx144->send(byte('O'));
-    shx144->send(byte('V'));
-    shx144->send(byte('E'));
-    shx144->send(byte('R'));
-    shx144->send(byte(' '));
-    shx144->send(byte(' '));
+    backup1->send(byte(' '));
+    backup1->send(byte('S'));
+    backup1->send(byte('T'));
+    backup1->send(byte('A'));
+    backup1->send(byte('T'));
+    backup1->send(byte('I'));
+    backup1->send(byte('O'));
+    backup1->send(byte('N'));
+    backup1->send(byte(':'));
+    backup1->send(byte(' '));  
+    backup1->send(byte('A'));
+    backup1->send(byte('L'));
+    backup1->send(byte('T'));
+    backup1->send(byte('A'));
+    backup1->send(byte('I'));
+    backup1->send(byte('R'));
+    backup1->send(byte(' '));
+    backup1->send(byte('O'));
+    backup1->send(byte('V'));
+    backup1->send(byte('E'));
+    backup1->send(byte('R'));
+    backup1->send(byte(' '));
+    backup1->send(byte(' '));
 
     delay(20);
 
 
-    ALTAIR_RFM23BP* rfm23bp = deviceControl.telemSystem()->rfm23bp();
-//    unsigned char* rfm23SendString = new unsigned char[sizeof(" VE7XJA STATION ALTAIR OVER")]; 
-//    strcpy((char*) rfm23SendString, " VE7XJA STATION ALTAIR OVER");
-//    Serial.print("About to send to RFM23BP: "); Serial.println((char *) rfm23SendString);
-    rfm23bp->send(rfm23SendString);
-//    rfm23bp->send((const unsigned char*) " VE7XJA STATION ALTAIR OVER");
+    ALTAIR_GenTelInt* backup2 = deviceControl.telemSystem()->backup2();
+//    unsigned char* backup2SendString = new unsigned char[sizeof(" VE7XJA STATION ALTAIR OVER")]; 
+//    strcpy((char*) backup2SendString, " VE7XJA STATION ALTAIR OVER");
+//    Serial.print("About to send to backup2: "); Serial.println((char *) backup2SendString);
+    backup2->send(backup2SendString);
+//    backup2->send((const unsigned char*) " VE7XJA STATION ALTAIR OVER");
 
 /*
    //send my call sign (VE7XJA)
-    rfm23bp.send(byte('V'));
-    rfm23bp.send(byte('E'));
-    rfm23bp.send(byte('7'));
-    rfm23bp.send(byte('X'));
-    rfm23bp.send(byte('J'));
-    rfm23bp.send(byte('A'));
+    backup2->send(byte('V'));
+    backup2->send(byte('E'));
+    backup2->send(byte('7'));
+    backup2->send(byte('X'));
+    backup2->send(byte('J'));
+    backup2->send(byte('A'));
 
   //send station name
-    rfm23bp.send(byte(' '));
-    rfm23bp.send(byte('S'));
-    rfm23bp.send(byte('T'));
-    rfm23bp.send(byte('A'));
-    rfm23bp.send(byte('T'));
-    rfm23bp.send(byte('I'));
-    rfm23bp.send(byte('O'));
-    rfm23bp.send(byte('N'));
-//    rfm23bp.send(byte(':'));
-    rfm23bp.send(byte(' '));  
-    rfm23bp.send(byte('A'));
-    rfm23bp.send(byte('L'));
-    rfm23bp.send(byte('T'));
-    rfm23bp.send(byte('A'));
-    rfm23bp.send(byte('I'));
-    rfm23bp.send(byte('R'));
-    rfm23bp.send(byte(' '));
-    rfm23bp.send(byte('O'));
-    rfm23bp.send(byte('V'));
-    rfm23bp.send(byte('E'));
-    rfm23bp.send(byte('R'));
-    rfm23bp.send(byte(' '));
-    rfm23bp.send(byte(' '));   
+    backup2->send(byte(' '));
+    backup2->send(byte('S'));
+    backup2->send(byte('T'));
+    backup2->send(byte('A'));
+    backup2->send(byte('T'));
+    backup2->send(byte('I'));
+    backup2->send(byte('O'));
+    backup2->send(byte('N'));
+//    backup2->send(byte(':'));
+    backup2->send(byte(' '));  
+    backup2->send(byte('A'));
+    backup2->send(byte('L'));
+    backup2->send(byte('T'));
+    backup2->send(byte('A'));
+    backup2->send(byte('I'));
+    backup2->send(byte('R'));
+    backup2->send(byte(' '));
+    backup2->send(byte('O'));
+    backup2->send(byte('V'));
+    backup2->send(byte('E'));
+    backup2->send(byte('R'));
+    backup2->send(byte(' '));
+    backup2->send(byte(' '));   
 */
 
     delay(40);
     lightControl.intSphereSource()->resetLights();
     lightControl.diffLEDSource()->resetLights();
 
-  } else if (shx144->available()) {
-    byte shxTerm[maxTermLength];
-    int  shxTermIndex = 0;
-    while (shx144->available() && shxTermIndex < maxTermLength) {
-      shxTerm[shxTermIndex++] = shx144->read();
+  } else if (backup1->available()) {
+    byte backup1Term[maxTermLength];
+    int  backup1TermIndex = 0;
+    while (backup1->available() && backup1TermIndex < maxTermLength) {
+      backup1Term[backup1TermIndex++] = backup1->read();
       delay(5);
     }
-    Serial.print(F("  Number of SHX bytes: "));    Serial.println(shxTermIndex);
-    Serial.print(F("  SHX Data: \""));
-    for (int i = 0; i < shxTermIndex; i++)
+    Serial.print(F("  Number of first backup radio bytes: "));    Serial.println(backup1TermIndex);
+    Serial.print(F("  First backup radio Data: \""));
+    for (int i = 0; i < backup1TermIndex; i++)
     {
-      Serial.print((char)shxTerm[i]);
+      Serial.print((char)backup1Term[i]);
     }
     Serial.println(F("\""));
-    Serial.print(F("  SHX Data (HEX): \""));
-    for (int i = 0; i < shxTermIndex; i++)
+    Serial.print(F("  First backup radio Data (HEX): \""));
+    for (int i = 0; i < backup1TermIndex; i++)
     {
-      Serial.print(shxTerm[i], HEX); Serial.print(F(" "));
+      Serial.print(backup1Term[i], HEX); Serial.print(F(" "));
     }
     Serial.println(F("\""));  
-  } else if (shx144->isBusy()) {
-//    Serial.println(F("Cannot send the station name to SHX1, since the SHX1 Busy pin is HIGH, and the SHX1 is not available"));
+  } else if (backup1->isBusy()) {
+//    Serial.println(F("Cannot send the station name to the first backup radio, since its Busy pin is HIGH, and thus it is not available"));
   }
   
 }
 
 
-void sendStatusToDNTRadioAndReadCommandsAtInterval(long interval)
+void sendStatusToPrimaryRadioAndReadCommandsAtInterval(long interval)
 {
   unsigned long currentMillis = millis();
-  ALTAIR_DNT900* dnt900 = deviceControl.telemSystem()->dnt900();
-  if (!dnt900->isBusy() && currentMillis - previousMillis2 > interval) {
+  ALTAIR_GenTelInt* primary = deviceControl.telemSystem()->primary();
+  if (!primary->isBusy() && currentMillis - previousMillis2 > interval) {
     previousMillis2 = currentMillis;
-    Serial.println(F("*** Writing status to DNT ***"));
+    Serial.println(F("*** Writing status to the primary radio ***"));
     lightControl.intSphereSource()->setLightsPrimaryRadio();
     lightControl.diffLEDSource()->setLightsPrimaryRadio();
 
-    dnt900->sendGPS(gps);
+    primary->sendGPS(gps);
 
     delay(40);
     lightControl.intSphereSource()->resetLights();
     lightControl.diffLEDSource()->resetLights();
 
-  long dntReadTry = 0;
+  long primaryReadTry = 0;
   termIndex = termLength = 0;
   
   Serial.println(F("Reading radio"));
   if (infoByte == '7') infoByte = 'r';
   
     while (true) {
-      while (!dnt900->available() && dntReadTry < dntMaxReadTries) {
-        ++dntReadTry;
+      while (!primary->available() && primaryReadTry < primaryMaxReadTries) {
+        ++primaryReadTry;
 //      delay(5);
       }
-      if (dntReadTry < dntMaxReadTries) {
+      if (primaryReadTry < primaryMaxReadTries) {
 
         do {
           Serial.println(F("Reading a byte from radio"));
           if (infoByte == 'r') infoByte = 's';
 
-          byte b = dnt900->read();
+          byte b = primary->read();
 //        term[termIndex++] = b;
     
           if (b == (byte)0xFC && hasBegun == 0) {
@@ -538,13 +538,13 @@ void sendStatusToDNTRadioAndReadCommandsAtInterval(long interval)
           if (termLength == termIndex && termLength > 0) break;
 
 //        if (termIndex == maxTermLength) break;
-        } while (dnt900->available());
+        } while (primary->available());
         
 //      if (termIndex == maxTermLength) break;
         if (termLength == termIndex && termLength > 0) break;
     
       } else {
-        Serial.println(F("DNT is not available for reading"));
+        Serial.println(F("Primary radio is not available for reading"));
         break;
       }
     }
@@ -554,8 +554,8 @@ void sendStatusToDNTRadioAndReadCommandsAtInterval(long interval)
       termLength = termIndex = hasBegun = 0;    
     }
 
-  } else if (dnt900->isBusy()) {
-    Serial.println(F("Cannot send the GPS to DNT, since the DNT is busy"));
+  } else if (primary->isBusy()) {
+    Serial.println(F("Cannot send the GPS to the primary radio, since the primary radio is busy"));
   }
 
   
