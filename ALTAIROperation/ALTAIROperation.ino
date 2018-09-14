@@ -2,60 +2,29 @@
 #include <TinyGPS++.h>
 
 #include <Wire.h>
-#include <SPI.h>
-#include <SD.h>
             
-#include <Adafruit_Sensor.h>
-#include <Adafruit_BME280.h>
-#include <Adafruit_BNO055.h>
-#include <SFE_HMC6343.h>
-
-#include <ALTAIR_DNT900.h>
-#include <ALTAIR_SHX144.h>
-#include <ALTAIR_RFM23BP.h>
-#include <ALTAIR_UM7.h>
-
 #include <ALTAIR_GlobalMotorControl.h>
 #include <ALTAIR_GlobalDeviceControl.h>
 #include <ALTAIR_GlobalLightControl.h>
 
-#include <utility/imumaths.h>
-
 #define        SEALEVELPRESSURE_HPA       (1013.25)
 #define        MAX_BUFFER_SIZE               32
 
-// Pins 6, 7, and 8 correspond to timer 4 pins.  Pins 45 and 46 correspond to timer 5 pins.  Pins 11 and 12 correspond to timer 1 pins.
-//   pin 6 = axle rotation servo;          pin 7 = helium valve servo;              pin 8 = cutdown and parafoil steering servo  
-//   setting 6 = default upward-pointing;  setting 15 = fully closed helium valve;  setting 7 = cutdown plunger open, 6 = cutdown plunger closed
-// Pins 45, 46, 11, 12 are the propulsion motors.  Setting 0 is off, setting 10 is max for these.
-//   pin 9 = ; pin 10 = ; pin 11 = ; pin 12 = 
-const byte     pwmPin[7]                = {   6 ,  7 ,  8 , 45  , 46  , 11  , 12   };  
-
 float          setting[7]               = {   6., 15.,  6.,  0. ,  0. ,  0. ,  0.  };
-const float    settingSafeMax[7]        = {  15., 16., 15.,  2.5,  2.5,  2.5,  2.5 };
-const float    settingSafeMin[7]        = {   0.,  0.,  0.,  0. ,  0. ,  0. ,  0.  };
-const float    settingNominal[7]        = {   6., 15.,  6.,  0. ,  0. ,  0. ,  0.  }; 
-const byte     axleRotAngSensePin       =    A3;
-const byte     cutdownAngSensePin       =    A4;
-const byte     helValveAngSensePin      =    A5;
 
 const byte     gpsI2CAddress            =  0x42;               // U-blox NEO-M8N GPS     (in Hobbyking GPS/compass)
 const byte     compassmagI2CAddress     =  0x1E;               // HMC5883L magnetometer  (in Hobbyking GPS/compass)
-const byte     compassmagInitBytes[]    = {0x70, 0x20, 0x00};  // 0x70 = 8 samples averaged per output, default output rate of 15 Hz, no applied bias
-                                                               // 0x20 = default gain of 1090 LSB/Gauss
-                                                               // 0x00 = continuous measurement mode 
+
 static const uint8_t rfm23SendString[]  = " VE7XJA STATION ALTAIR OVER";
 
 static int16_t magDataX,      magDataY,      magDataZ;
 static float   magCalX = 1.0, magCalY = 1.0, magCalZ = 1.0;                                                        
-float          compassmagHeading        =  -999.;              // heading in degrees east of true North
+float          compassmagHeading        =  -999.;              // heading in degrees East of true North
 
 // const long     dntMaxReadTries          =  500000;
 const long     dntMaxReadTries          =   100;
 const int      maxTermLength            =   255;
 // const int      maxTermLength            =  5000;
-
-uint8_t        i2cBuf[maxTermLength];
 
 bool           backupRadiosOn           =   true;
 byte           infoByte                 =    '7';
