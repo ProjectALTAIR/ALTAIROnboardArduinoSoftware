@@ -60,3 +60,65 @@ bool ALTAIR_GenTelInt::sendGPS(TinyGPSPlus& gps)
 
     return send('T');
 }
+
+/**************************************************************************/
+/*!
+ @brief  Read data (typically commands) sent up from a ground station.
+*/
+/**************************************************************************/
+byte* ALTAIR_GenTelInt::readALTAIRData()
+{
+    static byte term[MAX_TERM_LENGTH]    =    "";
+    static int  termIndex                =     0;
+    static int  termLength               =     0;
+    int         hasBegun                 =     0;
+    long        readTry                  =     0;
+    if (!isBusy()) {
+      Serial.print(F("Reading radio "));
+      Serial.println(radioName());
+      while (true) {
+        while (!available() && readTry < MAX_READ_TRIES) {
+          ++readTry;
+//           delay(5);
+        }
+        if (readTry < MAX_READ_TRIES) {
+          do {
+            Serial.println(F("Reading a byte from radio"));
+
+            byte b = read();
+//             term[termIndex++] = b;
+    
+            if (b == (byte) RX_START_BYTE && hasBegun == 0) {
+              hasBegun = 1;
+            }
+            else if (hasBegun == 1) {
+              termLength = (int)b;
+              hasBegun = 2;
+            }
+            else if (hasBegun == 2) {
+            //Serial.println(b, HEX);
+              term[termIndex++] = b;
+            } 
+            if (termLength == termIndex && termLength > 0) break;
+//             if (termIndex == MAX_TERM_LENGTH) break;
+          } while (available());
+        
+//           if (termIndex == MAX_TERM_LENGTH) break;
+          if (termLength == termIndex && termLength > 0) break;
+    
+        } else {
+          Serial.println(F("Radio is not available for reading"));
+          break;
+        }
+      }
+      if (termLength == termIndex && termLength > 0) {
+        termLength = termIndex = hasBegun = 0;    
+        return term;
+      }
+    } else {
+      Serial.print(F("Cannot read commands from the ground station, since the"));
+      Serial.print(radioName());
+      Serial.println(F(" radio is busy"));
+    }
+    return (byte*) "";
+}

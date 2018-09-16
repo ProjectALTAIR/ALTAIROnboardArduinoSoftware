@@ -24,28 +24,38 @@
 
 #include "Arduino.h"
 
-#define  FAKE_RSSI_VAL   127
-#define  TX_START_BYTE   0xFA
+#define  FAKE_RSSI_VAL     127
+#define  MAX_TERM_LENGTH   255
+#define  MAX_READ_TRIES    100
+#define  TX_START_BYTE    0xFA
+#define  RX_START_BYTE    0xFC
+
+typedef enum { dnt900 ,
+               shx144 ,
+               rfm23bp } radio_t;
 
 class    TinyGPSPlus;
 
 class ALTAIR_GenTelInt {
   public:
-    virtual bool    send(unsigned char aChar)                 = 0;
-    virtual bool    send(const uint8_t* aString)              = 0;
-            bool    sendGPS(TinyGPSPlus& gps)                    ;
-    virtual bool    sendStart()                               { return send((unsigned char) TX_START_BYTE); }
-    virtual bool    sendAsIndivChars(const uint8_t* aString)  = 0;
-    virtual bool    available()                               = 0; // If a byte is available for reading, returns true.
-    virtual bool    isBusy()                                  = 0;
-    virtual bool    initialize(const char* aString = "")      = 0;
-    virtual byte    read()                                    = 0;
-    virtual char    lastRSSI()                                = 0; // The RSSI value of most recently received message,
-                                                                   // return value is in dBm, response of +127 means 
-                                                                   // failed to get the last RSSI value.
+    virtual bool         send(unsigned char aChar)                 = 0;
+    virtual bool         send(const uint8_t* aString)              = 0;
+            bool         sendGPS(TinyGPSPlus& gps)                    ;
+    virtual bool         sendStart()                               { return send((unsigned char) TX_START_BYTE); }
+    virtual bool         sendAsIndivChars(const uint8_t* aString)  = 0;
+    virtual bool         available()                               = 0; // If a byte is available for reading, returns true.
+    virtual bool         isBusy()                                  = 0;
+    virtual bool         initialize(const char* aString = "")      = 0;
+    virtual byte         read()                                    = 0;
+            byte*        readALTAIRData()                             ;
+    virtual const char*  radioName()                               = 0;
+    virtual radio_t      radioType()                               = 0;
+    virtual char         lastRSSI()                                = 0; // The RSSI value of most recently received message,
+                                                                        // return value is in dBm, response of +127 means 
+                                                                        // failed to get the last RSSI value.
 
   protected:
-    ALTAIR_GenTelInt();
+    ALTAIR_GenTelInt()                                                ;
 
 
   private:
