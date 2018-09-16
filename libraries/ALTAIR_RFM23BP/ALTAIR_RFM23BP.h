@@ -23,6 +23,7 @@
 
 #define  DEFAULT_RFM_CHIPSELECTPIN    26
 #define  DEFAULT_RFM_INTERRUPTPIN      2
+#define  RFM23BP_RADIO_NAME     "RFM23BP"
 
 class ALTAIR_RFM23BP : public ALTAIR_GenTelInt {
   public:
@@ -35,6 +36,8 @@ class ALTAIR_RFM23BP : public ALTAIR_GenTelInt {
     virtual byte    read(                                                                    );
     virtual bool    readMessage(       unsigned char* buffer, 
                                        unsigned char* length                                 );
+    virtual const char*   radioName(                                                         );
+    virtual radio_t radioType(                                                               );
     virtual char    lastRSSI(                                                                ); // The RSSI value of most recently received message,
                                                                                                 // return value is in dBm, response of +127 means 
                                                                                                 // failed to get the last RSSI value.

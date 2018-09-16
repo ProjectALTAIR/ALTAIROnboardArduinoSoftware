@@ -158,7 +158,23 @@ bool ALTAIR_RFM23BP::readMessage(unsigned char* buffer, unsigned char* length) {
 
 }
 
+/**************************************************************************/
+/*!
+ @brief  Return the name of the radio
+*/
+/**************************************************************************/
+const char* ALTAIR_RFM23BP::radioName() {
+    return RFM23BP_RADIO_NAME;
+}
 
+/**************************************************************************/
+/*!
+ @brief  Return the type of the radio
+*/
+/**************************************************************************/
+radio_t ALTAIR_RFM23BP::radioType() {
+    return rfm23bp;
+}
 
 /**************************************************************************/
 /*!
