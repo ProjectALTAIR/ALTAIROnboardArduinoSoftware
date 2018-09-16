@@ -22,41 +22,45 @@
 */
 /**************************************************************************/
 
-#ifndef ALTAIR_TelemetrySystem_h
-#define ALTAIR_TelemetrySystem_h
+#ifndef   ALTAIR_TelemetrySystem_h
+#define   ALTAIR_TelemetrySystem_h
 
 #include "Arduino.h"
 #include "ALTAIR_DNT900.h"
 #include "ALTAIR_SHX144.h"
 #include "ALTAIR_RFM23BP.h"
 
-class ALTAIR_TelemetrySystem {
+class     ALTAIR_TelemetrySystem {
   public:
 
-    ALTAIR_TelemetrySystem(                  )                              ;
+    ALTAIR_TelemetrySystem(                  )                                                ;
 
-    ALTAIR_DNT900*           dnt900(         ) { return &_dnt900            ; }
-    ALTAIR_SHX144*           shx144(         ) { return &_shx144            ; }
-    ALTAIR_RFM23BP*          rfm23bp(        ) { return &_rfm23bp           ; }
+    ALTAIR_DNT900*           dnt900(         ) { return &_dnt900                              ; }
+    ALTAIR_SHX144*           shx144(         ) { return &_shx144                              ; }
+    ALTAIR_RFM23BP*          rfm23bp(        ) { return &_rfm23bp                             ; }
 
-    ALTAIR_GenTelInt*        primary(        ) { return  _primaryRadio      ; }
-    ALTAIR_GenTelInt*        backup1(        ) { return  _firstBackupRadio  ; }
-    ALTAIR_GenTelInt*        backup2(        ) { return  _secondBackupRadio ; }
+    ALTAIR_GenTelInt*        primary(        ) { return       _primaryRadio                   ; }
+    ALTAIR_GenTelInt*        backup1(        ) { return   _firstBackupRadio                   ; }
+    ALTAIR_GenTelInt*        backup2(        ) { return  _secondBackupRadio                   ; }
 
-    void                     initialize(     )                              ;
-    void                     switchToBackup1()                              ;
-    void                     switchToBackup2()                              ;
+    byte*                    readPrimary(    ) { return       _primaryRadio->readALTAIRData() ; }
+    byte*                    readBackup1(    ) { return   _firstBackupRadio->readALTAIRData() ; }
+    byte*                    readBackup2(    ) { return  _secondBackupRadio->readALTAIRData() ; }
+
+    void                     initialize(     )                                                ;
+    void                     switchToBackup1()                                                ;
+    void                     switchToBackup2()                                                ;
 
   protected:
 
   private:
-    ALTAIR_DNT900            _dnt900                                        ;
-    ALTAIR_SHX144            _shx144                                        ;
-    ALTAIR_RFM23BP           _rfm23bp                                       ;
+    ALTAIR_DNT900            _dnt900                                                          ;
+    ALTAIR_SHX144            _shx144                                                          ;
+    ALTAIR_RFM23BP           _rfm23bp                                                         ;
 
-    ALTAIR_GenTelInt*        _primaryRadio                                  ;
-    ALTAIR_GenTelInt*        _firstBackupRadio                              ;
-    ALTAIR_GenTelInt*        _secondBackupRadio                             ;
+    ALTAIR_GenTelInt*             _primaryRadio                                               ;
+    ALTAIR_GenTelInt*         _firstBackupRadio                                               ;
+    ALTAIR_GenTelInt*        _secondBackupRadio                                               ;
 
 };
 #endif    //   ifndef ALTAIR_TelemetrySystem_h
