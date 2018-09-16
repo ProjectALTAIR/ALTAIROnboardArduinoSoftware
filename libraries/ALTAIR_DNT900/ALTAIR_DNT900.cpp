@@ -244,6 +244,24 @@ byte ALTAIR_DNT900::read() {
 
 /**************************************************************************/
 /*!
+ @brief  Return the name of the radio
+*/
+/**************************************************************************/
+const char* ALTAIR_DNT900::radioName() {
+    return DNT900_RADIO_NAME;
+}
+
+/**************************************************************************/
+/*!
+ @brief  Return the type of the radio
+*/
+/**************************************************************************/
+radio_t ALTAIR_DNT900::radioType() {
+    return dnt900;
+}
+
+/**************************************************************************/
+/*!
  @brief  Returns the most recent Return Signal Strength Information from
          the transceiver (i.e., from the most recent byte read).  The 
          return value is in dBm.  However, if a value of +127 is returned, 
