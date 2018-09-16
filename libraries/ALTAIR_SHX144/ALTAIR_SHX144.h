@@ -27,6 +27,7 @@
 #define  DEFAULT_FAKESHXPROGRAMRXPIN  24
 #define  DEFAULT_SHXPROGRAMPIN        25
 #define  DEFAULT_SHXBUSYPIN           23
+#define  SHX144_RADIO_NAME       "SHX144"
 
 class ALTAIR_SHX144 : public ALTAIR_GenTelInt {
   public:
@@ -37,6 +38,8 @@ class ALTAIR_SHX144 : public ALTAIR_GenTelInt {
     virtual bool    isBusy(                                                                  );
     virtual bool    initialize(        const char*    aString = ""                           );
     virtual byte    read(                                                                    );
+    virtual const char*   radioName(                                                         );
+    virtual radio_t radioType(                                                               );
     virtual char    lastRSSI(                                                                ); // The RSSI value of most recently received message,
                                                                                                 // return value is in dBm, response of +127 means 
                                                                                                 // failed to get the last RSSI value.
@@ -50,11 +53,10 @@ class ALTAIR_SHX144 : public ALTAIR_GenTelInt {
 
   private:
 
-    char _serialID;
-    char _fakeShxProgramRxPin;
-    char _shxProgramPin;
-    char _shxBusyPin;
-  
+    char           _serialID                                                                  ;
+    char           _fakeShxProgramRxPin                                                       ;
+    char           _shxProgramPin                                                             ;
+    char           _shxBusyPin                                                                ;
 };
 #endif
 

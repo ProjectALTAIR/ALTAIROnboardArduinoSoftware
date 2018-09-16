@@ -255,6 +255,24 @@ byte ALTAIR_SHX144::read() {
 
 /**************************************************************************/
 /*!
+ @brief  Return the name of the radio
+*/
+/**************************************************************************/
+const char* ALTAIR_SHX144::radioName() {
+    return SHX144_RADIO_NAME;
+}
+
+/**************************************************************************/
+/*!
+ @brief  Return the type of the radio
+*/
+/**************************************************************************/
+radio_t ALTAIR_SHX144::radioType() {
+    return shx144;
+}
+
+/**************************************************************************/
+/*!
  @brief  Returns the most recent Return Signal Strength Information from
          the transceiver (i.e., from the most recent byte read).  The 
          return value is in dBm.  However, if a value of +127 is returned, 
