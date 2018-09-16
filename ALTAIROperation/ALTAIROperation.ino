@@ -10,8 +10,6 @@
 #define        SEALEVELPRESSURE_HPA       (1013.25)
 #define        MAX_BUFFER_SIZE               32
 
-float          setting[7]               = {   6., 15.,  6.,  0. ,  0. ,  0. ,  0.  };
-
 const byte     gpsI2CAddress            =  0x42;               // U-blox NEO-M8N GPS     (in Hobbyking GPS/compass)
 const byte     compassmagI2CAddress     =  0x1E;               // HMC5883L magnetometer  (in Hobbyking GPS/compass)
 
@@ -21,17 +19,10 @@ static int16_t magDataX,      magDataY,      magDataZ;
 static float   magCalX = 1.0, magCalY = 1.0, magCalZ = 1.0;                                                        
 float          compassmagHeading        =  -999.;              // heading in degrees East of true North
 
-// const long     primaryMaxReadTries          =  500000;
-const long     primaryMaxReadTries          =   100;
 const int      maxTermLength            =   255;
 // const int      maxTermLength            =  5000;
 
 bool           backupRadiosOn           =   true;
-byte           infoByte                 =    '7';
-byte           term[maxTermLength];
-int            termIndex                =     0;
-int            termLength               =     0;
-int            hasBegun                 =     0;
   
 long           previousMillis           =     0;
 long           previousMillis2          =     0;
@@ -208,11 +199,6 @@ void printNavMastSensorValsAndAdjSettingsAtInterval(long interval) {
  
 
     } 
-
-        Serial.print("Present settings: "); Serial.print(setting[0]); Serial.print(" "); Serial.print(setting[1]);
-        Serial.print(" "); Serial.print(setting[2]); Serial.print(" "); Serial.print(setting[3]);
-        Serial.print(" "); Serial.print(setting[4]); Serial.print(" "); Serial.print(setting[5]);
-        Serial.print(" "); Serial.println(setting[6]);
  
   }
 
@@ -504,72 +490,13 @@ void sendStatusToPrimaryRadioAndReadCommandsAtInterval(long interval)
     lightControl.intSphereSource()->resetLights();
     lightControl.diffLEDSource()->resetLights();
 
-  long primaryReadTry = 0;
-  termIndex = termLength = 0;
-  
-  Serial.println(F("Reading radio"));
-  if (infoByte == '7') infoByte = 'r';
-  
-    while (true) {
-      while (!primary->available() && primaryReadTry < primaryMaxReadTries) {
-        ++primaryReadTry;
-//      delay(5);
-      }
-      if (primaryReadTry < primaryMaxReadTries) {
-
-        do {
-          Serial.println(F("Reading a byte from radio"));
-          if (infoByte == 'r') infoByte = 's';
-
-          byte b = primary->read();
-//        term[termIndex++] = b;
-    
-          if (b == (byte)0xFC && hasBegun == 0) {
-            hasBegun = 1;
-          }
-          else if (hasBegun == 1) {
-            termLength = (int)b;
-            hasBegun = 2;
-          }
-          else if (hasBegun == 2) {
-        //Serial.println(b, HEX);
-            term[termIndex++] = b;
-          } 
-          if (termLength == termIndex && termLength > 0) break;
-
-//        if (termIndex == maxTermLength) break;
-        } while (primary->available());
-        
-//      if (termIndex == maxTermLength) break;
-        if (termLength == termIndex && termLength > 0) break;
-    
-      } else {
-        Serial.println(F("Primary radio is not available for reading"));
-        break;
+    byte* newterm = primary->readALTAIRData();
+    if (newterm[0] != 0) {
+      if (newterm[1] != 0) {
+        performCommand(newterm[0], newterm[1]);
       }
     }
-
-    if (termLength == termIndex && termLength > 0) {
-      performCommand(term[0], term[1]);
-      termLength = termIndex = hasBegun = 0;    
-    }
-
-  } else if (primary->isBusy()) {
-    Serial.println(F("Cannot send the GPS to the primary radio, since the primary radio is busy"));
   }
-
-  
-  //send altitude
-//  signed long gps_altitude = gps.altitude();
-      
-  //send speed
-//  unsigned long gps_speed = gps.speed();
-    
-  //send HDOP
-//  unsigned long gps_hdop = gps.hdop();
-
-
-
 }
 
 
