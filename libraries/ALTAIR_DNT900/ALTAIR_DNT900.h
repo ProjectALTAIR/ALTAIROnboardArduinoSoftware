@@ -31,19 +31,21 @@ class ALTAIR_DNT900 : public ALTAIR_GenTelInt {
     virtual bool    send(              unsigned char  aChar                                  );
     virtual bool    send(              const uint8_t* aString                                );
     virtual bool    sendAsIndivChars(  const uint8_t* aString                                );
-    virtual bool    available(                                                               );  // If a byte is available for reading, returns true.
+    virtual bool    sendCallSign()                                              { return true ; } // Call sign   not necessary on ISM band DNT 900.
+    virtual bool    sendEndMessage()                                            { return true ; } // End message not necessary on ISM band DNT 900.
+    virtual bool    available(                                                               );   // If a byte is available for reading, returns true.
     virtual bool    isBusy(                                                                  );
     virtual bool    initialize(        const char*    aString       = ""                     );
     virtual byte    read(                                                                    );
     virtual const char*   radioName(                                                         );
     virtual radio_t radioType(                                                               );
-    virtual char    lastRSSI(                                                                );  // The RSSI value of the most recently received 
-                                                                                                 // message.  Return value is in dBm, response of 
-                                                                                                 // +127 means: failed to get the last RSSI value.
+    virtual char    lastRSSI(                                                                );   // The RSSI value of the most recently received 
+                                                                                                  // message.  Return value is in dBm, response of 
+                                                                                                  // +127 means: failed to get the last RSSI value.
     ALTAIR_DNT900(const char serialID, const char     dntHwResetPin = DEFAULT_DNTHWRESETPIN, 
                                        const char     dntCTSPin     = DEFAULT_DNTCTSPIN, 
                                        const char     dntRTSPin     = DEFAULT_DNTRTSPIN      );
-    ALTAIR_DNT900(                                                                           );  // No arguments => all default values.
+    ALTAIR_DNT900(                                                                           );   // No arguments => all default values.
 
   protected:
 
