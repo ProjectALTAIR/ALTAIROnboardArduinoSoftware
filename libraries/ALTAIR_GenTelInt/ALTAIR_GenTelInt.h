@@ -29,10 +29,12 @@
 #define  MAX_READ_TRIES    100
 #define  TX_START_BYTE    0xFA
 #define  RX_START_BYTE    0xFC
+#define  CALL_SIGN_STRING     " VE7XJA STATION ALTAIR "
+#define  END_MESSAGE_STRING   " OVER "
 
-typedef enum { dnt900 ,
-               shx144 ,
-               rfm23bp } radio_t;
+typedef  enum { dnt900 ,
+                shx144 ,
+                rfm23bp } radio_t;
 
 class    TinyGPSPlus;
 
@@ -41,8 +43,10 @@ class ALTAIR_GenTelInt {
     virtual bool         send(unsigned char aChar)                 = 0;
     virtual bool         send(const uint8_t* aString)              = 0;
             bool         sendGPS(TinyGPSPlus& gps)                    ;
-    virtual bool         sendStart()                               { return send((unsigned char) TX_START_BYTE); }
+    virtual bool         sendStart()                               { return send((unsigned char)  TX_START_BYTE      ) ; }
     virtual bool         sendAsIndivChars(const uint8_t* aString)  = 0;
+    virtual bool         sendCallSign()                            { return send((const uint8_t*) CALL_SIGN_STRING   ) ; }
+    virtual bool         sendEndMessage()                          { return send((const uint8_t*) END_MESSAGE_STRING ) ; }
     virtual bool         available()                               = 0; // If a byte is available for reading, returns true.
     virtual bool         isBusy()                                  = 0;
     virtual bool         initialize(const char* aString = "")      = 0;
