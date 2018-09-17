@@ -364,84 +364,16 @@ void sendStationNameToBackupRadiosAtInterval(long interval)
     previousMillis3 = currentMillis;
     lightControl.intSphereSource()->setLightsBackupRadio();
     lightControl.diffLEDSource()->setLightsBackupRadio();
-      
-  //send my call sign (VE7XJA)
-    backup1->send(byte('V'));
-    backup1->send(byte('E'));
-    backup1->send(byte('7'));
-    backup1->send(byte('X'));
-    backup1->send(byte('J'));
-    backup1->send(byte('A'));
 
-  //send station name
-    backup1->send(byte(' '));
-    backup1->send(byte('S'));
-    backup1->send(byte('T'));
-    backup1->send(byte('A'));
-    backup1->send(byte('T'));
-    backup1->send(byte('I'));
-    backup1->send(byte('O'));
-    backup1->send(byte('N'));
-    backup1->send(byte(':'));
-    backup1->send(byte(' '));  
-    backup1->send(byte('A'));
-    backup1->send(byte('L'));
-    backup1->send(byte('T'));
-    backup1->send(byte('A'));
-    backup1->send(byte('I'));
-    backup1->send(byte('R'));
-    backup1->send(byte(' '));
-    backup1->send(byte('O'));
-    backup1->send(byte('V'));
-    backup1->send(byte('E'));
-    backup1->send(byte('R'));
-    backup1->send(byte(' '));
-    backup1->send(byte(' '));
+    backup1->sendCallSign();
+    backup1->sendEndMessage();
 
     delay(20);
 
-
     ALTAIR_GenTelInt* backup2 = deviceControl.telemSystem()->backup2();
-//    unsigned char* backup2SendString = new unsigned char[sizeof(" VE7XJA STATION ALTAIR OVER")]; 
-//    strcpy((char*) backup2SendString, " VE7XJA STATION ALTAIR OVER");
-//    Serial.print("About to send to backup2: "); Serial.println((char *) backup2SendString);
-    backup2->send(backup2SendString);
-//    backup2->send((const unsigned char*) " VE7XJA STATION ALTAIR OVER");
 
-/*
-   //send my call sign (VE7XJA)
-    backup2->send(byte('V'));
-    backup2->send(byte('E'));
-    backup2->send(byte('7'));
-    backup2->send(byte('X'));
-    backup2->send(byte('J'));
-    backup2->send(byte('A'));
-
-  //send station name
-    backup2->send(byte(' '));
-    backup2->send(byte('S'));
-    backup2->send(byte('T'));
-    backup2->send(byte('A'));
-    backup2->send(byte('T'));
-    backup2->send(byte('I'));
-    backup2->send(byte('O'));
-    backup2->send(byte('N'));
-//    backup2->send(byte(':'));
-    backup2->send(byte(' '));  
-    backup2->send(byte('A'));
-    backup2->send(byte('L'));
-    backup2->send(byte('T'));
-    backup2->send(byte('A'));
-    backup2->send(byte('I'));
-    backup2->send(byte('R'));
-    backup2->send(byte(' '));
-    backup2->send(byte('O'));
-    backup2->send(byte('V'));
-    backup2->send(byte('E'));
-    backup2->send(byte('R'));
-    backup2->send(byte(' '));
-    backup2->send(byte(' '));   
-*/
+    backup2->sendCallSign();
+    backup2->sendEndMessage();
 
     delay(40);
     lightControl.intSphereSource()->resetLights();
