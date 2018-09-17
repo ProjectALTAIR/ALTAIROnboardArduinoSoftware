@@ -13,14 +13,9 @@
 const byte     gpsI2CAddress            =  0x42;               // U-blox NEO-M8N GPS     (in Hobbyking GPS/compass)
 const byte     compassmagI2CAddress     =  0x1E;               // HMC5883L magnetometer  (in Hobbyking GPS/compass)
 
-static const uint8_t backup2SendString[]  = " VE7XJA STATION ALTAIR OVER";
-
 static int16_t magDataX,      magDataY,      magDataZ;
 static float   magCalX = 1.0, magCalY = 1.0, magCalZ = 1.0;                                                        
 float          compassmagHeading        =  -999.;              // heading in degrees East of true North
-
-const int      maxTermLength            =   255;
-// const int      maxTermLength            =  5000;
 
 bool           backupRadiosOn           =   true;
   
@@ -358,7 +353,6 @@ void sendStationNameToBackupRadiosAtInterval(long interval)
 {
   unsigned long currentMillis = millis();
   ALTAIR_GenTelInt* backup1 = deviceControl.telemSystem()->backup1();
-//  if (digitalRead(shxBusyPin) == LOW && currentMillis - previousMillis3 > interval) {
   if (currentMillis - previousMillis3 > interval) { 
     Serial.println(F("Writing station name to the first backup radio"));
     previousMillis3 = currentMillis;
@@ -379,30 +373,14 @@ void sendStationNameToBackupRadiosAtInterval(long interval)
     lightControl.intSphereSource()->resetLights();
     lightControl.diffLEDSource()->resetLights();
 
-  } else if (backup1->available()) {
-    byte backup1Term[maxTermLength];
-    int  backup1TermIndex = 0;
-    while (backup1->available() && backup1TermIndex < maxTermLength) {
-      backup1Term[backup1TermIndex++] = backup1->read();
-      delay(5);
+    byte* newterm = backup1->readALTAIRData();
+    if (newterm[0] != 0) {
+      if (newterm[1] != 0) {
+        performCommand(newterm[0], newterm[1]);
+      }
     }
-    Serial.print(F("  Number of first backup radio bytes: "));    Serial.println(backup1TermIndex);
-    Serial.print(F("  First backup radio Data: \""));
-    for (int i = 0; i < backup1TermIndex; i++)
-    {
-      Serial.print((char)backup1Term[i]);
-    }
-    Serial.println(F("\""));
-    Serial.print(F("  First backup radio Data (HEX): \""));
-    for (int i = 0; i < backup1TermIndex; i++)
-    {
-      Serial.print(backup1Term[i], HEX); Serial.print(F(" "));
-    }
-    Serial.println(F("\""));  
-  } else if (backup1->isBusy()) {
-//    Serial.println(F("Cannot send the station name to the first backup radio, since its Busy pin is HIGH, and thus it is not available"));
+
   }
-  
 }
 
 
