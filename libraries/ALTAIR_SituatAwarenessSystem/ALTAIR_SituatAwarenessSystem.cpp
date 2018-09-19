@@ -7,11 +7,14 @@
     This is the class for the ALTAIR "situational awareness" system, which
     includes the two GPS receivers (the NEO-M8N on the mast, and the
     DFRobot G6 in a small plastic housing directly atop the payload); the
-    three orientation sensors (the Adafruit BNO055 accel/gyro/mag on the
+    three orientation sensors (the Adafruit BNO055 accel/gyro/mag on the 
     mast, the CHRobotics UM7 accel/gyro/mag within the payload, and the
-    SparkFun HMC6343 accel/mag on the mast); the three Adafruit BME280
-    pressure/temp/humidity sensors; and the many (primarily LM333) other
-    temperature sensors located at various places within and around ALTAIR.
+    SparkFun HMC6343 accel/mag on the mast); the Arduino Micro I2C slave
+    board which reads and controls the 4 propulsion system RPM sensors, 
+    4 propulsion system current sensors, and 8 propulsion system temp       
+    sensors; the three Adafruit BME280 pressure/temp/humidity sensors; and 
+    the many (primarily LM333) other temperature sensors located at 
+    various places within and around ALTAIR.
 
     This class is instantiated as a singleton via the instantiation of the
     (also singleton) ALTAIR_GlobalDeviceControl class.
@@ -60,7 +63,33 @@ void ALTAIR_SituatAwarenessSystem::initialize(             )
          while (1);
      }
 
-    _gpsSensors.initialize() ;
+    _gpsSensors.initialize()   ;
+    _arduinoMicro.initialize() ;
 }
 
+/**************************************************************************/
+/*!
+ @brief  Print out temp/pressure/humidity info from a BME280 sensor.
+*/
+/**************************************************************************/
+void ALTAIR_SituatAwarenessSystem::bme280PrintInfo( Adafruit_BME280*   bme280 )
+{
+    Serial.print(F("Mast Temperature = "));
+    Serial.print(bme280->readTemperature());
+    Serial.println(F(" *C"));
 
+    Serial.print(F("Mast Pressure = "));
+
+    Serial.print(bme280->readPressure() / 100.0F);
+    Serial.println(F(" hPa"));
+
+    Serial.print(F("Mast Approx. Altitude = "));
+    Serial.print(bme280->readAltitude(SEALEVELPRESSURE_HPA));
+    Serial.println(F(" m"));
+
+    Serial.print(F("Mast Humidity = "));
+    Serial.print(bme280->readHumidity());
+    Serial.println(F(" %"));
+    
+    Serial.println();
+}
