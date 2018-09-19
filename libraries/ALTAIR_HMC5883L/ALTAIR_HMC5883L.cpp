@@ -57,3 +57,27 @@ void ALTAIR_HMC5883L::initialize(                              )
 //    I2c.write(compassmagI2CAddress, 0x02, 0x00);
 //    I2c.end();
 }
+
+/**************************************************************************/
+/*!
+ @brief  Return the heading, in degrees.
+*/
+/**************************************************************************/
+float ALTAIR_HMC5883L::getHeading(                              )
+{
+    int16_t magDataX,      magDataY,      magDataZ;
+    float   magCalX = 1.0, magCalY = 1.0, magCalZ = 1.0;                                                        
+
+    Wire.beginTransmission( HMC5883L_I2CADDRESS );
+    Wire.write(             HMC5883L_DATAREG    );
+    Wire.endTransmission(                       );
+    Wire.requestFrom(       HMC5883L_I2CADDRESS ,  HMC5883L_DATABYTES );
+    magDataX  = Wire.read(                      ) << 8;
+    magDataX |= Wire.read(                      );
+    magDataZ  = Wire.read(                      ) << 8; // HMC5883L z data register is before the y register, don't ask y!...
+    magDataZ |= Wire.read(                      );
+    magDataY  = Wire.read(                      ) << 8;
+    magDataY |= Wire.read(                      );
+
+    return      atan2(magDataY*magCalY, magDataX*magCalX) * 180. / M_PI;
+}

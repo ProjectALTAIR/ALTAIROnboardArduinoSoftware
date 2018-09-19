@@ -22,6 +22,8 @@
 
 #define   HMC5883L_I2CADDRESS  0x1E
 #define   HMC5883L_INITCODE    0x02
+#define   HMC5883L_DATAREG     0x03
+#define   HMC5883L_DATABYTES      6
 
 class ALTAIR_HMC5883L : public ALTAIR_OrientSensor {
   public:
@@ -29,6 +31,8 @@ class ALTAIR_HMC5883L : public ALTAIR_OrientSensor {
     ALTAIR_HMC5883L(                                        );
 
     virtual void      initialize(                           );
+
+            float     getHeading(                           );
 
   protected:
 
