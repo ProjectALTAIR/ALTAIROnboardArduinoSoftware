@@ -55,5 +55,25 @@ void ALTAIR_BNO055::initialize(                                 )
     _theBNO055.setExtCrystalUse(true);
 }
 
+/**************************************************************************/
+/*!
+ @brief  Prints out orientation info.
+*/
+/**************************************************************************/
+void ALTAIR_BNO055::printInfo(                                  )
+{
+    /* Get a new sensor event */ 
+    sensors_event_t event; 
+    _theBNO055.getEvent(&event);
+  
+    /* Display the floating point data */
+    Serial.print(F("X: "));
+    Serial.print(event.orientation.x, 4);
+    Serial.print(F("\tY: "));
+    Serial.print(event.orientation.y, 4);
+    Serial.print(F("\tZ: "));
+    Serial.print(event.orientation.z, 4);
+    Serial.println();
+}
 
 

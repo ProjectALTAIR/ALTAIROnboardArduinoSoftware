@@ -33,6 +33,7 @@ class ALTAIR_BNO055 : public ALTAIR_OrientSensor {
     Adafruit_BNO055*  theBNO055(                            )  { return &_theBNO055 ; }
 
     virtual void      initialize(                           )                       ;
+            void      printInfo(                            )                       ;
 
   protected:
 
