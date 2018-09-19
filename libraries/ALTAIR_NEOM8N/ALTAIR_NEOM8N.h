@@ -15,18 +15,26 @@
 */
 /**************************************************************************/
 
-#ifndef ALTAIR_NEOM8N_h
-#define ALTAIR_NEOM8N_h
+#ifndef   ALTAIR_NEOM8N_h
+#define   ALTAIR_NEOM8N_h
 
 #include "Arduino.h"
 #include "ALTAIR_GPSSensor.h"
 
+#define   NEOM8N_I2CADDRESS         0x42
+#define   NEOM8N_MAXBUFFERSIZE        32
+#define   NEOM8N_INITCODE           0xFD
+#define   NEOM8N_INITBYTES             2
+#define   NEOM8N_GETGPSCODE         0xFF
+#define   NEOM8N_ERRORBYTE          0xFF
+
 class ALTAIR_NEOM8N : public ALTAIR_GPSSensor {
   public:
 
-    ALTAIR_NEOM8N(                   )         {  }
+    ALTAIR_NEOM8N(                             )    {  }
 
-    virtual void         initialize( )         {  }
+    virtual void      initialize(              )    {  }
+    virtual bool      getGPS( TinyGPSPlus* gps )    ;
 
   private:
 
