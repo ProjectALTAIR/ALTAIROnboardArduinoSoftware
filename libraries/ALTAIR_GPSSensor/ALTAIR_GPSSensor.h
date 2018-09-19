@@ -21,12 +21,15 @@
 
 #include "Arduino.h"
 
+class TinyGPSPlus;
+
 class ALTAIR_GPSSensor {
   public:
 
-    ALTAIR_GPSSensor(                    )     {  }
+    ALTAIR_GPSSensor(                              )     {  }
 
-    virtual void            initialize(  ) = 0    ;
+    virtual void            initialize(            ) = 0 ;
+    virtual bool            getGPS(TinyGPSPlus* gps) = 0 ;
 
   private:
 
