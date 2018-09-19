@@ -24,11 +24,15 @@
 class ALTAIR_HMC6343 : public ALTAIR_OrientSensor {
   public:
 
-    ALTAIR_HMC6343(                   )                       ;
+    ALTAIR_HMC6343(                     )                       ;
 
-    virtual void      initialize(     )                       ;
+    virtual void      initialize(       )                       ;
 
-    SFE_HMC6343*      theHMC6343(     ) { return &_theHMC6343 ; }
+            void      printInfo(        )                       ;
+            void      printHeadingData( )                       ;
+            void      printAccelData(   )                       ;
+
+    SFE_HMC6343*      theHMC6343(       ) { return &_theHMC6343 ; }
 
   protected:
 
