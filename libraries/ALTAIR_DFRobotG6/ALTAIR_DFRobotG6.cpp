@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*!
-    @file     ALTAIR_DFRobotG6.h
+    @file     ALTAIR_DFRobotG6.cpp
     @author   Justin Albert (jalbert@uvic.ca)
     @license  GPL
 
@@ -15,22 +15,21 @@
 */
 /**************************************************************************/
 
-#ifndef ALTAIR_DFRobotG6_h
-#define ALTAIR_DFRobotG6_h
+#include "ALTAIR_DFRobotG6.h"
+#include <TinyGPS++.h>
+#include <Wire.h>
 
-#include "Arduino.h"
-#include "ALTAIR_GPSSensor.h"
+/**************************************************************************/
+/*!
+ @brief  Get the GPS, and place the data in the TinyGPSPlus object pointed
+         to in the argument.
+*/
+/**************************************************************************/
+bool      ALTAIR_DFRobotG6::getGPS(      TinyGPSPlus*     gps    )
+{
 
-class ALTAIR_DFRobotG6 : public ALTAIR_GPSSensor {
-  public:
+// will implement later!
+    return false ;
 
-    ALTAIR_DFRobotG6(                             )  {  }
+}
 
-    virtual void         initialize(              )  {  }
-    virtual bool         getGPS( TinyGPSPlus* gps )  ;
-
-
-  private:
-
-};
-#endif    //   ifndef ALTAIR_DFRobotG6_h
