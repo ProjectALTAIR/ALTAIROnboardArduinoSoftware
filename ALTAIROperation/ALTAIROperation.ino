@@ -9,11 +9,7 @@ float          compassmagHeading        =  -999.;           // heading in degree
 
 bool           backupRadiosOn           =  true ;
   
-long           previousMillis           =     0 ;
-long           previousMillis2          =     0 ;
-long           previousMillis3          =     0 ;
-long           previousMillis4          =     0 ;
-long           previousMillis5          =     0 ;
+long           previousMillis[5]                ;
 
 ALTAIR_GlobalMotorControl   motorControl        ;
 ALTAIR_GlobalDeviceControl  deviceControl       ;
@@ -38,7 +34,6 @@ void setup() {
   } 
 
   Serial.println(F("Setup complete."));
- 
 }
 
 void loop() {
@@ -68,7 +63,6 @@ void loop() {
 
   storeDataOnMicroSDCard();
   
-
 //  delay(100);
 
 }
@@ -80,8 +74,8 @@ void storeDataOnMicroSDCard() {
 void printNavMastSensorValsAndAdjSettingsAtInterval(long interval) {
 
   unsigned long currentMillis = millis();
-  if (currentMillis - previousMillis5 > interval) { 
-    previousMillis5 = currentMillis;
+  if (currentMillis - previousMillis[4] > interval) { 
+    previousMillis[4] = currentMillis;
 
 // First, the BME280 temp/pres/hum
     deviceControl.sitAwareSystem()->bmeMastPrintInfo();
@@ -102,18 +96,17 @@ void printNavMastSensorValsAndAdjSettingsAtInterval(long interval) {
         if (Serial.available()) inputByte2 = Serial.read();
         performCommand(inputByte, inputByte2);
     } 
- 
   }
-
 }
+
 
 bool getGPSandHeadingAtInterval(long interval)
 {
   bool retval = false;
 
   unsigned long currentMillis = millis();
-  if (currentMillis - previousMillis4 > interval) { 
-    previousMillis4 = currentMillis;
+  if (currentMillis - previousMillis[3] > interval) { 
+    previousMillis[3] = currentMillis;
     Serial.println("Getting heading and GPS");
 
      // First, get the magnetometer heading
@@ -129,9 +122,9 @@ void sendStationNameToBackupRadiosAtInterval(long interval)
 {
   unsigned long currentMillis = millis();
   ALTAIR_GenTelInt* backup1 = deviceControl.telemSystem()->backup1();
-  if (currentMillis - previousMillis3 > interval) { 
+  if (currentMillis - previousMillis[2] > interval) { 
     Serial.println(F("Writing station name to the first backup radio"));
-    previousMillis3 = currentMillis;
+    previousMillis[2] = currentMillis;
     lightControl.intSphereSource()->setLightsBackupRadio();
     lightControl.diffLEDSource()->setLightsBackupRadio();
 
@@ -149,7 +142,7 @@ void sendStationNameToBackupRadiosAtInterval(long interval)
     lightControl.intSphereSource()->resetLights();
     lightControl.diffLEDSource()->resetLights();
 
-    byte* newterm = backup1->readALTAIRData();
+    byte* newterm = backup1->readALTAIRCommand();
     if (newterm[0] != 0) {
       if (newterm[1] != 0) {
         performCommand(newterm[0], newterm[1]);
@@ -164,8 +157,8 @@ void sendStatusToPrimaryRadioAndReadCommandsAtInterval(long interval)
 {
   unsigned long currentMillis = millis();
   ALTAIR_GenTelInt* primary = deviceControl.telemSystem()->primary();
-  if (!primary->isBusy() && currentMillis - previousMillis2 > interval) {
-    previousMillis2 = currentMillis;
+  if (!primary->isBusy() && currentMillis - previousMillis[1] > interval) {
+    previousMillis[1] = currentMillis;
     Serial.println(F("*** Writing status to the primary radio ***"));
     lightControl.intSphereSource()->setLightsPrimaryRadio();
     lightControl.diffLEDSource()->setLightsPrimaryRadio();
@@ -176,7 +169,7 @@ void sendStatusToPrimaryRadioAndReadCommandsAtInterval(long interval)
     lightControl.intSphereSource()->resetLights();
     lightControl.diffLEDSource()->resetLights();
 
-    byte* newterm = primary->readALTAIRData();
+    byte* newterm = primary->readALTAIRCommand();
     if (newterm[0] != 0) {
       if (newterm[1] != 0) {
         performCommand(newterm[0], newterm[1]);
@@ -194,8 +187,8 @@ void sendGPSCompassStatusToComputerAtInterval(long interval) {
   int year;
 
   unsigned long currentMillis = millis();
-  if (currentMillis - previousMillis > interval) {
-    previousMillis = currentMillis;   
+  if (currentMillis - previousMillis[0] > interval) {
+    previousMillis[0] = currentMillis;   
 
     Serial.print(F("ALTAIR Latitude: "));    Serial.println(gps.location.lat(), 6);
     Serial.print(F("ALTAIR Longitude: "));   Serial.println(gps.location.lng(), 6);
@@ -209,11 +202,9 @@ void sendGPSCompassStatusToComputerAtInterval(long interval) {
     Serial.print(F("ALTAIR Hundredth: "));   Serial.println(gps.time.centisecond());
 //    Serial.print(F("ALTAIR GPSTime Age: ")); Serial.println(gps.time.age());                  // no need to have this, it always reads the same thing
     Serial.print(F("ALTAIR compass magnetometer heading: ")); Serial.println(compassmagHeading);
-
   }
-
-
 }
+
 
 void performCommand(byte byte0, byte byte1) {
   switch(byte0) {
