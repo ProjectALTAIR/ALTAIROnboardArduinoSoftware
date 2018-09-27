@@ -5,7 +5,7 @@
 #include <ALTAIR_GlobalDeviceControl.h>
 #include <ALTAIR_GlobalLightControl.h>
 
-float          compassmagHeading        =  -999.;           // heading in degrees East of true North
+float          compassmagHeading        =  -999.;           // will be set to the heading in degrees East of true North, uncorrected for magnetic declination angle
 
 bool           backupRadiosOn           =  true ;
   
@@ -68,6 +68,8 @@ void loop() {
 }
 
 void storeDataOnMicroSDCard() {
+
+  deviceControl.dataStoreSystem()->storeTimestamp(gps);
 
 }
 
