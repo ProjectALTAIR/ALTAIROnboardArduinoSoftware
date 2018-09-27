@@ -49,6 +49,7 @@ class ALTAIR_UM7 : public ALTAIR_OrientSensor {
 
     struct   UM7packet getDataPacket(                                          );
     struct   UM7packet getHealthPacket(                                        );
+             void      update(                                                 ) {        getDataPacket();                           getHealthPacket(); }
 
 
     static   float     getYaw(            struct UM7packet  dataPacket         );
@@ -62,22 +63,33 @@ class ALTAIR_UM7 : public ALTAIR_OrientSensor {
     static   byte      getnSatsInView(    struct UM7packet  healthPacket       );
     static   byte      getHDOP(           struct UM7packet  healthPacket       );
     static   byte      getnSensors(       struct UM7packet  healthPacket       );
+    static   float     getTemperature(    struct UM7packet  healthPacket       );
+    static   byte      getTypeAndHealth(  struct UM7packet  healthPacket       );
 
     static   float     convertBytesToFloat(      byte*      data               );
-
 
              byte      parse_serial_data( const  byte*      rx_data         ,   
                                                  byte       rx_length       , 
                                                  byte       requestedAddress, 
-                                          struct UM7packet* packet            );
+                                          struct UM7packet* packet             );
 
-    void               initialize(                                            );
+    void               initialize(                                             );
+
+    int16_t            accelZ(                                                 ) { return convertFloatToInt16(getZAccel(     _lastDataPacket  )      ); }
+    int16_t            accelX(                                                 ) { return convertFloatToInt16(getXAccel(     _lastDataPacket  )      ); }
+    int16_t            accelY(                                                 ) { return convertFloatToInt16(getYAccel(     _lastDataPacket  )      ); }
+    int16_t            yaw(                                                    ) { return ((_lastDataPacket.data[48] << 8) | _lastDataPacket.data[49]); }
+    int16_t            pitch(                                                  ) { return ((_lastDataPacket.data[46] << 8) | _lastDataPacket.data[47]); }
+    int16_t            roll(                                                   ) { return ((_lastDataPacket.data[44] << 8) | _lastDataPacket.data[45]); }
+    int8_t             temperature(                                            ) { return convertFloatToInt16(getTemperature(_lastHealthPacket)      ); }
+    uint8_t            typeAndHealth(                                          ) { return getTypeAndHealth(                  _lastHealthPacket       ); }
 
   protected:
 
   private:
-             char     _serialID;
-  
+             char      _serialID                                                ;
+    struct   UM7packet _lastDataPacket                                          ;
+    struct   UM7packet _lastHealthPacket                                        ;
 };
 
 #endif

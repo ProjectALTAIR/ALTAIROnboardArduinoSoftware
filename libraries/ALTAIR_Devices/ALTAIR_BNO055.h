@@ -27,18 +27,29 @@
 class ALTAIR_BNO055 : public ALTAIR_OrientSensor {
   public:
 
-    ALTAIR_BNO055(                byte    adafruitSensorID  )                       ;
-    ALTAIR_BNO055(                                          )                       ; // No argument => default value.
+    ALTAIR_BNO055(                byte    adafruitSensorID  )                                                        ;
+    ALTAIR_BNO055(                                          )                                                        ; // No argument => default value.
 
-    Adafruit_BNO055*  theBNO055(                            )  { return &_theBNO055 ; }
+    Adafruit_BNO055*  theBNO055(                            ) { return                    &_theBNO055                ; }
 
-    virtual void      initialize(                           )                       ;
-            void      printInfo(                            )                       ;
+    virtual void      initialize(                           )                                                        ;
+            void      update(                               ) { _theBNO055.getEvent(      &_lastEvent               ); }
+            void      printInfo(                            )                                                        ;
+
+    int16_t            accelZ(                              ) { return convertFloatToInt16(_lastEvent.acceleration.z); }
+    int16_t            accelX(                              ) { return convertFloatToInt16(_lastEvent.acceleration.x); }
+    int16_t            accelY(                              ) { return convertFloatToInt16(_lastEvent.acceleration.y); }
+    int16_t            yaw(                                 ) { return convertFloatToInt16(_lastEvent.orientation.z ); }
+    int16_t            pitch(                               ) { return convertFloatToInt16(_lastEvent.orientation.y ); }
+    int16_t            roll(                                ) { return convertFloatToInt16(_lastEvent.orientation.x ); }
+    int8_t             temperature(                         ) { return convertFloatToInt16(_lastEvent.temperature   ); }
+    uint8_t            typeAndHealth(                       )                                                        ;
 
   protected:
 
   private:
     // this class is basically just a container for the Adafruit_BNO055 class
     Adafruit_BNO055  _theBNO055                                                    ;
+    sensors_event_t  _lastEvent                                                    ;
 };
 #endif

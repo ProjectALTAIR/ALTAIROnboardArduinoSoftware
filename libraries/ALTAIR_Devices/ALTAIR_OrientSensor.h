@@ -5,6 +5,10 @@
     @license  GPL
 
     This is the base class for each of the ALTAIR orientation sensors:
+    1) the Adafruit BNO055 (accel/gyro/mag), located on the mast; 2) 
+    the CHRobotics UM7 (accel/gyro/mag), located inside the payload; 3)
+    the Sparkfun HMC6343 (accel/mag), located on the mast; and 4) the
+    compass HMC5883L magnetometer (just mag), located inside the mast.
 
     Justin Albert  jalbert@uvic.ca     began on 6 Sep. 2018
 
@@ -14,17 +18,40 @@
 */
 /**************************************************************************/
 
-#ifndef ALTAIR_OrientSensor_h
-#define ALTAIR_OrientSensor_h
+#ifndef  ALTAIR_OrientSensor_h
+#define  ALTAIR_OrientSensor_h
 
 #include "Arduino.h"
+
+#define  SHRTMAX_DIVBY_360          91.02222                 // = 2^15 / 360.
+
+typedef  enum { bno055_healthy     = 0,
+                um7_healthy        = 1,
+                hmc6343_healthy    = 2,
+                hmc5883l_healthy   = 3,
+                bno055_unhealthy   = 4,
+                um7_unhealthy      = 5,
+                hmc6343_unhealthy  = 6,
+                hmc5883l_unhealthy = 7,
+                unknown_osensor    = 8  } orientsensor_t;
 
 class ALTAIR_OrientSensor {
   public:
 
-    ALTAIR_OrientSensor(                 )     {  }
+    ALTAIR_OrientSensor(                                    ) {                                                }
 
-    virtual void            initialize(  ) = 0    ;
+    virtual void            initialize(                     ) = 0                                            ;
+    virtual void            update(                         ) = 0                                            ;
+            int16_t         convertFloatToInt16( float data ) { return (int16_t) ( data * SHRTMAX_DIVBY_360 ); }
+
+    virtual int16_t         accelZ(                         ) = 0                                            ;
+    virtual int16_t         accelX(                         ) = 0                                            ;
+    virtual int16_t         accelY(                         ) = 0                                            ;
+    virtual int16_t         yaw(                            ) = 0                                            ;
+    virtual int16_t         pitch(                          ) = 0                                            ;
+    virtual int16_t         roll(                           ) = 0                                            ;
+    virtual int8_t          temperature(                    ) = 0                                            ;
+    virtual uint8_t         typeAndHealth(                  ) = 0                                            ;
 
   private:
 

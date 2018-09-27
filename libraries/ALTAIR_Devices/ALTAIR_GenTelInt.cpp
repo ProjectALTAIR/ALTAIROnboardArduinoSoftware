@@ -14,7 +14,9 @@
 /**************************************************************************/
 
 #include "ALTAIR_GenTelInt.h"
-
+#include "ALTAIR_GlobalMotorControl.h"
+#include "ALTAIR_GlobalDeviceControl.h"
+#include "ALTAIR_GlobalLightControl.h"
 #include <TinyGPS++.h>
 
 /**************************************************************************/
@@ -34,6 +36,9 @@ ALTAIR_GenTelInt::ALTAIR_GenTelInt()
 /**************************************************************************/
 bool ALTAIR_GenTelInt::sendGPS(TinyGPSPlus& gps) 
 {
+    uint8_t hour      = gps.time.hour();
+    uint8_t minute    = gps.time.minute();
+    uint8_t second    = gps.time.second();
     int32_t latitude  = gps.location.lat() * 1000000;  // Latitude,  in millionths of a degree.
     int32_t longitude = gps.location.lng() * 1000000;  // Longitude, in millionths of a degree.
     int16_t elevation = gps.altitude.meters();         // Elevation above mean sea level in meters.  NOTE: as this is signed 16 bit, this will *turn over*
@@ -42,24 +47,91 @@ bool ALTAIR_GenTelInt::sendGPS(TinyGPSPlus& gps)
                                                        // (One could get clever, and make it unsigned, but add, then later remove, 1000 meters, but I'm not 
                                                        //  that clever.)
     sendStart();
-    send(0x0B);
+    send(0x0E);
 
-  //send latitude
-    send(byte(( latitude >> 24) & 0xFF));
-    send(byte(( latitude >> 16) & 0xFF));
-    send(byte(( latitude >>  8) & 0xFF));
-    send(byte(  latitude        & 0xFF));
-  //send longitude
-    send(byte((longitude >> 24) & 0xFF));
-    send(byte((longitude >> 16) & 0xFF));
-    send(byte((longitude >>  8) & 0xFF));
-    send(byte( longitude        & 0xFF));
-  //send elevation
-    send(byte((elevation >>  8) & 0xFF));
-    send(byte( elevation        & 0xFF));
+    sendBareGPS(hour, minute, second, latitude, longitude, elevation);
 
     return send('T');
 }
+
+/**************************************************************************/
+/*!
+ @brief  Send every bit of ALTAIR info that is displayed in AIFCOMSS.
+*/
+/**************************************************************************/
+bool ALTAIR_GenTelInt::sendAllALTAIRInfo( TinyGPSPlus&                gps           ,
+                                          ALTAIR_GlobalMotorControl&  motorControl  ,
+                                          ALTAIR_GlobalDeviceControl& deviceControl ,
+                                          ALTAIR_GlobalLightControl&  lightControl   ) 
+{
+    uint8_t  hour      = gps.time.hour();
+    uint8_t  minute    = gps.time.minute();
+    uint8_t  second    = gps.time.second();
+    int32_t  latitude  = gps.location.lat() * 1000000;  // Latitude,  in millionths of a degree.
+    int32_t  longitude = gps.location.lng() * 1000000;  // Longitude, in millionths of a degree.
+    uint16_t age       = gps.location.age();            // Milliseconds since last GPS update (or default value USHRT_MAX if never received).
+    int16_t  elevation = gps.altitude.meters();         // Elevation above mean sea level in meters.  NOTE: above in previous function.
+    int8_t   hdop      = gps.hdop.value();              // Horizontal degree of precision.  A number typically between 1 and 50.
+
+    int8_t   rssi      = lastRSSI();
+
+    ALTAIR_OrientSensor* primaryOrientSensor = deviceControl.sitAwareSystem()->orientSensors()->primary();
+    int16_t  accelZ    = primaryOrientSensor->accelZ();
+    int16_t  accelX    = primaryOrientSensor->accelX();
+    int16_t  accelY    = primaryOrientSensor->accelY();
+    int16_t  yaw       = primaryOrientSensor->yaw();
+    int16_t  pitch     = primaryOrientSensor->pitch();
+    int16_t  roll      = primaryOrientSensor->roll();
+    int8_t   oSensTemp = primaryOrientSensor->temperature();
+    uint8_t  typeInfo  = primaryOrientSensor->typeAndHealth();
+
+    ALTAIR_DataStorageSystem* sdCard         = deviceControl.dataStoreSystem();
+    uint16_t occSpace  = sdCard->occupiedSpace();
+    uint16_t freeSpace = sdCard->remainingSpace();
+
+    sendStart();
+    send(0x12);                                         // Number of bytes of data that will be sent.
+
+    sendBareGPS(hour, minute, second, latitude, longitude, elevation);
+    send(  byte(( age      >>  8)      & 0xFF));
+    send(  byte(  age                  & 0xFF));
+    send(  byte(  hdop                 & 0xFF));
+
+    send(  byte(  rssi                 & 0xFF));
+
+
+
+    return send('T');
+}
+
+/**************************************************************************/
+/*!
+ @brief  Send bare GPS info.  (Only use within a data packet wrapper 
+         function!)
+*/
+/**************************************************************************/
+bool ALTAIR_GenTelInt::sendBareGPS(uint8_t hour    , uint8_t minute   , uint8_t second   ,
+                                   int32_t latitude, int32_t longitude, int16_t elevation)
+{
+  //send time
+           send(byte(      hour        & 0xFF));
+           send(byte(    minute        & 0xFF));
+           send(byte(    second        & 0xFF));
+  //send latitude
+           send(byte(( latitude >> 24) & 0xFF));
+           send(byte(( latitude >> 16) & 0xFF));
+           send(byte(( latitude >>  8) & 0xFF));
+           send(byte(  latitude        & 0xFF));
+  //send longitude
+           send(byte((longitude >> 24) & 0xFF));
+           send(byte((longitude >> 16) & 0xFF));
+           send(byte((longitude >>  8) & 0xFF));
+           send(byte( longitude        & 0xFF));
+  //send elevation
+           send(byte((elevation >>  8) & 0xFF));
+    return send(byte( elevation        & 0xFF));
+}
+
 
 /**************************************************************************/
 /*!

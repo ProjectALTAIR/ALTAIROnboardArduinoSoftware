@@ -17,14 +17,14 @@
 /**************************************************************************/
 
 #include "ALTAIR_HMC5883L.h"
-#include <Wire.h>
 
 /**************************************************************************/
 /*!
  @brief  (Default) constructor.
 */
 /**************************************************************************/
-ALTAIR_HMC5883L::ALTAIR_HMC5883L(                               )
+ALTAIR_HMC5883L::ALTAIR_HMC5883L(                              ) :
+                _theHMC5883(          HMC5883L_SENSORID        )
 {
 }
 
@@ -35,27 +35,12 @@ ALTAIR_HMC5883L::ALTAIR_HMC5883L(                               )
 /**************************************************************************/
 void ALTAIR_HMC5883L::initialize(                              ) 
 {
-    Serial.println(F("Starting I2C/TWI bus..."));
-    Wire.begin();
-    Serial.println(F("Initializing and calibrating I2C/TWI compass magnetometer..."));
-/*
-    const byte     compassmagCalibBytes[]    = { 0x71, 0x60, 0x01 };
-    twiWriteBytes(compassmagI2CAddress, 0x00, compassmagCalibBytes, 1);
-    delay(50);
-    twiWriteBytes(compassmagI2CAddress, 0x01, &compassmagCalibBytes[1], 2);
-    delay(100);
-    getCompassmagData();
-    const float    magScale[]                = { 1160.0, 1160.0, 1080 };
-    magCalX = magScale[0]/abs(magDataX);
-    magCalY = magScale[1]/abs(magDataY);
-    magCalZ = magScale[2]/abs(magDataZ);
-    twiWriteBytes(compassmagI2CAddress, 0x00, compassmagInitBytes, 3);
-*/
-    Wire.beginTransmission( HMC5883L_I2CADDRESS );
-    Wire.write(             HMC5883L_INITCODE   );
-    Wire.endTransmission(                       );
-//    I2c.write(compassmagI2CAddress, 0x02, 0x00);
-//    I2c.end();
+  if(!_theHMC5883.begin())
+  {
+    /* There was a problem detecting the HMC5883 ... check your connections */
+    Serial.println("Ooops, no HMC5883 detected ... Check your wiring!");
+    while(1);
+  }
 }
 
 /**************************************************************************/
@@ -63,21 +48,12 @@ void ALTAIR_HMC5883L::initialize(                              )
  @brief  Return the heading, in degrees.
 */
 /**************************************************************************/
-float ALTAIR_HMC5883L::getHeading(                              )
+float ALTAIR_HMC5883L::getHeading(                             )
 {
-    int16_t magDataX,      magDataY,      magDataZ;
-    float   magCalX = 1.0, magCalY = 1.0, magCalZ = 1.0;                                                        
+    /* Get a new sensor event */
+    _theHMC5883.getEvent(&_lastEvent);
 
-    Wire.beginTransmission( HMC5883L_I2CADDRESS );
-    Wire.write(             HMC5883L_DATAREG    );
-    Wire.endTransmission(                       );
-    Wire.requestFrom(       HMC5883L_I2CADDRESS ,  HMC5883L_DATABYTES );
-    magDataX  = Wire.read(                      ) << 8;
-    magDataX |= Wire.read(                      );
-    magDataZ  = Wire.read(                      ) << 8; // HMC5883L z data register is before the y register, don't ask y!...
-    magDataZ |= Wire.read(                      );
-    magDataY  = Wire.read(                      ) << 8;
-    magDataY |= Wire.read(                      );
-
-    return      atan2(magDataY*magCalY, magDataX*magCalX) * 180. / M_PI;
+    // Hold the module so that Z is pointing 'up' and you can measure the heading with x&y
+    // Calculate heading when the magnetometer is level, then correct for signs of axis.
+    return      atan2(_lastEvent.magnetic.y, _lastEvent.magnetic.x) * 180. / M_PI;
 }

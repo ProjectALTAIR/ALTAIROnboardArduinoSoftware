@@ -23,23 +23,30 @@
 #define   ALTAIR_DataStorageSystem_h
 
 #include "Arduino.h"
-#include <SD.h>
+#include <SdFat.h>
 
 #define   DEFAULT_SDCARD_CSPIN          24
 #define   DEFAULT_SDCARD_FILENAME    "data.txt"
 
-class ALTAIR_DataStorageSystem {
+class     TinyGPSPlus;
+
+class     ALTAIR_DataStorageSystem {
   public:
 
-    ALTAIR_DataStorageSystem(                )                             ;
+    ALTAIR_DataStorageSystem(                            )                 ;
 
 
-    void                     initialize(     )                             ;
+    void                initialize(                      )                 ;
+
+    uint16_t            occupiedSpace(                   )                 ;  // current occupied  space on the disk, in Mb
+    uint16_t            remainingSpace(                  )                 ;  // current remaining space on the disk, in Mb
+
+    void                storeTimestamp( TinyGPSPlus& gps )                 ;
 
   protected:
 
   private:
-    File                    _theSDCardFile                                 ;
-
+    SdFat              _SD                                                 ;
+    File               _theSDCardFile                                      ;
 };
 #endif    //   ifndef ALTAIR_DataStorageSystem_h

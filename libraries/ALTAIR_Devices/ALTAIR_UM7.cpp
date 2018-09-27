@@ -95,6 +95,7 @@ struct UM7packet ALTAIR_UM7::getDataPacket() {
     }
     returnVal = parse_serial_data(rx_data, RX_READ_LENGTH, tx_data[4], &new_packet);
     if ( returnVal != 0 ) Serial.println(F("A bad data packet has been returned by the UM7 orientation sensor!"));
+    _lastDataPacket = new_packet;
 
     return new_packet;
 }
@@ -117,10 +118,10 @@ struct UM7packet ALTAIR_UM7::getHealthPacket() {
     tx_data[0] = 's';  // Send
     tx_data[1] = 'n';  // New
     tx_data[2] = 'p';  // Packet
-    tx_data[3] = 0x00; // packet type byte
+    tx_data[3] = 0x7C; // get a batch of 16 register words (= 64 bytes)
     tx_data[4] = 0x55; // address of DREG_HEALTH sensor health info register
-    tx_data[5] = 0x01; // checksum high byte
-    tx_data[6] = 0xA6; // checksum low byte  
+    tx_data[5] = 0x02; // checksum high byte
+    tx_data[6] = 0x22; // checksum low byte  
 
     switch (_serialID) {
       case 0:
@@ -145,6 +146,7 @@ struct UM7packet ALTAIR_UM7::getHealthPacket() {
     }
     returnVal = parse_serial_data(rx_data, RX_READ_LENGTH, tx_data[4], &new_packet);
     if ( returnVal != 0 ) Serial.println(F("A bad health packet has been returned by the UM7 orientation sensor!"));
+    _lastHealthPacket = new_packet;
 
     return new_packet;
 }
@@ -211,6 +213,29 @@ float ALTAIR_UM7::getZAccel( struct UM7packet dataPacket ) {
 
 /**************************************************************************/
 /*!
+ @brief  Extract the temperature from a health packet.
+*/
+/**************************************************************************/
+float ALTAIR_UM7::getTemperature( struct UM7packet healthPacket ) {
+    return convertBytesToFloat(&(healthPacket.data[40]));
+}
+
+/**************************************************************************/
+/*!
+ @brief  Return the type and health, given a health packet.
+*/
+/**************************************************************************/
+byte ALTAIR_UM7::getTypeAndHealth( struct UM7packet healthPacket ) {
+    // if no failures to initialize, and if norms of acc and mag are not too ridiculous:
+    if (healthPacket.data[0] & 0x3E == 0) {  
+       return ((byte) um7_healthy);
+    } else {
+       return ((byte) um7_unhealthy);
+    }
+}
+
+/**************************************************************************/
+/*!
  @brief  Extract the number of satellites used from a health packet.
 */
 /**************************************************************************/
@@ -257,6 +282,14 @@ float ALTAIR_UM7::convertBytesToFloat( byte* data ) {
    }
    return converter.value;
 }
+
+/**************************************************************************/
+/*!
+ @brief  Convert 4 bytes to a float.
+*/
+/**************************************************************************/
+
+
 
 /**************************************************************************/
 /*!

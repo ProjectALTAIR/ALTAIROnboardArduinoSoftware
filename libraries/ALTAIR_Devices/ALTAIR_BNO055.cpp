@@ -40,6 +40,22 @@ ALTAIR_BNO055::ALTAIR_BNO055(                                   ) :
 
 /**************************************************************************/
 /*!
+ @brief  Return the type and health.
+*/
+/**************************************************************************/
+uint8_t ALTAIR_BNO055::typeAndHealth(                           )
+{
+  uint8_t system_status, self_test_results, system_error;
+  _theBNO055.getSystemStatus(&system_status, &self_test_results, &system_error);
+  if (system_error == 0) {
+       return ((uint8_t) bno055_healthy);
+    } else {
+       return ((uint8_t) bno055_unhealthy);
+    }
+}
+
+/**************************************************************************/
+/*!
  @brief  Initialize the orientation sensor during the setup routine.
 */
 /**************************************************************************/
