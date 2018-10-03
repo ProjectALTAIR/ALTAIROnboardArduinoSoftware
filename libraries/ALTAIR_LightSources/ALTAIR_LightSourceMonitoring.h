@@ -26,6 +26,10 @@
 #define   DEFAULT_ADS1115ADC_I2CADDRESS               0x48
 #define   DEFAULT_ADS1115ADC2_I2CADDRESS              0x49
 #define   DEFAULT_ADS1115ADC3_I2CADDRESS              0x4A
+#define   INTSPHERE_PD1_ADC_CHANNEL                      0             //  located on ads1115ADC1
+#define   INTSPHERE_PD2_ADC_CHANNEL                      1             //  located on ads1115ADC1
+#define   INTSPHERE_PD3_ADC_CHANNEL                      2             //  located on ads1115ADC1
+
 
 class ALTAIR_LightSourceMonitoring {
   public:

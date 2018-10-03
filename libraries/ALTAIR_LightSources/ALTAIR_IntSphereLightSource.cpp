@@ -94,6 +94,21 @@ void ALTAIR_IntSphereLightSource::resetLights(                                  
 
 /**************************************************************************/
 /*!
+ @brief  Return a uint8_t with its lowest 4 bits set according to the states
+         of the 4 lasers
+*/
+/**************************************************************************/
+uint8_t ALTAIR_IntSphereLightSource::getStatusNibble(                                  )
+{
+      uint8_t blue440nmLaserBit  = _blue440nmLaserState  == HIGH ? 1 : 0;
+      uint8_t green532nmLaserBit = _green532nmLaserState == HIGH ? 2 : 0;
+      uint8_t red635nmLaserBit   = _red635nmLaserState   == HIGH ? 4 : 0;
+      uint8_t red670nmLaserBit   = _red670nmLaserState   == HIGH ? 8 : 0;
+      return (red670nmLaserBit | red635nmLaserBit | green532nmLaserBit | blue440nmLaserBit);
+}
+
+/**************************************************************************/
+/*!
  @brief  Perform a test flash pattern when primary radio is transmitting:
          turn on the the blue laser (and the red LEDs).
 */

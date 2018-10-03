@@ -48,6 +48,8 @@ class ALTAIR_IntSphereLightSource : public ALTAIR_LightSource {
     void            turnOnRed670nmLaser()                                                    ;
     void            turnOffRed670nmLaser()                                                   ;
 
+    uint8_t         getStatusNibble()                                                        ;
+
     ALTAIR_IntSphereLightSource(const char blue440nmLaserPin                               , 
                                 const char green532nmLaserPin = DEFAULT_GREEN532NMLASERPIN ,
                                 const char red635nmLaserPin   = DEFAULT_RED635NMLASERPIN   ,

@@ -37,6 +37,16 @@ bool ALTAIR_GlobalLightControl::initializeAllLightSources(                      
 
 /**************************************************************************/
 /*!
+ @brief  Get a byte containing the status of all 8 lights (4 lasers and 4 LED sets).
+*/
+/**************************************************************************/
+uint8_t ALTAIR_GlobalLightControl::getLightStatusByte(                                       )
+{
+    return (  _intSphereSource.getStatusNibble()     |     _diffLEDSource.getStatusNibble()  ) ;
+}
+
+/**************************************************************************/
+/*!
  @brief  Perform a command.
 */
 /**************************************************************************/

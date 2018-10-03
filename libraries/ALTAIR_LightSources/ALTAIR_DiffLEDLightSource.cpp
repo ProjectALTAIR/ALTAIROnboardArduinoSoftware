@@ -95,6 +95,21 @@ void ALTAIR_DiffLEDLightSource::resetLights(                              )
 
 /**************************************************************************/
 /*!
+ @brief  Return a uint8_t with its upper 4 bits set according to the states
+         of the 4 LED sets.
+*/
+/**************************************************************************/
+uint8_t ALTAIR_DiffLEDLightSource::getStatusNibble(                       )
+{
+      uint8_t blueLEDsBit   = _blueLEDsState   == HIGH ? 0x10 : 0;
+      uint8_t greenLEDsBit  = _greenLEDsState  == HIGH ? 0x20 : 0;
+      uint8_t yellowLEDsBit = _yellowLEDsState == HIGH ? 0x40 : 0;
+      uint8_t redLEDsBit    = _redLEDsState    == HIGH ? 0x80 : 0;
+      return (redLEDsBit | yellowLEDsBit | greenLEDsBit | blueLEDsBit);
+}
+
+/**************************************************************************/
+/*!
  @brief  Perform a test flash pattern when primary radio is transmitting:
          turn on the red LEDs (and the blue laser)
 */

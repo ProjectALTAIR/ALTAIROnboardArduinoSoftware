@@ -47,6 +47,8 @@ class ALTAIR_DiffLEDLightSource : public ALTAIR_LightSource {
     void            turnOnRedLEDs()                                             ;
     void            turnOffRedLEDs()                                            ;
 
+    uint8_t         getStatusNibble()                                           ;
+
     ALTAIR_DiffLEDLightSource(const char blueLEDsPin                            , 
                               const char greenLEDsPin  = DEFAULT_GREENLEDSPIN   ,
                               const char yellowLEDsPin = DEFAULT_YELLOWLEDSPIN  ,

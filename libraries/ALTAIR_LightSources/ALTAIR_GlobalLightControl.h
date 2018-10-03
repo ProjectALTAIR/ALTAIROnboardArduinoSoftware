@@ -44,6 +44,8 @@ class ALTAIR_GlobalLightControl {
     ALTAIR_DiffLEDLightSource*      diffLEDSource(                          ) { return &_diffLEDSource   ; } 
     ALTAIR_LightSourceMonitoring*   lightSourceMon(                         ) { return &_lightSourceMon  ; } // includes the amplifiers and ADC boards
 
+    uint8_t                         getLightStatusByte(                     )                            ;
+
   protected:
 
   private:
