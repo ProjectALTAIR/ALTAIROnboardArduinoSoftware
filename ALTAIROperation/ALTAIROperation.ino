@@ -144,7 +144,7 @@ void sendStationNameToBackupRadiosAtInterval(long interval)
     lightControl.intSphereSource()->resetLights();
     lightControl.diffLEDSource()->resetLights();
 
-    byte* newterm = backup1->readALTAIRCommand();
+    byte* newterm = backup1->readALTAIRInfo();
     if (newterm[0] != 0) {
       if (newterm[1] != 0) {
         performCommand(newterm[0], newterm[1]);
@@ -171,7 +171,7 @@ void sendStatusToPrimaryRadioAndReadCommandsAtInterval(long interval)
     lightControl.intSphereSource()->resetLights();
     lightControl.diffLEDSource()->resetLights();
 
-    byte* newterm = primary->readALTAIRCommand();
+    byte* newterm = primary->readALTAIRInfo();
     if (newterm[0] != 0) {
       if (newterm[1] != 0) {
         performCommand(newterm[0], newterm[1]);
