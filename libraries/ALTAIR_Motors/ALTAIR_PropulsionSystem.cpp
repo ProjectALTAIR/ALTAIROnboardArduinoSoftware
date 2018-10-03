@@ -30,7 +30,8 @@
  @brief  Constructor.  
 */
 /**************************************************************************/
-ALTAIR_PropulsionSystem::ALTAIR_PropulsionSystem(                                        )
+ALTAIR_PropulsionSystem::ALTAIR_PropulsionSystem(                                        ) :
+     _propAxleRotServo(                               PROPAXLEROT_SERVO_POS_ADC_PIN      )
 {
     (_motorAndESC[0]).makePortOuter();
     (_motorAndESC[1]).makePortInner();

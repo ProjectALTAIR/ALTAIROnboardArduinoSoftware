@@ -34,12 +34,12 @@
  @brief  Constructor.  
 */
 /**************************************************************************/
-ALTAIR_BleedSystem::ALTAIR_BleedSystem(                                    ) :
-    _isOpen(                          false                                )
+ALTAIR_BleedSystem::ALTAIR_BleedSystem( byte             posADCPin           ) :
+                    ALTAIR_ServoMotor(                   posADCPin           ),
+                   _isOpen(                              false               )
 {
-    setPWMPin(                        BLEEDVALVE_SERVO_PWM_PIN             ) ;
-    initializeSetting(                DEFAULT_BLEEDVALVE_SETTING           ) ;
-
+    setPWMPin(                          BLEEDVALVE_SERVO_PWM_PIN             ) ;
+    initializeSetting(                  DEFAULT_BLEEDVALVE_SETTING           ) ;
 }
 
 /**************************************************************************/
@@ -47,9 +47,9 @@ ALTAIR_BleedSystem::ALTAIR_BleedSystem(                                    ) :
  @brief  Return the maximum safe setting.
 */
 /**************************************************************************/
-float ALTAIR_BleedSystem::maxSafeSetting(                                  )
+float ALTAIR_BleedSystem::maxSafeSetting(                                    )
 {
-    return                         MAX_SAFE_BLEEDVALVE_SETTING               ;
+    return                              MAX_SAFE_BLEEDVALVE_SETTING            ;
 }
 
 /**************************************************************************/
@@ -57,9 +57,9 @@ float ALTAIR_BleedSystem::maxSafeSetting(                                  )
  @brief  Return the minimum safe setting.
 */
 /**************************************************************************/
-float ALTAIR_BleedSystem::minSafeSetting(                                  )
+float ALTAIR_BleedSystem::minSafeSetting(                                    )
 {
-    return                         MIN_SAFE_BLEEDVALVE_SETTING               ;
+    return                              MIN_SAFE_BLEEDVALVE_SETTING            ;
 }
 
 /**************************************************************************/
@@ -67,8 +67,8 @@ float ALTAIR_BleedSystem::minSafeSetting(                                  )
  @brief  (Re-)set the PWM output register.
 */
 /**************************************************************************/
-void ALTAIR_BleedSystem::resetPWMRegister(                                 )
+void ALTAIR_BleedSystem::resetPWMRegister(                                   )
 {
-    BLEEDVALVE_SERVO_PWMOUTPUT_REG  = PWM_PEDESTAL_VALUE + 2*reportSetting() ;
+    BLEEDVALVE_SERVO_PWMOUTPUT_REG  =   PWM_PEDESTAL_VALUE + 2*reportSetting() ;
 }
 

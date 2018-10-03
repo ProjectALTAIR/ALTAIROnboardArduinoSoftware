@@ -30,11 +30,12 @@
  @brief  Constructor.  
 */
 /**************************************************************************/
-ALTAIR_CutdownSystem::ALTAIR_CutdownSystem(                             ) :
-    _isCutdown(                    false                                )
+ALTAIR_CutdownSystem::ALTAIR_CutdownSystem( byte   posADCPin            ) :
+                      ALTAIR_ServoMotor(    posADCPin                   ),
+                     _isCutdown(            false                       )
 {
-    setPWMPin(                     CUTDOWN_SERVO_PWM_PIN                ) ;
-    initializeSetting(             DEFAULT_CUTDOWN_SETTING              ) ;
+    setPWMPin(                              CUTDOWN_SERVO_PWM_PIN       ) ;
+    initializeSetting(                      DEFAULT_CUTDOWN_SETTING     ) ;
 }
 
 /**************************************************************************/
@@ -44,7 +45,7 @@ ALTAIR_CutdownSystem::ALTAIR_CutdownSystem(                             ) :
 /**************************************************************************/
 float ALTAIR_CutdownSystem::maxSafeSetting(                             )
 {
-    return                         MAX_SAFE_CUTDOWN_SETTING               ;
+    return                                  MAX_SAFE_CUTDOWN_SETTING      ;
 }
 
 /**************************************************************************/
@@ -54,7 +55,7 @@ float ALTAIR_CutdownSystem::maxSafeSetting(                             )
 /**************************************************************************/
 float ALTAIR_CutdownSystem::minSafeSetting(                             )
 {
-    return                         MIN_SAFE_CUTDOWN_SETTING               ;
+    return                                  MIN_SAFE_CUTDOWN_SETTING      ;
 }
 
 /**************************************************************************/

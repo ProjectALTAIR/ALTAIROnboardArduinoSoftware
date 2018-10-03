@@ -31,10 +31,11 @@
  @brief  Constructor.  
 */
 /**************************************************************************/
-ALTAIR_PropAxleRotServo::ALTAIR_PropAxleRotServo(                           )
+ALTAIR_PropAxleRotServo::ALTAIR_PropAxleRotServo( byte              posADCPin ) :
+                         ALTAIR_ServoMotor(                         posADCPin )
 {
-    setPWMPin(                         PROPAXLEROT_SERVO_PWM_PIN            ) ;
-    initializeSetting(                 DEFAULT_PROPAXLEROT_SETTING          ) ;
+    setPWMPin(                                    PROPAXLEROT_SERVO_PWM_PIN   ) ;
+    initializeSetting(                            DEFAULT_PROPAXLEROT_SETTING ) ;
 }
 
 /**************************************************************************/

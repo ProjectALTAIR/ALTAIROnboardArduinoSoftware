@@ -34,20 +34,20 @@
 class ALTAIR_ServoMotor {
   public:
 
-    ALTAIR_ServoMotor(                                                   )                                   ;
+    ALTAIR_ServoMotor(                              byte  posADCPin      )                                   ;
 
     bool                     isInitialized(                              ) {  return         _isInitialized  ; }
 
     float                    reportSetting(                              ) {  return         _setting        ; }
     virtual float            maxSafeSetting(                             )                  = 0              ;
     virtual float            minSafeSetting(                             )                  = 0              ;
-    bool                     incrementSetting()                                                              ;   // Increase setting by 1.    Returns true if successful.
-    bool                     decrementSetting()                                                              ;   // Decrease setting by 1.    Returns true if successful.
-    bool                     halfIncrementSetting()                                                          ;   // Increase setting by 0.5.  Returns true if successful.
-    bool                     halfDecrementSetting()                                                          ;   // Decrease setting by 0.5.  Returns true if successful.
+    bool                     incrementSetting(                           )                                   ;   // Increase setting by 1.    Returns true if successful.
+    bool                     decrementSetting(                           )                                   ;   // Decrease setting by 1.    Returns true if successful.
+    bool                     halfIncrementSetting(                       )                                   ;   // Increase setting by 0.5.  Returns true if successful.
+    bool                     halfDecrementSetting(                       )                                   ;   // Decrease setting by 0.5.  Returns true if successful.
     bool                     setSettingTo(          float newSetting     )                                   ;   // Returns true if successful.
 
-    float                    determinePosition(                          )                                   ;   // Determine and report present position.
+    float                    reportPosition(                             ) {  return  analogRead(_posADCPin) ; } // Determine and report present position.
 
     void                     initializePinMode(                          )                                   ;
     void                     initializePWMRegister(                      )                                   ;
@@ -62,8 +62,8 @@ class ALTAIR_ServoMotor {
     bool                     _isInitialized              ;
 
     float                    _setting                    ; // present PWM setting of the servo
-    float                    _position                   ; // present position of servo (determined from its potentiometer voltage)
 
     byte                     _pwmPin                     ;
+    byte                     _posADCPin                  ;
 };
 #endif    //   ifndef ALTAIR_ServoMotor_h

@@ -29,6 +29,10 @@
 #define   BLEEDVALVE_SERVO_PWM_PIN       7
 #define   CUTDOWN_SERVO_PWM_PIN          8
 
+#define   PROPAXLEROT_SERVO_POS_ADC_PIN A6         // FIX THESE VALUES!!!!!
+#define   BLEEDVALVE_SERVO_POS_ADC_PIN  A7
+#define   CUTDOWN_SERVO_POS_ADC_PIN     A8
+
 #define   DEFAULT_PROPAXLEROT_SETTING    6.        // The default servo settings.
 #define   DEFAULT_BLEEDVALVE_SETTING    15.
 #define   DEFAULT_CUTDOWN_SETTING        6.

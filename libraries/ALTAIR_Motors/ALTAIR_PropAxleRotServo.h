@@ -33,14 +33,14 @@
 class ALTAIR_PropAxleRotServo : public ALTAIR_ServoMotor {
   public:
 
-    ALTAIR_PropAxleRotServo(                )                          ;
+    ALTAIR_PropAxleRotServo(                 byte  posADCPin ) ;
 
-    virtual float            maxSafeSetting()                          ;
-    virtual float            minSafeSetting()                          ;
+    virtual float            maxSafeSetting(                 ) ;
+    virtual float            minSafeSetting(                 ) ;
 
 
   protected:
-    virtual void     resetPWMRegister(      )                          ;
+    virtual void             resetPWMRegister(               ) ;
 
 
   private:

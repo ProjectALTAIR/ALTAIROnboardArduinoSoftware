@@ -34,21 +34,11 @@
  @brief  Constructor.  
 */
 /**************************************************************************/
-ALTAIR_ServoMotor::ALTAIR_ServoMotor() :
-     _isInitialized(   false ),
-     _setting      (  0.     ),
-     _position     (  0.     )
+ALTAIR_ServoMotor::ALTAIR_ServoMotor( byte  posADCPin  ) :
+     _isInitialized(                            false  ),
+     _setting      (                                0. ),
+     _posADCPin    (                        posADCPin  )
 {
-}
-
-/**************************************************************************/
-/*!
- @brief  Determine and report the present position of the servo.
-*/
-/**************************************************************************/
-float ALTAIR_ServoMotor::determinePosition() 
-{
-    return 3.5;    // implement this later
 }
 
 /**************************************************************************/
@@ -56,9 +46,9 @@ float ALTAIR_ServoMotor::determinePosition()
  @brief  Increases the setting by 1.
 */
 /**************************************************************************/
-bool ALTAIR_ServoMotor::incrementSetting(                            )
+bool ALTAIR_ServoMotor::incrementSetting(              )
 {
-   if ( reportSetting() + 1.  <= maxSafeSetting() ) {
+   if ( reportSetting() + 1.  <= maxSafeSetting()      ) {
        _setting++                    ;
        resetPWMRegister()            ;
        return true                   ;
@@ -72,9 +62,9 @@ bool ALTAIR_ServoMotor::incrementSetting(                            )
  @brief  Decreases the setting by 1.
 */
 /**************************************************************************/
-bool ALTAIR_ServoMotor::decrementSetting(                            )
+bool ALTAIR_ServoMotor::decrementSetting(             )
 {
-   if ( reportSetting() - 1.  >= minSafeSetting() ) {
+   if ( reportSetting() - 1.  >= minSafeSetting()     ) {
        _setting--                    ;
        resetPWMRegister()            ;
        return true                   ;
@@ -88,9 +78,9 @@ bool ALTAIR_ServoMotor::decrementSetting(                            )
  @brief  Increases the setting by 0.5.
 */
 /**************************************************************************/
-bool ALTAIR_ServoMotor::halfIncrementSetting(                        )
+bool ALTAIR_ServoMotor::halfIncrementSetting(         )
 {
-   if ( reportSetting() + 0.5 <= maxSafeSetting() ) {
+   if ( reportSetting() + 0.5 <= maxSafeSetting()     ) {
        _setting               += 0.5 ;
        resetPWMRegister()            ;
        return true                   ;
@@ -104,9 +94,9 @@ bool ALTAIR_ServoMotor::halfIncrementSetting(                        )
  @brief  Decreases the setting by 0.5.
 */
 /**************************************************************************/
-bool ALTAIR_ServoMotor::halfDecrementSetting(                        )
+bool ALTAIR_ServoMotor::halfDecrementSetting(         )
 {
-   if ( reportSetting() - 0.5 >= minSafeSetting() ) {
+   if ( reportSetting() - 0.5 >= minSafeSetting()     ) {
        _setting               -= 0.5 ;
        resetPWMRegister()            ;
        return true                   ;

@@ -26,7 +26,9 @@
  @brief  Constructor. 
 */
 /**************************************************************************/
-ALTAIR_GlobalMotorControl::ALTAIR_GlobalMotorControl(                                        )
+ALTAIR_GlobalMotorControl::ALTAIR_GlobalMotorControl(                                        ) :
+                          _bleedSystem(                BLEEDVALVE_SERVO_POS_ADC_PIN          ),
+                          _cutdownSystem(              CUTDOWN_SERVO_POS_ADC_PIN             )
 {
 }
 

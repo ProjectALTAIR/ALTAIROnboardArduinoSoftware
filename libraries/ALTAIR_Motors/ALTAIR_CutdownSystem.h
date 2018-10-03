@@ -31,7 +31,7 @@
 class ALTAIR_CutdownSystem : public ALTAIR_ServoMotor {
   public:
 
-    ALTAIR_CutdownSystem(                      )                                 ;
+    ALTAIR_CutdownSystem(    byte   posADCPin  )                                 ;
 
     bool                     isCutdown(        )      { return _isCutdown        ; }
 

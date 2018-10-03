@@ -35,22 +35,22 @@
 class ALTAIR_BleedSystem : public ALTAIR_ServoMotor {
   public:
 
-    ALTAIR_BleedSystem(                       )                      ;
+    ALTAIR_BleedSystem(           byte  posADCPin )                    ;
 
-    bool                     isOpen(          )     { return _isOpen ; }
+    bool                 isOpen(                  )   { return _isOpen ; }
 
-//    void                     openBleedValve(  )                      ;    will implement later!
-//    void                     closeBleedValve( )                      ;
+//    void                 openBleedValve(           )                    ;    will implement later!
+//    void                 closeBleedValve(          )                    ;
 
-    virtual float            maxSafeSetting(  )                        ;
-    virtual float            minSafeSetting(  )                        ;
+    virtual float        maxSafeSetting(          )                    ;
+    virtual float        minSafeSetting(          )                    ;
 
   protected:
-    virtual void             resetPWMRegister()                        ;
+    virtual void         resetPWMRegister(        )                    ;
 
 
   private:
-    bool                     _isOpen                                 ;
+    bool                _isOpen                                        ;
 
 };
 #endif    //   ifndef ALTAIR_BleedSystem_h
