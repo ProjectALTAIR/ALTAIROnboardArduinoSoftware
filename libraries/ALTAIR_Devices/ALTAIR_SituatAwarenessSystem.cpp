@@ -35,7 +35,9 @@
  @brief  Constructor.  
 */
 /**************************************************************************/
-ALTAIR_SituatAwarenessSystem::ALTAIR_SituatAwarenessSystem()
+ALTAIR_SituatAwarenessSystem::ALTAIR_SituatAwarenessSystem() :
+      _genOpsBattery(         ALTAIR_GENOPSBAT_VMON_PIN    ),
+      _propBattery(           ALTAIR_PROPBAT_VMON_PIN      )
 {
 }
 

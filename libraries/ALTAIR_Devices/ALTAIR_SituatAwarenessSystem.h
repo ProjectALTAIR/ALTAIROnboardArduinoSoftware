@@ -34,6 +34,7 @@
 #include "ALTAIR_GPSSensors.h"
 #include "ALTAIR_OrientSensors.h"
 #include "ALTAIR_ArduinoMicro.h"
+#include "ALTAIR_Battery.h"
 #include <Adafruit_Sensor.h>
 #include <Adafruit_BME280.h>
 
@@ -49,6 +50,9 @@ class ALTAIR_SituatAwarenessSystem {
     ALTAIR_OrientSensors*    orientSensors(              ) { return &_orientSensors           ; }
 
     ALTAIR_ArduinoMicro*     arduinoMicro(               ) { return &_arduinoMicro            ; }
+
+    ALTAIR_Battery*          genOpsBatt(                 ) { return &_genOpsBattery           ; }
+    ALTAIR_Battery*          propBatt(                   ) { return &_propBattery             ; }
 
     Adafruit_BME280*         bmeMast(                    ) { return &_bmeMast                 ; }
     Adafruit_BME280*         bmeBalloon(                 ) { return &_bmeBalloon              ; }
@@ -73,6 +77,9 @@ class ALTAIR_SituatAwarenessSystem {
     ALTAIR_OrientSensors     _orientSensors                                                   ;
 
     ALTAIR_ArduinoMicro      _arduinoMicro                                                    ;
+
+    ALTAIR_Battery           _genOpsBattery                                                   ;
+    ALTAIR_Battery           _propBattery                                                     ;
 
     Adafruit_BME280          _bmeMast                                                         ;
     Adafruit_BME280          _bmeBalloon                                                      ;
