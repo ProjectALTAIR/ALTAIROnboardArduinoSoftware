@@ -188,6 +188,21 @@ bool ALTAIR_GenTelInt::sendAllALTAIRInfo( TinyGPSPlus&                gps       
 
 /**************************************************************************/
 /*!
+ @brief  Send a command from a ground station up to ALTAIR.
+*/
+/**************************************************************************/
+bool ALTAIR_GenTelInt::sendCommandToALTAIR(byte commandByte1 , 
+                                           byte commandByte2  )
+{
+           send(      (unsigned char)           RX_START_BYTE ) ;
+           send(                                0x02          ) ;
+           send(                                commandByte1  ) ;
+    return send(                                commandByte2  ) ;
+}
+
+
+/**************************************************************************/
+/*!
  @brief  Send bare GPS info.  (Only use within a data packet wrapper 
          function!)
 */
@@ -231,8 +246,8 @@ byte* ALTAIR_GenTelInt::readALTAIRInfo(  bool  isGroundStation )
     byte        startByte                =  RX_START_BYTE ;
     if (isGroundStation)  startByte      =  TX_START_BYTE ;
     if (!isBusy()) {
-      Serial.print(F("Reading radio "));
-      Serial.println(radioName());
+//      Serial.print(F("Reading radio "));
+//      Serial.println(radioName());
       while (true) {
         while (!available() && readTry < MAX_READ_TRIES) {
           ++readTry;
@@ -240,7 +255,7 @@ byte* ALTAIR_GenTelInt::readALTAIRInfo(  bool  isGroundStation )
         }
         if (readTry < MAX_READ_TRIES) {
           do {
-            Serial.println(F("Reading a byte from radio"));
+//            Serial.println(F("Reading a byte from radio"));
 
             byte b = read();
 //             term[termIndex++] = b;
@@ -264,11 +279,12 @@ byte* ALTAIR_GenTelInt::readALTAIRInfo(  bool  isGroundStation )
           if (termLength == termIndex && termLength > 0) break;
     
         } else {
-          Serial.println(F("Radio is not available for reading"));
+//          Serial.println(F("Radio is not available for reading"));
           break;
         }
       }
       if (termLength == termIndex && termLength > 0) {
+        if (isGroundStation) groundStationPrintRxInfo(term, termLength);
         termLength = termIndex = hasBegun = 0;    
         return term;
       }
@@ -278,4 +294,56 @@ byte* ALTAIR_GenTelInt::readALTAIRInfo(  bool  isGroundStation )
       Serial.println(F(" radio is busy"));
     }
     return (byte*) "";
+}
+
+
+/**************************************************************************/
+/*!
+ @brief  Print out (to Serial) the info received from ALTAIR by a ground 
+         station.
+*/
+/**************************************************************************/
+void ALTAIR_GenTelInt::groundStationPrintRxInfo(  byte  term[] ,  int termLength )
+{
+    Serial.print(F("  Number of bytes: "));    Serial.println(termLength);
+    Serial.print(F("  Data: \""));
+    for (int i = 0; i < termLength; i++)
+    {
+      Serial.print((char)term[i]);
+    }
+    Serial.println("\"");
+    Serial.print(F("  Data (HEX): \""));
+    for (int i = 0; i < termLength; i++)
+    {
+      Serial.print(term[i], HEX); Serial.print(" ");
+    }
+    Serial.println("\"");  
+
+    if (termLength > 12) {
+      Serial.print(F("Transmitter station GMT time: "));  
+        Serial.print(term[0], DEC); Serial.print(":"); 
+        if (term[1] < 10) Serial.print("0"); Serial.print(term[1], DEC); Serial.print(":"); 
+        if (term[2] < 10) Serial.print("0"); Serial.println(term[2], DEC);
+
+      long lat = 0;
+      long lon = 0;
+      int  ele = 0;
+    
+      lat  = ((unsigned long) term[3])  << 24;
+      lat |= ((unsigned long) term[4])  << 16;
+      lat |= ((unsigned long) term[5])  << 8;
+      lat |= ((unsigned long) term[6]);
+    
+      lon  = ((unsigned long) term[7]) << 24;
+      lon |= ((unsigned long) term[8]) << 16;
+      lon |= ((unsigned long) term[9]) << 8;
+      lon |= ((unsigned long) term[10]);
+
+      ele |= ((unsigned int)  term[11]) << 8;
+      ele |= ((unsigned int)  term[12]);
+
+      Serial.print(F("Latitude:  ")); Serial.println(lat);
+      Serial.print(F("Longitude: ")); Serial.println(lon);
+      Serial.print(F("Elevation: ")); Serial.println(ele);
+    }
 }
