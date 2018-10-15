@@ -8,6 +8,7 @@
 
 // Pulse timing for measuring the 4 RPMs.
 const int     rpmTimerPin[4]            =     {  5,  7, 11, 13 };
+const int     usbInputCheckPin          =       14;                // Pin 14 is actually the MISO pin on the Arduino Micro (see below)
 const int     numRPMPulsesToAverage     =       20;
 const long    numMicrosBeforeRPMTimeout =  1000000;
 const long    numMicrosPerMinute        = 60000000;
@@ -130,8 +131,8 @@ void setup() {
   for (int i = 0; i < 4; ++i) {
     pinMode(rpmTimerPin[i], INPUT);
   }
-  // Initialize special SPI SS pin = 17 as an input (to see if device has its USB port plugged in)
-  pinMode(17, INPUT);
+  // Initialize special SPI MISO pin = 14 as an input (to see if device has its USB port plugged in)
+  pinMode(usbInputCheckPin, INPUT);
 }
 
 void loop() {
@@ -160,9 +161,10 @@ void loop() {
   }
 
 
-  if (digitalRead(14) == HIGH) {      // i.e., if the USB port is actually connected.
-                                      // Pin 14 is actually the MISO pin on the Arduino Micro (see e.g. https://forum.arduino.cc/index.php?topic=337715.0 ).
-                                      // I have connected this to the MF-MSMF050-2 fuse (VUSB) on the bottom of the board.
+  if (digitalRead(usbInputCheckPin) == HIGH) {      // i.e., if the USB port is actually connected.
+                                                    // Pin 14 is actually the MISO pin on the Arduino Micro 
+                                                    // (see e.g. https://forum.arduino.cc/index.php?topic=337715.0 ).
+                                                    // I have connected this to the MF-MSMF050-2 fuse (VUSB) on the bottom of the board.
  
                            Serial.print(rpm[0]); Serial.print(" "); Serial.print(rpm[1]);            Serial.print(" ");
                            Serial.print(rpm[2]); Serial.print(" "); Serial.print(rpm[3]);            Serial.print("      "); 
