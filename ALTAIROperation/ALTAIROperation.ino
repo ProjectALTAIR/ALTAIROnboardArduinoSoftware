@@ -5,16 +5,16 @@
 #include <ALTAIR_GlobalDeviceControl.h>
 #include <ALTAIR_GlobalLightControl.h>
 
-float          compassmagHeading        =  -999.;           // will be set to the heading in degrees East of true North, uncorrected for magnetic declination angle
+float          compassmagHeading          =  -999.;        // will be set to the heading in degrees East of true North, uncorrected for magnetic declination angle
 
-bool           backupRadiosOn           =  true ;
+bool           backupRadiosOn             =  true ;
   
-long           previousMillis[5]                ;
+long           previousMillis[5]                  ;
 
-ALTAIR_GlobalMotorControl   motorControl        ;
-ALTAIR_GlobalDeviceControl  deviceControl       ;
-ALTAIR_GlobalLightControl   lightControl        ;
-TinyGPSPlus                 gps                 ;           // nav mast GPS on I2C (addr = 0x42), and also UM7 with DFRobot GPS input on Serial3
+ALTAIR_GlobalMotorControl   motorControl          ;
+ALTAIR_GlobalDeviceControl  deviceControl         ;
+ALTAIR_GlobalLightControl   lightControl          ;
+TinyGPSPlus                 gps                   ;        // nav mast GPS on I2C (addr = 0x42), and also UM7 with DFRobot GPS input on Serial3
 
 void setup() {
 
@@ -69,7 +69,7 @@ void loop() {
 
 void storeDataOnMicroSDCard() {
 
-  deviceControl.dataStoreSystem()->storeTimestamp(gps);
+  deviceControl.dataStoreSystem()->storeTimestamp(gps);      // disable until microSD problems fixed
 
 }
 
@@ -165,7 +165,11 @@ void sendStatusToPrimaryRadioAndReadCommandsAtInterval(long interval)
     lightControl.intSphereSource()->setLightsPrimaryRadio();
     lightControl.diffLEDSource()->setLightsPrimaryRadio();
 
-    primary->sendGPS(gps);
+//     primary->sendGPS(        gps             );
+    primary->sendAllALTAIRInfo( gps           ,
+                                motorControl  ,
+                                deviceControl ,
+                                lightControl    );
 
     delay(40);
     lightControl.intSphereSource()->resetLights();
