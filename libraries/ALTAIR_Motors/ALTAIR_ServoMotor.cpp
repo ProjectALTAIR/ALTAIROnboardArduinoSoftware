@@ -124,13 +124,14 @@ bool ALTAIR_ServoMotor::setSettingTo(   float  newSetting  )
 
 /**************************************************************************/
 /*!
- @brief  Initialize the Arduino Mega 2560 control pin mode after
-         power-on (within the setup routine).
+ @brief  Initialize the Arduino Mega 2560 control and readout pin modes
+         after power-on (within the setup routine).
 */
 /**************************************************************************/
 void ALTAIR_ServoMotor::initializePinMode(                                   )
 {
-    pinMode(_pwmPin, OUTPUT)    ;
+    pinMode(_pwmPin    , OUTPUT )        ;
+    pinMode(_posADCPin ,  INPUT )        ;
 }
 
 /**************************************************************************/

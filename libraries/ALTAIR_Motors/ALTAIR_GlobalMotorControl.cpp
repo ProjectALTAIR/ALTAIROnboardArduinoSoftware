@@ -4,9 +4,9 @@
     @author   Justin Albert (jalbert@uvic.ca)
     @license  GPL
 
-    This class contains methods for initializing and controlling 
-    _all_ ALTAIR motors (including both the 4 propulsion motors as well 
-    as the 3 servo motors) all at once.
+    This class contains methods and pointers for initializing and 
+    controlling _all_ ALTAIR motors (including the 4 propulsion motors 
+    as well as the 3 servo motors) all at once.
 
     This class should be instantiated as a singleton.
 
