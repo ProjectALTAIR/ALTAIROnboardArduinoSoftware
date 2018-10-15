@@ -27,7 +27,8 @@
 ALTAIR_LightSourceMonitoring::ALTAIR_LightSourceMonitoring(  ) :
    _ads1115ADC1(              DEFAULT_ADS1115ADC_I2CADDRESS  ) ,
    _ads1115ADC2(              DEFAULT_ADS1115ADC2_I2CADDRESS ) ,
-   _ads1115ADC3(              DEFAULT_ADS1115ADC3_I2CADDRESS )
+   _ads1115ADC3(              DEFAULT_ADS1115ADC3_I2CADDRESS ) ,
+   _ads1115ADC4(              DEFAULT_ADS1115ADC4_I2CADDRESS )
 {
 
 }
@@ -39,9 +40,10 @@ ALTAIR_LightSourceMonitoring::ALTAIR_LightSourceMonitoring(  ) :
 /**************************************************************************/
 void ALTAIR_LightSourceMonitoring::initialize(               )
 {
-    Serial.println(F("Initializing the three ADS1115 4-channel ADC breakout boards ..."));
+    Serial.println(F("Initializing the four ADS1115 4-channel ADC breakout boards ..."));
    _ads1115ADC1.begin();
    _ads1115ADC2.begin();
    _ads1115ADC3.begin();
+   _ads1115ADC4.begin();
 }
 

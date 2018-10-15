@@ -26,9 +26,11 @@
 #define   DEFAULT_ADS1115ADC_I2CADDRESS               0x48
 #define   DEFAULT_ADS1115ADC2_I2CADDRESS              0x49
 #define   DEFAULT_ADS1115ADC3_I2CADDRESS              0x4A
-#define   INTSPHERE_PD1_ADC_CHANNEL                      0             //  located on ads1115ADC1
-#define   INTSPHERE_PD2_ADC_CHANNEL                      1             //  located on ads1115ADC1
-#define   INTSPHERE_PD3_ADC_CHANNEL                      2             //  located on ads1115ADC1
+#define   DEFAULT_ADS1115ADC4_I2CADDRESS              0x4B
+#define   INTSPHERE_PD1_ADC_CHANNEL                      0             //  located on both ads1115ADC1 and ads1115ADC2
+#define   INTSPHERE_PD2_ADC_CHANNEL                      1             //  located on both ads1115ADC1 and ads1115ADC2
+#define   INTSPHERE_PD3_ADC_CHANNEL                      2             //  located on ads1115ADC2
+#define   INTSPHERE_SHX_RSSI_ADC_CHANNEL                 3             //  located on ads1115ADC2
 
 
 class ALTAIR_LightSourceMonitoring {
@@ -38,6 +40,7 @@ class ALTAIR_LightSourceMonitoring {
     Adafruit_ADS1115*    ads1115ADC1( )    { return &_ads1115ADC1 ; }
     Adafruit_ADS1115*    ads1115ADC2( )    { return &_ads1115ADC2 ; }
     Adafruit_ADS1115*    ads1115ADC3( )    { return &_ads1115ADC3 ; }
+    Adafruit_ADS1115*    ads1115ADC4( )    { return &_ads1115ADC4 ; }
 
     ALTAIR_LightSourceMonitoring(     )                           ;
 
@@ -48,6 +51,7 @@ class ALTAIR_LightSourceMonitoring {
     Adafruit_ADS1115    _ads1115ADC1                              ;
     Adafruit_ADS1115    _ads1115ADC2                              ;
     Adafruit_ADS1115    _ads1115ADC3                              ;
+    Adafruit_ADS1115    _ads1115ADC4                              ;
 };
 #endif    //   ifndef ALTAIR_LightSourceMonitoring_h
 
