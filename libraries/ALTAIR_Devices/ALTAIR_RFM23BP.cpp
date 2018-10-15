@@ -48,6 +48,8 @@ ALTAIR_RFM23BP::ALTAIR_RFM23BP() :
 /**************************************************************************/
 bool ALTAIR_RFM23BP::initialize(const char* aString) {
 
+    pinMode( DEFAULT_RFM_CHIPSELECTPIN,     OUTPUT ) ;
+
     return _theRFM23BP.init();
 
 }

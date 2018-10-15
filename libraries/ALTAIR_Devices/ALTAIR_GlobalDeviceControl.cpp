@@ -41,8 +41,8 @@ ALTAIR_GlobalDeviceControl::ALTAIR_GlobalDeviceControl(                         
 /**************************************************************************/
 bool ALTAIR_GlobalDeviceControl::initializeAllDevices(                                       )
 {
+    _dataStoreSystem.initialize()                   ;   // disable until microSD problems fixed
         _telemSystem.initialize()                   ;
-    _dataStoreSystem.initialize()                   ;
      _sitAwareSystem.initialize()                   ;
 
          return      true                           ;

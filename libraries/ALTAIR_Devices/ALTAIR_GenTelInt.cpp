@@ -106,33 +106,15 @@ bool ALTAIR_GenTelInt::sendAllALTAIRInfo( TinyGPSPlus&                gps       
     int8_t*  packedCur = (int8_t*)      deviceControl.sitAwareSystem()->arduinoMicro()->packedCurrent();
     int8_t*  packedTem = (int8_t*)      deviceControl.sitAwareSystem()->arduinoMicro()->packedTemp();
 
-    ALTAIR_DataStorageSystem* sdCard =  deviceControl.dataStoreSystem();
-    uint16_t occSpace  =      sdCard->occupiedSpace();
-    uint16_t freeSpace =      sdCard->remainingSpace();
-
-    uint8_t  powerMot[4];
-    powerMot[0]        = (motorControl.propSystem()->portOuterMotor()->powerSetting() * 10.0F) ; // an integer containing 10x the present power setting
-    powerMot[1]        = (motorControl.propSystem()->portInnerMotor()->powerSetting() * 10.0F) ; // an integer containing 10x the present power setting
-    powerMot[2]        = (motorControl.propSystem()->stbdInnerMotor()->powerSetting() * 10.0F) ; // an integer containing 10x the present power setting
-    powerMot[3]        = (motorControl.propSystem()->stbdOuterMotor()->powerSetting() * 10.0F) ; // an integer containing 10x the present power setting
-
-    uint8_t  axlRotSet = (motorControl.propSystem()->axleRotServo()->reportSetting()  * 10.0F) ; // an integer containing 10x the present servo setting
-    uint8_t  axlRotAng = (motorControl.propSystem()->axleRotServo()->reportPosition() * 50.0F) ; // in units of 1/50 V (i.e. 20 mV): 5.1 V is max
-    uint8_t  bleedVSet = (motorControl.bleedSystem()->reportSetting()                 * 10.0F) ; // an integer containing 10x the present servo setting
-    uint8_t  bleedVAng = (motorControl.bleedSystem()->reportPosition()                * 50.0F) ; // in units of 1/50 V (i.e. 20 mV): 5.1 V is max
-    uint8_t  cutdwnSet = (motorControl.cutdownSystem()->reportSetting()               * 10.0F) ; // an integer containing 10x the present servo setting
-    uint8_t  cutdwnAng = (motorControl.cutdownSystem()->reportPosition()              * 50.0F) ; // in units of 1/50 V (i.e. 20 mV): 5.1 V is max
-
-    uint8_t  lightStat =  lightControl.getLightStatusByte()                                                              ;
-    uint16_t pd1ADRead =  lightControl.lightSourceMon()->ads1115ADC1()->readADC_SingleEnded( INTSPHERE_PD1_ADC_CHANNEL ) ;
-    uint16_t pd2ADRead =  lightControl.lightSourceMon()->ads1115ADC1()->readADC_SingleEnded( INTSPHERE_PD2_ADC_CHANNEL ) ;
-    uint16_t pd3ADRead =  lightControl.lightSourceMon()->ads1115ADC1()->readADC_SingleEnded( INTSPHERE_PD3_ADC_CHANNEL ) ;
-    int16_t  diffPD12  =  lightControl.lightSourceMon()->ads1115ADC1()->readADC_Differential_0_1(                      ) ;
-
     sendStart();
-    send(0x47);                                         // Number of bytes of data that will be sent.
+    send(0x2B);                                         // Number of bytes of data that will be sent.
 
-    sendBareGPS(hour, minute, second, latitude, longitude, elevation);
+    sendBareGPSTime(  hour     , minute   , second); 
+    sendBareGPSLatLon(latitude , longitude        ); 
+    sendBareGPSEle(   elevation                   );    // 13 bytes total (up to here)
+
+    send('T');
+
     send(  byte(( age       >>  8)      & 0xFF));
     send(  byte(  age                   & 0xFF));
     send(  byte(  hdop                  & 0xFF));
@@ -141,6 +123,8 @@ bool ALTAIR_GenTelInt::sendAllALTAIRInfo( TinyGPSPlus&                gps       
 
     send(  byte(  bat1V                 & 0xFF));
     send(  byte(  bat2V                 & 0xFF));
+
+    send('T');
 
     send(  byte(( outPres   >>  8)      & 0xFF));
     send(  byte(  outPres               & 0xFF));
@@ -155,16 +139,60 @@ bool ALTAIR_GenTelInt::sendAllALTAIRInfo( TinyGPSPlus&                gps       
     send(  byte(  balTemp               & 0xFF));
     send(  byte(  balHum                & 0xFF));
 
+    send('T');
+
     for (int i = 0; i < 4; ++i)     send(  byte(  packedRPM[i]          & 0xFF));
     for (int i = 0; i < 4; ++i)     send(  byte(  packedCur[i]          & 0xFF));
-    for (int i = 0; i < 8; ++i)     send(  byte(  packedTem[i]          & 0xFF));
+
+    send('T');
+
+//    delay(50);
+//    delay(200);
+
+// try moving work here (instead of a CPU-cycle-wasting delay)
+
+    ALTAIR_DataStorageSystem* sdCard =  deviceControl.dataStoreSystem();
+    uint16_t occSpace  =      sdCard->occupiedSpace();
+    uint16_t freeSpace =      sdCard->remainingSpace();
+
+    uint8_t  powerMot1 = (motorControl.propSystem()->portOuterMotor()->powerSetting() * 10.0F) ; // an integer containing 10x the present power setting
+    uint8_t  powerMot2 = (motorControl.propSystem()->portInnerMotor()->powerSetting() * 10.0F) ; // an integer containing 10x the present power setting
+    uint8_t  powerMot3 = (motorControl.propSystem()->stbdInnerMotor()->powerSetting() * 10.0F) ; // an integer containing 10x the present power setting
+    uint8_t  powerMot4 = (motorControl.propSystem()->stbdOuterMotor()->powerSetting() * 10.0F) ; // an integer containing 10x the present power setting
+
+    uint8_t  axlRotSet = (motorControl.propSystem()->axleRotServo()->reportSetting()  * 10.0F) ; // an integer containing 10x the present servo setting
+    uint8_t  axlRotAng = (motorControl.propSystem()->axleRotServo()->reportPosition() * 50.0F) ; // in units of 1/50 V (i.e. 20 mV): 5.1 V is max
+    uint8_t  bleedVSet = (motorControl.bleedSystem()->reportSetting()                 * 10.0F) ; // an integer containing 10x the present servo setting
+    uint8_t  bleedVAng = (motorControl.bleedSystem()->reportPosition()                * 50.0F) ; // in units of 1/50 V (i.e. 20 mV): 5.1 V is max
+    uint8_t  cutdwnSet = (motorControl.cutdownSystem()->reportSetting()               * 10.0F) ; // an integer containing 10x the present servo setting
+    uint8_t  cutdwnAng = (motorControl.cutdownSystem()->reportPosition()              * 50.0F) ; // in units of 1/50 V (i.e. 20 mV): 5.1 V is max
+
+    uint8_t  lightStat =  lightControl.getLightStatusByte()                                                              ;
+    uint16_t pd1ADRead =  lightControl.lightSourceMon()->ads1115ADC2()->readADC_SingleEnded( INTSPHERE_PD1_ADC_CHANNEL ) ;
+    uint16_t pd2ADRead =  lightControl.lightSourceMon()->ads1115ADC2()->readADC_SingleEnded( INTSPHERE_PD2_ADC_CHANNEL ) ;
+    uint16_t pd3ADRead =  lightControl.lightSourceMon()->ads1115ADC2()->readADC_SingleEnded( INTSPHERE_PD3_ADC_CHANNEL ) ;
+    int16_t  diffPD12  =  lightControl.lightSourceMon()->ads1115ADC2()->readADC_Differential_0_1(                      ) ;
+
+    sendStart();
+    send(0x26);                                         // Number of bytes of data that will be sent.
+
+    sendBareGPSTime(  hour     , minute   , second); 
+
+    for (int i = 0; i < 8; ++i)     send(  byte(  packedTem[i]          & 0xFF));   // 11 bytes total (up to here)
+
+    send('T');
 
     send(  byte(( occSpace  >>  8)      & 0xFF));
     send(  byte(  occSpace              & 0xFF));
     send(  byte(( freeSpace >>  8)      & 0xFF));
     send(  byte(  freeSpace             & 0xFF));
 
-    for (int i = 0; i < 4; ++i)     send(  byte(  powerMot[i]           & 0xFF));
+    send(  byte(  powerMot1             & 0xFF));
+    send(  byte(  powerMot2             & 0xFF));
+    send(  byte(  powerMot3             & 0xFF));
+    send(  byte(  powerMot4             & 0xFF));
+
+    send('T');
 
     send(  byte(  axlRotSet             & 0xFF));    
     send(  byte(  axlRotAng             & 0xFF));    
@@ -172,6 +200,8 @@ bool ALTAIR_GenTelInt::sendAllALTAIRInfo( TinyGPSPlus&                gps       
     send(  byte(  bleedVAng             & 0xFF));    
     send(  byte(  cutdwnSet             & 0xFF));    
     send(  byte(  cutdwnAng             & 0xFF));    
+
+    send('T');
 
     send(  byte(  lightStat             & 0xFF));
     send(  byte(( pd1ADRead >>  8)      & 0xFF));
@@ -207,28 +237,63 @@ bool ALTAIR_GenTelInt::sendCommandToALTAIR(byte commandByte1 ,
          function!)
 */
 /**************************************************************************/
-bool ALTAIR_GenTelInt::sendBareGPS(uint8_t hour    , uint8_t minute   , uint8_t second   ,
+bool ALTAIR_GenTelInt::sendBareGPS(uint8_t hour    , uint8_t minute   , uint8_t second  ,
                                    int32_t latitude, int32_t longitude, int16_t elevation)
+{
+  //send time
+           sendBareGPSTime(  hour     , minute   , second);
+  //send latitude & longitude
+           sendBareGPSLatLon(latitude , longitude        );
+  //send elevation
+    return sendBareGPSEle(   elevation                   );
+}
+
+/**************************************************************************/
+/*!
+ @brief  Send bare GPS time info.  (Only use within a data packet wrapper 
+         function!)
+*/
+/**************************************************************************/
+bool ALTAIR_GenTelInt::sendBareGPSTime(uint8_t hour    , uint8_t minute   , uint8_t second)
 {
   //send time
            send(byte(      hour        & 0xFF));
            send(byte(    minute        & 0xFF));
-           send(byte(    second        & 0xFF));
+    return send(byte(    second        & 0xFF));
+}
+
+/**************************************************************************/
+/*!
+ @brief  Send bare GPS lat + lon info. (Only use within a data packet wrapper 
+         function!)
+*/
+/**************************************************************************/
+bool ALTAIR_GenTelInt::sendBareGPSLatLon(int32_t latitude, int32_t longitude)
+{
   //send latitude
-           send(byte(( latitude >> 24) & 0xFF));
-           send(byte(( latitude >> 16) & 0xFF));
-           send(byte(( latitude >>  8) & 0xFF));
-           send(byte(  latitude        & 0xFF));
+           send(byte((latitude  >> 24) & 0xFF));
+           send(byte((latitude  >> 16) & 0xFF));
+           send(byte((latitude  >>  8) & 0xFF));
+           send(byte( latitude         & 0xFF));
   //send longitude
            send(byte((longitude >> 24) & 0xFF));
            send(byte((longitude >> 16) & 0xFF));
            send(byte((longitude >>  8) & 0xFF));
-           send(byte( longitude        & 0xFF));
+    return send(byte( longitude        & 0xFF));
+}
+
+/**************************************************************************/
+/*!
+ @brief  Send bare GPS elevation info. (Only use within a data packet wrapper 
+         function!)
+*/
+/**************************************************************************/
+bool ALTAIR_GenTelInt::sendBareGPSEle(int16_t elevation)
+{
   //send elevation
            send(byte((elevation >>  8) & 0xFF));
     return send(byte( elevation        & 0xFF));
 }
-
 
 /**************************************************************************/
 /*!
@@ -306,15 +371,16 @@ byte* ALTAIR_GenTelInt::readALTAIRInfo(  bool  isGroundStation )
 void ALTAIR_GenTelInt::groundStationPrintRxInfo(  byte  term[] ,  int termLength )
 {
     Serial.print(F("  Number of bytes: "));    Serial.println(termLength);
-    Serial.print(F("  Data: \""));
-    for (int i = 0; i < termLength; i++)
-    {
-      Serial.print((char)term[i]);
-    }
-    Serial.println("\"");
+//    Serial.print(F("  Data: \""));
+//    for (int i = 0; i < termLength; i++)
+//    {
+//      Serial.print((char)term[i]);
+//    }
+//    Serial.println("\"");
     Serial.print(F("  Data (HEX): \""));
     for (int i = 0; i < termLength; i++)
     {
+      if (term[i] < 0x10) Serial.print('0');
       Serial.print(term[i], HEX); Serial.print(" ");
     }
     Serial.println("\"");  
@@ -325,25 +391,32 @@ void ALTAIR_GenTelInt::groundStationPrintRxInfo(  byte  term[] ,  int termLength
         if (term[1] < 10) Serial.print("0"); Serial.print(term[1], DEC); Serial.print(":"); 
         if (term[2] < 10) Serial.print("0"); Serial.println(term[2], DEC);
 
-      long lat = 0;
-      long lon = 0;
-      int  ele = 0;
-    
-      lat  = ((unsigned long) term[3])  << 24;
-      lat |= ((unsigned long) term[4])  << 16;
-      lat |= ((unsigned long) term[5])  << 8;
-      lat |= ((unsigned long) term[6]);
-    
-      lon  = ((unsigned long) term[7]) << 24;
-      lon |= ((unsigned long) term[8]) << 16;
-      lon |= ((unsigned long) term[9]) << 8;
-      lon |= ((unsigned long) term[10]);
+      if (termLength > 42) {
+        long lat = 0;
+        long lon = 0;
+        int  ele = 0;
+        int  age = 0;
 
-      ele |= ((unsigned int)  term[11]) << 8;
-      ele |= ((unsigned int)  term[12]);
+        lat  = ((unsigned long) term[3])  << 24;
+        lat |= ((unsigned long) term[4])  << 16;
+        lat |= ((unsigned long) term[5])  << 8;
+        lat |= ((unsigned long) term[6]);
+    
+        lon  = ((unsigned long) term[7]) << 24;
+        lon |= ((unsigned long) term[8]) << 16;
+        lon |= ((unsigned long) term[9]) << 8;
+        lon |= ((unsigned long) term[10]);
 
-      Serial.print(F("Latitude:  ")); Serial.println(lat);
-      Serial.print(F("Longitude: ")); Serial.println(lon);
-      Serial.print(F("Elevation: ")); Serial.println(ele);
+        ele |= ((unsigned int)  term[11]) << 8;
+        ele |= ((unsigned int)  term[12]);
+
+        age |= ((unsigned int)  term[14]) << 8;
+        age |= ((unsigned int)  term[15]);
+
+        Serial.print(F("Latitude:  ")); Serial.println(lat);
+        Serial.print(F("Longitude: ")); Serial.println(lon);
+        Serial.print(F("Elevation above SL (in m): ")); Serial.println(ele);
+        Serial.print(F("GPS age (in milliseconds): ")); Serial.println(age);
+      }
     }
 }

@@ -73,6 +73,13 @@ class ALTAIR_GenTelInt {
                                                      int32_t            latitude        , 
                                                      int32_t            longitude       , 
                                                      int16_t            elevation               )    ;
+            bool         sendBareGPSTime(            uint8_t            hour            ,
+                                                     uint8_t            minute          ,
+                                                     uint8_t            second                  )    ;
+            bool         sendBareGPSLatLon(          int32_t            latitude        , 
+                                                     int32_t            longitude               )    ;
+            bool         sendBareGPSEle(             int16_t            elevation               )    ;
+
             void         groundStationPrintRxInfo(   byte               term[]          ,
                                                      int                termLength              )    ;
     ALTAIR_GenTelInt(                                                                           )    ;

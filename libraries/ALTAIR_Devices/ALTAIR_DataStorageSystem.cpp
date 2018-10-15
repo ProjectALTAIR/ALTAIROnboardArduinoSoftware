@@ -39,7 +39,10 @@ ALTAIR_DataStorageSystem::ALTAIR_DataStorageSystem()
 void ALTAIR_DataStorageSystem::initialize(                        )
 {
   Serial.println(F(  "Initializing SPI bus SD card output ..."   ))   ;
-  if (!_SD.begin(     DEFAULT_SDCARD_CSPIN                       )) {
+  pinMode(            DEFAULT_SDCARD_CSPIN ,         OUTPUT       )   ;
+  digitalWrite(       DEFAULT_SDCARD_CSPIN ,         HIGH         )   ;   // try adding this
+//  if (!_SD.begin(     DEFAULT_SDCARD_CSPIN                       )) {   // try changing this to the line below
+  if (!_SD.begin(     DEFAULT_SDCARD_CSPIN ,  SD_SCK_MHZ(  50  ) )) {        
     Serial.println(F("SD card output initialization failed!"     ))   ;
     while(1)                                                          ;
   }
@@ -50,6 +53,7 @@ void ALTAIR_DataStorageSystem::initialize(                        )
     Serial.println(F("SD card file open failed."                 ))   ;
     while(1)                                                          ;
   }
+  _theSDCardFile.close(                                           )   ;   // try adding this
   Serial.println(F("SPI bus and device initialization complete." ))   ;
 }
 
@@ -64,7 +68,7 @@ uint16_t ALTAIR_DataStorageSystem::occupiedSpace(                 )
   double   filesize    = _theSDCardFile.size(                     )   ;  // in bytes
            filesize   /=           1024.                              ;  // in kb
            filesize   /=           1024.                              ;  // in Mb
-  return   filesize                                                   ;  // in Mb
+  return  ((uint16_t)     filesize                                )   ;  // in Mb
 }
 
 
@@ -76,10 +80,12 @@ uint16_t ALTAIR_DataStorageSystem::occupiedSpace(                 )
 /**************************************************************************/
 uint16_t ALTAIR_DataStorageSystem::remainingSpace(                )
 {
-  uint32_t volumesize  = _SD.vol()->freeClusterCount(             )   ;
-           volumesize *= _SD.vol()->blocksPerCluster(             )/2 ;  // in kb
-           volumesize /=           1024.                              ;  // in Mb
-  return  (volumesize  -  occupiedSpace(                         ))   ;  // in Mb
+  uint16_t volumesize  =              0                               ;
+  uint32_t volbigsize  = _SD.vol()->freeClusterCount(             )   ;
+           volbigsize *= _SD.vol()->blocksPerCluster(             )/2 ;  // in kb
+           volbigsize /=           1024.                              ;  // in Mb
+           volumesize  = ((uint16_t)   volbigsize                 )   ;  // in Mb
+  return  ((uint16_t)    (volumesize - occupiedSpace(           )))   ;  // in Mb
 }
 
 /**************************************************************************/
@@ -89,9 +95,10 @@ uint16_t ALTAIR_DataStorageSystem::remainingSpace(                )
 /**************************************************************************/
 void   ALTAIR_DataStorageSystem::storeTimestamp( TinyGPSPlus& gps )
 {
+  _theSDCardFile = _SD.open(DEFAULT_SDCARD_FILENAME, FILE_WRITE   )   ;  // try opening and closing before and after
   _theSDCardFile.print("GPS UTC time: ");  
   _theSDCardFile.print(gps.time.hour());  
   _theSDCardFile.print("   Milliseconds since CPU start: ");  
   _theSDCardFile.println(millis());  
-
+  _theSDCardFile.close();                                                // i.e., add this file close line too
 }
