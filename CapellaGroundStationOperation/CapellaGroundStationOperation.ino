@@ -2,13 +2,13 @@
 
 #include <ALTAIR_DNT900.h>
   
-const byte     dntHwResetPin            =      4;
-const byte     dntCTSPin                =      5;
-const byte     dntRTSPin                =      6;
-long           previousMillis           =      0;
+const byte     dntHwResetPin                   =      4;
+const byte     dntCTSPin                       =      5;
+const byte     dntRTSPin                       =      6;
+long           previousMillis                  =      0;
 
-ALTAIR_DNT900  theDNT900(1, dntHwResetPin,           // on Serial1 -- 910 MHz, Capella antenna: 6-element 63 cm Yagi, approx. 9 dBi
-                         dntCTSPin, dntRTSPin)  ;
+ALTAIR_DNT900  theDNT900(1, dntHwResetPin,                 // on Serial1 -- 910 MHz, Capella antenna: 6-element 63 cm Yagi, approx. 9 dBi
+                         dntCTSPin, dntRTSPin)         ;
 
 void setup() {
 
@@ -43,7 +43,7 @@ void sendCommandsToALTAIRAtInterval(long interval)
        headerByte1 = Serial.read();
        if (headerByte1 == 'C') {
           headerByte2 = Serial.read();
-          if (headerByte2 == 0x02) {
+          if (headerByte2 == '2') {
              inputByte1 = Serial.read();
              inputByte2 = Serial.read();
              // send the info via the DNT
