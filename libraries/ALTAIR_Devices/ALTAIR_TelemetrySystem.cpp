@@ -43,7 +43,7 @@ ALTAIR_TelemetrySystem::ALTAIR_TelemetrySystem()
  @brief  Initialize all three transceivers (within the setup routine).
 */
 /**************************************************************************/
-void ALTAIR_TelemetrySystem::initialize(                                   )
+void ALTAIR_TelemetrySystem::initialize( bool backupRadiosOn , bool backupRadio2On )
 {
   Serial.println(F("Starting DNT900 radio setup..."));
   if (!_dnt900.initialize()) {
@@ -52,19 +52,24 @@ void ALTAIR_TelemetrySystem::initialize(                                   )
   }
   Serial.println(F("DNT900 radio setup complete."));
 
-  Serial.println(F("Starting SHX1 serial modem radio setup..."));
-  if (!_shx144.initialize()) {
-    Serial.println(F("SHX1 radio init failed"));
-    while(1);
-  }
-  Serial.println(F("SHX1 serial modem radio setup complete."));
+  if (backupRadiosOn) {
+    Serial.println(F("Starting SHX1 serial modem radio setup..."));
+    if (!_shx144.initialize()) {
+      Serial.println(F("SHX1 radio init failed"));
+      while(1);
+    }
+    Serial.println(F("SHX1 serial modem radio setup complete."));
 
-  delay(100);
+//    delay(100);
+    delay(10);
 
-  Serial.println(F("Initializing SPI bus RFM23BP radio (433 MHz, antenna on top of gondola) ..."));
-  if (!_rfm23bp.initialize()) {
-    Serial.println(F("RFM23BP radio init failed"));
-    while(1);
+    if (backupRadio2On) {
+      Serial.println(F("Initializing SPI bus RFM23BP radio (433 MHz, antenna on top of gondola) ..."));
+      if (!_rfm23bp.initialize()) {
+        Serial.println(F("RFM23BP radio init failed"));
+        while(1);
+      }
+    }
   }
 }
 

@@ -39,11 +39,13 @@ ALTAIR_GlobalDeviceControl::ALTAIR_GlobalDeviceControl(                         
  @brief  Fully initialize all ALTAIR devices within these systems.
 */
 /**************************************************************************/
-bool ALTAIR_GlobalDeviceControl::initializeAllDevices(                                       )
+bool ALTAIR_GlobalDeviceControl::initializeAllDevices( bool                  backupRadiosOn ,
+                                                       bool                  backupRadio2On )
 {
-    _dataStoreSystem.initialize()                   ;   // disable until microSD problems fixed
-        _telemSystem.initialize()                   ;
-     _sitAwareSystem.initialize()                   ;
+    _dataStoreSystem.initialize(                  ) ;
+        _telemSystem.initialize(   backupRadiosOn ,
+                                   backupRadio2On ) ;
+     _sitAwareSystem.initialize(                  ) ;
 
          return      true                           ;
 }

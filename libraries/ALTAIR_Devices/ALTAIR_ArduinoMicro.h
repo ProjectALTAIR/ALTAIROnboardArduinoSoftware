@@ -32,15 +32,15 @@ class ALTAIR_ArduinoMicro {
     virtual  void        initialize(                             )    {                         }
     virtual  void        getDataAfterInterval(    long interval  )    ;
 
-             char*       packedRPM(                              )    { return _packedRPM     ; }
-             char*       packedCurrent(                          )    { return _packedCurrent ; }
-             char*       packedTemp(                             )    { return _packedTemp    ; }
+             byte*       packedRPM(                              )    { return _packedRPM     ; }
+             byte*       packedCurrent(                          )    { return _packedCurrent ; }
+             byte*       packedTemp(                             )    { return _packedTemp    ; }
     
   private:
 
     unsigned long       _dataLastObtainedAtMillis                     ;
-             char       _packedRPM[4]                                 ;
-             char       _packedCurrent[4]                             ;
-             char       _packedTemp[8]                                ;
+             byte       _packedRPM[4]                                 ;
+             byte       _packedCurrent[4]                             ;
+             byte       _packedTemp[8]                                ;
 };
 #endif    //   ifndef ALTAIR_ARDUINOMICRO_h

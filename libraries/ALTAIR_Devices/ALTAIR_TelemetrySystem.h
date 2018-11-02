@@ -47,7 +47,8 @@ class     ALTAIR_TelemetrySystem {
     byte*                    readBackup1(    ) { return   _firstBackupRadio->readALTAIRInfo() ; }
     byte*                    readBackup2(    ) { return  _secondBackupRadio->readALTAIRInfo() ; }
 
-    void                     initialize(     )                                                ;
+    void                     initialize(         bool    backupRadiosOn    = true ,
+                                                 bool    backupRadio2On    = true           ) ;
     void                     switchToBackup1()                                                ;
     void                     switchToBackup2()                                                ;
 

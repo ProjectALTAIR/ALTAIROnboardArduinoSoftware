@@ -370,20 +370,21 @@ byte* ALTAIR_GenTelInt::readALTAIRInfo(  bool  isGroundStation )
 /**************************************************************************/
 void ALTAIR_GenTelInt::groundStationPrintRxInfo(  byte  term[] ,  int termLength )
 {
-    Serial.print(F("  Number of bytes: "));    Serial.println(termLength);
+    Serial.print(F("Number of bytes: "));    Serial.println(termLength);
 //    Serial.print(F("  Data: \""));
 //    for (int i = 0; i < termLength; i++)
 //    {
 //      Serial.print((char)term[i]);
 //    }
 //    Serial.println("\"");
-    Serial.print(F("  Data (HEX): \""));
+    Serial.print(F("Data (HEX): "));
     for (int i = 0; i < termLength; i++)
     {
       if (term[i] < 0x10) Serial.print('0');
       Serial.print(term[i], HEX); Serial.print(" ");
     }
-    Serial.println("\"");  
+    Serial.println();  
+//    Serial.println("\"");  
 
     if (termLength > 12) {
       Serial.print(F("Transmitter station GMT time: "));  
