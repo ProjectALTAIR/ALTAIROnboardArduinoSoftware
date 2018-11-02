@@ -14,18 +14,18 @@ const long    numMicrosBeforeRPMTimeout =  1000000;
 const long    numMicrosPerMinute        = 60000000;
 const int     numMicrosDelayBtwReads    =       20;
 const int     numPulsesPerRevolution    =        4;
-char          packedRPM[4];
+byte          packedRPM[4];
 
 const int     currentSensorPin[4]       =     { A0, A1, A2, A3 };
 int           currentSensorValue[4];
 const int     numCurrentValsToAverage   =       20;
 float         currentInAmps[4][numCurrentValsToAverage];  // average the past 20 values
-char          packedCurrent[4];
+byte          packedCurrent[4];
 
 const int     tempSensorPin[8]          =     { A4, A5, A6, A7,    A8, A9, A10, A11  };
 int           tempSensorValue[8];
 float         tempInCelsius[8];
-char          packedTemp[8];
+byte          packedTemp[8];
 
 
 // get truncated (i.e. robust) mean of the pulse durations
@@ -79,41 +79,47 @@ float getRPM(int pinNumber) {
   return numMicrosPerMinute/(numPulsesPerRevolution*averageNumMicrosPerPulse(rpmPulseDuration)); 
 }
 
-char packRPM(float theRPM) {
+byte packRPM(float theRPM) {
   float theRPS = theRPM/60.;
-  char packRPS;
-  if (theRPS > -128. && theRPS < 127.) {
+  byte packRPS;
+  if (theRPS >= 0. && theRPS < 127.) {
     packRPS = theRPS;
+  } else if (theRPS >= -128. && theRPS < 0.) {
+    packRPS = theRPS + 256.;
   } else if (theRPS >= 127.) {
     packRPS = 127;
   } else {
-    packRPS = -128;
+    packRPS = 128;
   }
   return packRPS;
 }
 
-char packTemp(float theTemp) {
+byte packTemp(float theTemp) {
   float scaledTemp = theTemp*2.;
-  char thePackedTemp;
-  if (scaledTemp > -128. && scaledTemp < 127.) {
+  byte thePackedTemp;
+  if (scaledTemp >= 0. && scaledTemp < 127.) {
     thePackedTemp = scaledTemp;
+  } else if (scaledTemp >= -128. && scaledTemp < 0.) {
+    thePackedTemp = scaledTemp + 256.;
   } else if (scaledTemp >= 127.) {
     thePackedTemp = 127;
   } else {
-    thePackedTemp = -128;
+    thePackedTemp = 128;
   }
   return thePackedTemp;
 }
 
-char packCurrent(float theCurrent) {
+byte packCurrent(float theCurrent) {
   float scaledCurrent = theCurrent*4.;
-  char packCurr;
-  if (scaledCurrent > -128. && scaledCurrent < 127.) {
+  byte packCurr;
+  if (scaledCurrent >= 0. && scaledCurrent < 127.) {
     packCurr = scaledCurrent;
+  } else if (scaledCurrent >= -128. && scaledCurrent < 0.) {
+    packCurr = scaledCurrent + 256.;
   } else if (scaledCurrent >= 127.) {
     packCurr = 127;
   } else {
-    packCurr = -128;
+    packCurr = 128;
   }
   return packCurr;
 }
@@ -166,11 +172,22 @@ void loop() {
                                                     // (see e.g. https://forum.arduino.cc/index.php?topic=337715.0 ).
                                                     // I have connected this to the MF-MSMF050-2 fuse (VUSB) on the bottom of the board.
  
+        Serial.print(currentSensorValue[0]); Serial.print(" "); 
+        Serial.print(currentSensorValue[1]); Serial.print(" "); 
+        Serial.print(currentSensorValue[2]); Serial.print(" "); 
+        Serial.print(currentSensorValue[3]); Serial.print("      "); 
+        Serial.print(tempSensorValue[0]); Serial.print(" "); 
+        Serial.print(tempSensorValue[1]); Serial.print(" "); 
+        Serial.print(tempSensorValue[2]); Serial.print(" "); 
+        Serial.print(tempSensorValue[3]); Serial.print(" "); 
+        Serial.print(tempSensorValue[4]); Serial.print(" "); 
+        Serial.print(tempSensorValue[5]); Serial.print(" "); 
+        Serial.print(tempSensorValue[6]); Serial.print(" "); 
+        Serial.print(tempSensorValue[7]); Serial.println(" "); 
+        
                            Serial.print(rpm[0]); Serial.print(" "); Serial.print(rpm[1]);            Serial.print(" ");
                            Serial.print(rpm[2]); Serial.print(" "); Serial.print(rpm[3]);            Serial.print("      "); 
-//        Serial.print(currentSensorValue[0]); Serial.print(" = "); 
         Serial.print(currentRunningAverage[0]);  Serial.print(" "); 
-//        Serial.print(currentSensorValue[1]); Serial.print(" = "); 
         Serial.print(currentRunningAverage[1]);  Serial.print(" ");
         Serial.print(currentRunningAverage[2]);  Serial.print(" ");
         Serial.print(currentRunningAverage[3]);  Serial.print("      ");
@@ -179,9 +196,19 @@ void loop() {
         Serial.print(tempInCelsius[2]);          Serial.print(" "); Serial.print(tempInCelsius[3]);  Serial.print(" ");
         Serial.print(tempInCelsius[4]);          Serial.print(" "); Serial.print(tempInCelsius[5]);  Serial.print(" ");
         Serial.print(tempInCelsius[6]);          Serial.print(" "); Serial.print(tempInCelsius[7]);  Serial.println("      ");
+        
 //  for (int j = 0; j < numRPMPulsesToAverage; ++j) { Serial.print(rpmPulseDuration[0][j]); Serial.print(" "); } Serial.println(" ");
+                           Serial.print(packedRPM[0], HEX); Serial.print(" "); Serial.print(packedRPM[1], HEX);            Serial.print(" ");
+                           Serial.print(packedRPM[2], HEX); Serial.print(" "); Serial.print(packedRPM[3], HEX);            Serial.print("      "); 
+        Serial.print(packedCurrent[0], HEX);  Serial.print(" "); 
+        Serial.print(packedCurrent[1], HEX);  Serial.print(" ");
+        Serial.print(packedCurrent[2], HEX);  Serial.print(" ");
+        Serial.print(packedCurrent[3], HEX);  Serial.print("      ");
+        Serial.print(packedTemp[0], HEX);     Serial.print(" "); Serial.print(packedTemp[1], HEX);  Serial.print(" ");
+        Serial.print(packedTemp[2], HEX);     Serial.print(" "); Serial.print(packedTemp[3], HEX);  Serial.print(" ");
+        Serial.print(packedTemp[4], HEX);     Serial.print(" "); Serial.print(packedTemp[5], HEX);  Serial.print(" ");
+        Serial.print(packedTemp[6], HEX);     Serial.print(" "); Serial.print(packedTemp[7], HEX);  Serial.println("      "); Serial.println("      ");
   }
-
 }
 
 void sendInfo() {
