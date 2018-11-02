@@ -7,8 +7,9 @@
 
 float          compassmagHeading          =  -999.;        // will be set to the heading in degrees East of true North, uncorrected for magnetic declination angle
 
-bool           backupRadiosOn             =  true ;
-  
+bool           backupRadiosOn             =  true ;        // If this is set to false, then _neither_ backup radio will be on.
+bool           backupRadio2On             = false ;        // If this is set to true, _and_ if backupRadiosOn is _also_ set to true, then backupRadio2 will be 
+                                                           //   initialized and will transmit and receive.  (Otherwise, backupRadio2 will not be initialized.)
 long           previousMillis[5]                  ;
 
 ALTAIR_GlobalMotorControl   motorControl          ;
@@ -20,7 +21,7 @@ void setup() {
 
   Serial.begin(9600);
 
-  deviceControl.initializeAllDevices();
+  deviceControl.initializeAllDevices(backupRadiosOn, backupRadio2On);
   
 // normal situation: flash yellow LEDs then NO lights on (formerly it was yellow LEDs and green laser on, but that heats up the I-drive transistor too much)
   lightControl.initializeAllLightSources();
@@ -61,7 +62,7 @@ void loop() {
 
   printNavMastSensorValsAndAdjSettingsAtInterval(2000);
 
-  storeDataOnMicroSDCard();
+//  storeDataOnMicroSDCard();
   
 //  delay(100);
 
@@ -135,10 +136,12 @@ void sendStationNameToBackupRadiosAtInterval(long interval)
 
     delay(20);
 
-    ALTAIR_GenTelInt* backup2 = deviceControl.telemSystem()->backup2();
+    if (backupRadio2On) {
+      ALTAIR_GenTelInt* backup2 = deviceControl.telemSystem()->backup2();
 
-    backup2->sendCallSign();
-    backup2->sendEndMessage();
+      backup2->sendCallSign();
+      backup2->sendEndMessage();
+    }
 
     delay(40);
     lightControl.intSphereSource()->resetLights();
