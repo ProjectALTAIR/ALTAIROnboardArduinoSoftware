@@ -60,7 +60,8 @@ class ALTAIR_GenTelInt {
     virtual bool         isBusy(                                                                ) = 0;
     virtual bool         initialize(        const    char*              aString         = ""    ) = 0;
     virtual byte         read(                                                                  ) = 0;
-            byte*        readALTAIRInfo(             bool               isGroundStation = false )    ;
+            void         readALTAIRInfo(             byte               command[]       ,
+                                                     bool               isGroundStation = false )    ;
     virtual const char*  radioName(                                                             ) = 0;
     virtual radio_t      radioType(                                                             ) = 0;
     virtual char         lastRSSI(                                                              ) = 0; // The RSSI value of the most recently received 

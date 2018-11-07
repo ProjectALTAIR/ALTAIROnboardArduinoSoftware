@@ -18,7 +18,7 @@
 #include "ALTAIR_DNT900.h"
 
 #define  DNT900_SERIAL_BAUDRATE    38400
-#define  DNT_MAX_SEND_TRIES       500000
+#define  DNT_MAX_SEND_TRIES      1000000
 
 /**************************************************************************/
 /*!
@@ -104,22 +104,29 @@ bool ALTAIR_DNT900::send(unsigned char aChar) {
         ++i;
     }
     if (i < DNT_MAX_SEND_TRIES) {
+        int retval = 0;
+/*
         switch (_serialID) {
           case 0:
-            return Serial.write(aChar);
+            retval = Serial.write(aChar);
           case 1:
-            return Serial1.write(aChar);
+            retval = Serial1.write(aChar);
           case 2:
-            return Serial2.write(aChar);
+            retval = Serial2.write(aChar);
           case 3:
-            return Serial3.write(aChar);
+            retval = Serial3.write(aChar);
           default:
-            Serial.println(F("Unallowed serial ID provided in initialization of DNT900 radio transceiver!"));
+*/
+        if (_serialID == 1) {
+            retval = Serial1.write(aChar);
+        } else {
+            Serial.print(F("Unallowed serial ID provided in initialization of DNT900 radio transceiver!: ")); Serial.println(_serialID, HEX);
             while(1);
             return false;
         }
+        if (retval == 1) return true;
     } else {
-        Serial.println(F("Unable to write to DNT: CTS pin is high"));
+        Serial.println(F("Unable to write to DNT: Serial not sending and/or CTS pin is high"));
         return false;
     }
 

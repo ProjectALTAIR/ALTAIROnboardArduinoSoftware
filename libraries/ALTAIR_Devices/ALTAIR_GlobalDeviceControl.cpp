@@ -42,10 +42,10 @@ ALTAIR_GlobalDeviceControl::ALTAIR_GlobalDeviceControl(                         
 bool ALTAIR_GlobalDeviceControl::initializeAllDevices( bool                  backupRadiosOn ,
                                                        bool                  backupRadio2On )
 {
-    _dataStoreSystem.initialize(                  ) ;
         _telemSystem.initialize(   backupRadiosOn ,
                                    backupRadio2On ) ;
      _sitAwareSystem.initialize(                  ) ;
+    _dataStoreSystem.initialize(                  ) ;
 
          return      true                           ;
 }

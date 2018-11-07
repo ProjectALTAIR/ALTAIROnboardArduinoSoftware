@@ -24,6 +24,7 @@
 #define  DEFAULT_RFM_CHIPSELECTPIN    26
 #define  DEFAULT_RFM_INTERRUPTPIN      2
 #define  RFM23BP_RADIO_NAME     "RFM23BP"
+#define  RFM_SPI_BYTE               0x00
 
 class ALTAIR_RFM23BP : public ALTAIR_GenTelInt {
   public:
@@ -50,6 +51,7 @@ class ALTAIR_RFM23BP : public ALTAIR_GenTelInt {
   private:
     // this class is basically just a container for the RadioHead RH_RF22 class
     RH_RF22    _theRFM23BP                                                                    ;
+    byte       _RFM23_chipselectpin                                                           ;
   
 };
 #endif

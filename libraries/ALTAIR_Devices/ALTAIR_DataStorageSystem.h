@@ -27,6 +27,9 @@
 
 #define   DEFAULT_SDCARD_CSPIN          24
 #define   DEFAULT_SDCARD_FILENAME    "data.txt"
+#define   SD_SPI_BYTE                 0x00
+#define   MY_SD_CARD_SIZE             8000          // in MB
+#define   SD_FILESYS_OVERHEAD          100          // in MB  (an approximate value, for now)
 
 class     TinyGPSPlus;
 

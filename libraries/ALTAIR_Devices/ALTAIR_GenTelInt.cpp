@@ -97,7 +97,7 @@ bool ALTAIR_GenTelInt::sendAllALTAIRInfo( TinyGPSPlus&                gps       
     uint16_t inPres    = (deviceControl.sitAwareSystem()->bmePayload()->readPressure() / 2.0F) ; // in units of 2 Pa (fits nicely into a uint16_t)
     int8_t   inTemp    =  deviceControl.sitAwareSystem()->bmePayload()->readTemperature()      ; // in degrees C
     uint8_t  inHum     =  deviceControl.sitAwareSystem()->bmePayload()->readHumidity()         ; // in %
-// If the connector up to the balloon valve is unconnected, or gets pulled out on the fly (by a cutdown), the below will read:  
+// If the connector up to the balloon valve is unconnected, or gets pulled out on the fly (by a cutdown), the internal balloon values below will read as all zeros
     uint16_t balPres   = (deviceControl.sitAwareSystem()->bmeBalloon()->readPressure() / 2.0F) ; // in units of 2 Pa (fits nicely into a uint16_t)
     int8_t   balTemp   =  deviceControl.sitAwareSystem()->bmeBalloon()->readTemperature()      ; // in degrees C
     uint8_t  balHum    =  deviceControl.sitAwareSystem()->bmeBalloon()->readHumidity()         ; // in %
@@ -301,11 +301,16 @@ bool ALTAIR_GenTelInt::sendBareGPSEle(int16_t elevation)
          sent down from ALTAIR to a ground station.
 */
 /**************************************************************************/
-byte* ALTAIR_GenTelInt::readALTAIRInfo(  bool  isGroundStation )
+void ALTAIR_GenTelInt::readALTAIRInfo(  byte command[],  bool isGroundStation )
 {
+/*
     static byte term[MAX_TERM_LENGTH]    =             "" ;
     static int  termIndex                =              0 ;
     static int  termLength               =              0 ;
+*/
+    byte        term[MAX_TERM_LENGTH]    =             "" ;
+    int         termIndex                =              0 ;
+    int         termLength               =              0 ;
     int         hasBegun                 =              0 ;
     long        readTry                  =              0 ;
     byte        startByte                =  RX_START_BYTE ;
@@ -349,16 +354,17 @@ byte* ALTAIR_GenTelInt::readALTAIRInfo(  bool  isGroundStation )
         }
       }
       if (termLength == termIndex && termLength > 0) {
+        command[0] = term[0];
+        command[1] = term[1];
         if (isGroundStation) groundStationPrintRxInfo(term, termLength);
         termLength = termIndex = hasBegun = 0;    
-        return term;
+        return;
       }
     } else {
       Serial.print(F("Cannot read commands from the ground station, since the"));
       Serial.print(radioName());
       Serial.println(F(" radio is busy"));
     }
-    return (byte*) "";
 }
 
 
@@ -420,4 +426,5 @@ void ALTAIR_GenTelInt::groundStationPrintRxInfo(  byte  term[] ,  int termLength
         Serial.print(F("GPS age (in milliseconds): ")); Serial.println(age);
       }
     }
+    Serial.flush();
 }

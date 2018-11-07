@@ -24,8 +24,9 @@
  @brief  Constructor.
 */
 /**************************************************************************/
-ALTAIR_RFM23BP::ALTAIR_RFM23BP(byte RFM23_chipselectpin, byte RFM23_interruptpin) :
-  _theRFM23BP(RFM23_chipselectpin, RFM23_interruptpin)
+ALTAIR_RFM23BP::ALTAIR_RFM23BP(byte RFM23_chipselectpin  , byte RFM23_interruptpin  ) :
+                   _theRFM23BP(     RFM23_chipselectpin  ,      RFM23_interruptpin  ) ,
+          _RFM23_chipselectpin(     RFM23_chipselectpin                             )
 {
 }
 
@@ -34,8 +35,9 @@ ALTAIR_RFM23BP::ALTAIR_RFM23BP(byte RFM23_chipselectpin, byte RFM23_interruptpin
  @brief  Default constructor.
 */
 /**************************************************************************/
-ALTAIR_RFM23BP::ALTAIR_RFM23BP() :
-  _theRFM23BP(DEFAULT_RFM_CHIPSELECTPIN, DEFAULT_RFM_INTERRUPTPIN)
+ALTAIR_RFM23BP::ALTAIR_RFM23BP(                                                     ) :
+                   _theRFM23BP( DEFAULT_RFM_CHIPSELECTPIN, DEFAULT_RFM_INTERRUPTPIN ) ,
+          _RFM23_chipselectpin( DEFAULT_RFM_CHIPSELECTPIN                           )
 {
 }
 
@@ -43,18 +45,18 @@ ALTAIR_RFM23BP::ALTAIR_RFM23BP() :
 /*!
  @brief  Initialize the transceiver after it is first powered on.  (The input
          string contains initialization information, if a non-default 
-         initialization is wanted, for the specific transceiver.)
+         initialization is wanted for the specific transceiver.)
 */
 /**************************************************************************/
 bool ALTAIR_RFM23BP::initialize(const char* aString) {
 
-    pinMode( DEFAULT_RFM_CHIPSELECTPIN,     OUTPUT ) ;
-
-    return _theRFM23BP.init();
-
+    pinMode(               _RFM23_chipselectpin ,  OUTPUT       )   ;
+    bool   initBool      = _theRFM23BP.init(                    )   ;
+    digitalWrite(          _RFM23_chipselectpin ,  LOW          )   ;   // try adding this
+    byte   received_byte =  SPI.transfer(          RFM_SPI_BYTE )   ;   // try adding this
+    digitalWrite(          _RFM23_chipselectpin ,  HIGH         )   ;   // try adding this
+    return initBool                                                 ;
 }
-
-
 
 /**************************************************************************/
 /*!
@@ -80,9 +82,12 @@ bool ALTAIR_RFM23BP::send(const uint8_t* aString) {
     int stringLen = 0;
     while (aString[stringLen] != 0 && stringLen <= _theRFM23BP.maxMessageLength()) stringLen++;
     stringLen++;   // to get the null character at end
-    if (stringLen <= _theRFM23BP.maxMessageLength()) {
-        _theRFM23BP.send(aString, stringLen);
-        _theRFM23BP.waitPacketSent();
+    if (stringLen <= _theRFM23BP.maxMessageLength(                 )) {
+        _theRFM23BP.send(       aString,               stringLen    )   ;
+        _theRFM23BP.waitPacketSent(                                 )   ;
+        digitalWrite(          _RFM23_chipselectpin ,  LOW          )   ;   // try adding this
+        byte   received_byte =  SPI.transfer(          RFM_SPI_BYTE )   ;   // try adding this
+        digitalWrite(          _RFM23_chipselectpin ,  HIGH         )   ;   // try adding this
         return true;
     } else {
         return false;
