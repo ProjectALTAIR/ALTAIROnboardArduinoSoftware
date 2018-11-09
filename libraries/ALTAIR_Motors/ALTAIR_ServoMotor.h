@@ -31,39 +31,41 @@
 
 #include "Arduino.h"
 
+#define   ALTAIRSERVO_VOLTSPERADU                        (0.0049)
+
 class ALTAIR_ServoMotor {
   public:
 
-    ALTAIR_ServoMotor(                              byte  posADCPin      )                                   ;
+    ALTAIR_ServoMotor(                              byte  posADCPin      )                                                             ;
 
-    bool                     isInitialized(                              ) {  return         _isInitialized  ; }
+    bool                     isInitialized(                              ) {  return         _isInitialized                            ; }
 
-    float                    reportSetting(                              ) {  return         _setting        ; }
-    virtual float            maxSafeSetting(                             )                  = 0              ;
-    virtual float            minSafeSetting(                             )                  = 0              ;
-    bool                     incrementSetting(                           )                                   ;   // Increase setting by 1.    Returns true if successful.
-    bool                     decrementSetting(                           )                                   ;   // Decrease setting by 1.    Returns true if successful.
-    bool                     halfIncrementSetting(                       )                                   ;   // Increase setting by 0.5.  Returns true if successful.
-    bool                     halfDecrementSetting(                       )                                   ;   // Decrease setting by 0.5.  Returns true if successful.
-    bool                     setSettingTo(          float newSetting     )                                   ;   // Returns true if successful.
+    float                    reportSetting(                              ) {  return         _setting                                  ; }
+    virtual float            maxSafeSetting(                             )                  = 0                                        ;
+    virtual float            minSafeSetting(                             )                  = 0                                        ;
+    bool                     incrementSetting(                           )                                                             ;   // Increase setting by 1.    Returns true if successful.
+    bool                     decrementSetting(                           )                                                             ;   // Decrease setting by 1.    Returns true if successful.
+    bool                     halfIncrementSetting(                       )                                                             ;   // Increase setting by 0.5.  Returns true if successful.
+    bool                     halfDecrementSetting(                       )                                                             ;   // Decrease setting by 0.5.  Returns true if successful.
+    bool                     setSettingTo(          float newSetting     )                                                             ;   // Returns true if successful.
 
-    float                    reportPosition(                             ) {  return  analogRead(_posADCPin) ; } // Determine and report present position.
+    float                    reportPosition(                             ) {  return  ALTAIRSERVO_VOLTSPERADU * analogRead(_posADCPin) ; } // Determine and report present position (in volts).
 
-    void                     initializePinMode(                          )                                   ;
-    void                     initializePWMRegister(                      )                                   ;
+    void                     initializePinMode(                          )                                                             ;
+    void                     initializePWMRegister(                      )                                                             ;
 
   protected:
-    void                     setPWMPin(             byte  pwmPin         ) { _pwmPin        = pwmPin         ; }
-    virtual void             resetPWMRegister     (                      )                  = 0              ;
-    void                     initializeSetting(     float initialSetting ) { _setting       = initialSetting ; }
-    void                     setInitialized(                             ) { _isInitialized = true           ; }
+    void                     setPWMPin(             byte  pwmPin         ) { _pwmPin        = pwmPin                                   ; }
+    virtual void             resetPWMRegister     (                      )                  = 0                                        ;
+    void                     initializeSetting(     float initialSetting ) { _setting       = initialSetting                           ; }
+    void                     setInitialized(                             ) { _isInitialized = true                                     ; }
 
   private:
-    bool                     _isInitialized              ;
+    bool                     _isInitialized                                                                                            ;
 
-    float                    _setting                    ; // present PWM setting of the servo
+    float                    _setting                                                                                                  ; // present PWM setting of the servo
 
-    byte                     _pwmPin                     ;
-    byte                     _posADCPin                  ;
+    byte                     _pwmPin                                                                                                   ;
+    byte                     _posADCPin                                                                                                ;
 };
 #endif    //   ifndef ALTAIR_ServoMotor_h
