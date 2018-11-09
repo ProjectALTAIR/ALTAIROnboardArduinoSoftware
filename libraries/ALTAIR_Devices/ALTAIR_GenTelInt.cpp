@@ -104,7 +104,7 @@ bool ALTAIR_GenTelInt::sendAllALTAIRInfo( TinyGPSPlus&                gps       
 
     int8_t*  packedRPM = (int8_t*)      deviceControl.sitAwareSystem()->arduinoMicro()->packedRPM();
     int8_t*  packedCur = (int8_t*)      deviceControl.sitAwareSystem()->arduinoMicro()->packedCurrent();
-    int8_t*  packedTem = (int8_t*)      deviceControl.sitAwareSystem()->arduinoMicro()->packedTemp();
+    int8_t*  packedTem = (int8_t*)      deviceControl.sitAwareSystem()->arduinoMicro()->packedTemp();    // in units of 0.5 degrees C! (e.g 0x2B = 21.5 degrees C)
 
     sendStart();
     send(0x2B);                                         // Number of bytes of data that will be sent.

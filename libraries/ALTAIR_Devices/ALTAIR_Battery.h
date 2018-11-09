@@ -32,7 +32,7 @@
 #define   ALTAIR_GENOPSBAT_VMON_PIN                    A3 
 #define   ALTAIR_PROPBAT_VMON_PIN                      A4  
 #define   ALTAIRBAT_VOLTSPERADU                        (0.0049)
-#define   ALTAIRBAT_VOLTAGEDIVIDER                     (0.35)
+#define   ALTAIRBAT_VOLTAGEDIVIDER                     (0.34)
 
 class ALTAIR_Battery {
   public:
