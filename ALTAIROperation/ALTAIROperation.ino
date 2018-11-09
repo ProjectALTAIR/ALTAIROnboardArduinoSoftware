@@ -8,8 +8,8 @@
 float          compassmagHeading          =  -999.;        // will be set to the heading in degrees East of true North, uncorrected for magnetic declination angle
 
 bool           backupRadiosOn             =  true ;        // If this is set to false, then _neither_ backup radio will be on.
-bool           backupRadio2On             = false ;        // If this is set to true, _and_ if backupRadiosOn is _also_ set to true, then backupRadio2 will be 
-                                                           //   initialized and will transmit and receive.  (Otherwise, backupRadio2 will not be initialized.)
+bool           backupRadio2On             =  true ;        // If this is set to true, _and_ if backupRadiosOn is _also_ set to true, then backupRadio2 will be 
+                                                           //    initialized and will transmit and receive.  (Otherwise, backupRadio2 will not be initialized.)
 long           previousMillis[5]                  ;
 
 ALTAIR_GlobalMotorControl   motorControl          ;
@@ -19,7 +19,7 @@ TinyGPSPlus                 gps                   ;        // nav mast GPS on I2
 
 void setup() {
 
-  Serial.begin(9600);
+  Serial.begin(38400);
 
   deviceControl.initializeAllDevices(backupRadiosOn, backupRadio2On);
   
@@ -147,10 +147,11 @@ void sendStationNameToBackupRadiosAtInterval(long interval)
     lightControl.intSphereSource()->resetLights();
     lightControl.diffLEDSource()->resetLights();
 
-    byte* newterm = backup1->readALTAIRInfo();
-    if (newterm[0] != 0) {
-      if (newterm[1] != 0) {
-        performCommand(newterm[0], newterm[1]);
+    byte command[2];
+    backup1->readALTAIRInfo( command );
+    if (command[0] != 0) {
+      if (command[1] != 0) {
+        performCommand(command[0], command[1]);
       }
     }
 
@@ -178,10 +179,11 @@ void sendStatusToPrimaryRadioAndReadCommandsAtInterval(long interval)
     lightControl.intSphereSource()->resetLights();
     lightControl.diffLEDSource()->resetLights();
 
-    byte* newterm = primary->readALTAIRInfo();
-    if (newterm[0] != 0) {
-      if (newterm[1] != 0) {
-        performCommand(newterm[0], newterm[1]);
+    byte command[2];
+    primary->readALTAIRInfo( command );
+    if (command[0] != 0) {
+      if (command[1] != 0) {
+        performCommand(command[0], command[1]);
       }
     }
   }
