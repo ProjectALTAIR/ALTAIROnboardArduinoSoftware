@@ -88,8 +88,8 @@ bool ALTAIR_GenTelInt::sendAllALTAIRInfo( TinyGPSPlus&                gps       
     int8_t   oSensTemp = primaryOrientSensor->temperature();
     uint8_t  typeInfo  = primaryOrientSensor->typeAndHealth();
 
-    uint8_t  bat1V     = (deviceControl.sitAwareSystem()->genOpsBatt()->readVoltage() * 20.0F) ; // in units of 1/20 V (i.e. 50 mV): 12.75 V is max
-    uint8_t  bat2V     = (deviceControl.sitAwareSystem()->propBatt()->readVoltage()   * 20.0F) ; // in units of 1/20 V (i.e. 50 mV): 12.75 V is max
+    uint8_t  bat1V     = (deviceControl.sitAwareSystem()->genOpsBatt()->readVoltage() * 18.18F) ; // in units of 55 mV (would turn over at 14 V)
+    uint8_t  bat2V     = (deviceControl.sitAwareSystem()->propBatt()->readVoltage()   * 18.18F) ; // in units of 55 mV (would turn over at 14 V)
 
     uint16_t outPres   = (deviceControl.sitAwareSystem()->bmeMast()->readPressure()    / 2.0F) ; // in units of 2 Pa (fits nicely into a uint16_t)
     int8_t   outTemp   =  deviceControl.sitAwareSystem()->bmeMast()->readTemperature()         ; // in degrees C

@@ -31,14 +31,15 @@
 
 #define   ALTAIR_GENOPSBAT_VMON_PIN                    A3 
 #define   ALTAIR_PROPBAT_VMON_PIN                      A4  
-#define   ALTAIRBAT_VOLTAGEDIVIDER                     (0.33)
+#define   ALTAIRBAT_VOLTSPERADU                        (0.0049)
+#define   ALTAIRBAT_VOLTAGEDIVIDER                     (0.35)
 
 class ALTAIR_Battery {
   public:
 
     ALTAIR_Battery(              byte   adcPin  ) : _adcPin( adcPin ) { }
 
-    float           readVoltage(                )                     { return analogRead(_adcPin) * ALTAIRBAT_VOLTAGEDIVIDER ; }
+    float           readVoltage(                )                     { return analogRead(_adcPin) * ALTAIRBAT_VOLTSPERADU / ALTAIRBAT_VOLTAGEDIVIDER ; }
 
   private:
     byte           _adcPin                       ;
