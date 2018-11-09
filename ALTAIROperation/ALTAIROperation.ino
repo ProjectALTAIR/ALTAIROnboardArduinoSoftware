@@ -62,7 +62,7 @@ void loop() {
 
   printNavMastSensorValsAndAdjSettingsAtInterval(2000);
 
-//  storeDataOnMicroSDCard();
+  storeDataOnMicroSDCard();
   
 //  delay(100);
 
