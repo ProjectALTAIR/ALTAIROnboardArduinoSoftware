@@ -12,7 +12,7 @@ ALTAIR_DNT900  theDNT900(1, dntHwResetPin,                 // on Serial1 -- 910 
 
 void setup() {
 
-  Serial.begin(9600);
+  Serial.begin(38400);
 
   Serial.println(F("Starting DNT900 radio setup..."));
   if (!theDNT900.initialize()) {
@@ -26,8 +26,9 @@ void setup() {
 }
 
 void loop() {
+  byte downwardCommand[2];
   delay(100);
-  byte* newterm = theDNT900.readALTAIRInfo( true );
+  theDNT900.readALTAIRInfo( downwardCommand, true );       // ignore any downward commands, for now
   sendCommandsToALTAIRAtInterval(2000);
 }
 
