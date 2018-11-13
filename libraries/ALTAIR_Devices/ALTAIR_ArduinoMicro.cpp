@@ -46,8 +46,8 @@ void ALTAIR_ArduinoMicro::getDataAfterInterval(    long interval  )
     for (int i = 0; i < 4; ++i) _packedCurrent[i] = Wire.read();
     for (int i = 0; i < 8; ++i) _packedTemp[i]    = Wire.read();
 
-    for (int i = 0; i < 4; ++i) { Serial.print("_packedRPM["); Serial.print(i); Serial.print("]     = "); Serial.println(_packedRPM[i]    , HEX) ; }
-    for (int i = 0; i < 4; ++i) { Serial.print("_packedCurrent["); Serial.print(i); Serial.print("] = "); Serial.println(_packedCurrent[i], HEX) ; }
-    for (int i = 0; i < 8; ++i) { Serial.print("_packedTemp["); Serial.print(i); Serial.print("]    = "); Serial.println(_packedTemp[i]   , HEX) ; }
+//    for (int i = 0; i < 4; ++i) { Serial.print("_packedRPM["); Serial.print(i); Serial.print("]     = "); Serial.println(_packedRPM[i]    , HEX) ; }
+//    for (int i = 0; i < 4; ++i) { Serial.print("_packedCurrent["); Serial.print(i); Serial.print("] = "); Serial.println(_packedCurrent[i], HEX) ; }
+//    for (int i = 0; i < 8; ++i) { Serial.print("_packedTemp["); Serial.print(i); Serial.print("]    = "); Serial.println(_packedTemp[i]   , HEX) ; }
   }
 }

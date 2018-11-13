@@ -67,9 +67,11 @@ bool ALTAIR_GenTelInt::sendAllALTAIRInfo( TinyGPSPlus&                gps       
                                           ALTAIR_GlobalDeviceControl& deviceControl ,
                                           ALTAIR_GlobalLightControl&  lightControl   ) 
 {
+/*
     uint8_t  hour      = gps.time.hour();
     uint8_t  minute    = gps.time.minute();
     uint8_t  second    = gps.time.second();
+*/
     int32_t  latitude  = gps.location.lat() * 1000000;  // Latitude,  in millionths of a degree.
     int32_t  longitude = gps.location.lng() * 1000000;  // Longitude, in millionths of a degree.
     uint16_t age       = gps.location.age();            // Milliseconds since last GPS update (or default value USHRT_MAX if never received).
@@ -77,30 +79,54 @@ bool ALTAIR_GenTelInt::sendAllALTAIRInfo( TinyGPSPlus&                gps       
     int8_t   hdop      = gps.hdop.value();              // Horizontal degree of precision.  A number typically between 1 and 50.
 
     uint16_t outPres   = (deviceControl.sitAwareSystem()->bmeMast()->readPressure()    / 2.0F) ; // in units of 2 Pa (fits nicely into a uint16_t)
+//    uint8_t  outPres   = (deviceControl.sitAwareSystem()->bmeMast()->readPressure()    / 500.0F) ; // in units of 500 Pa (fits nicely into a uint8_t) 
     int8_t   outTemp   =  deviceControl.sitAwareSystem()->bmeMast()->readTemperature()         ; // in degrees C
     uint8_t  outHum    =  deviceControl.sitAwareSystem()->bmeMast()->readHumidity()            ; // in %
     uint16_t inPres    = (deviceControl.sitAwareSystem()->bmePayload()->readPressure() / 2.0F) ; // in units of 2 Pa (fits nicely into a uint16_t)
+//    uint8_t inPres     = (deviceControl.sitAwareSystem()->bmePayload()->readPressure() / 500.0F) ; // in units of 500 Pa (fits nicely into a uint8_t)
     int8_t   inTemp    =  deviceControl.sitAwareSystem()->bmePayload()->readTemperature()      ; // in degrees C
     uint8_t  inHum     =  deviceControl.sitAwareSystem()->bmePayload()->readHumidity()         ; // in %
 // If the connector up to the balloon valve is unconnected, or gets pulled out on the fly (by a cutdown), the internal balloon values below will read as all zeros
     uint16_t balPres   = (deviceControl.sitAwareSystem()->bmeBalloon()->readPressure() / 2.0F) ; // in units of 2 Pa (fits nicely into a uint16_t)
+//    uint8_t  balPres   = (deviceControl.sitAwareSystem()->bmeBalloon()->readPressure() / 500.0F) ; // in units of 500 Pa (fits nicely into a uint8_t)
     int8_t   balTemp   =  deviceControl.sitAwareSystem()->bmeBalloon()->readTemperature()      ; // in degrees C
     uint8_t  balHum    =  deviceControl.sitAwareSystem()->bmeBalloon()->readHumidity()         ; // in %
 
+    ALTAIR_OrientSensor* primaryOrientSensor = deviceControl.sitAwareSystem()->orientSensors()->primary();
+    primaryOrientSensor->update();
+    uint8_t rollUInt8   = primaryOrientSensor->rollUInt8();
+    uint8_t pitchUInt8  = primaryOrientSensor->pitchUInt8();
+    uint8_t yawUInt8    = primaryOrientSensor->yawUInt8();
+    int8_t  oSensTemp   = primaryOrientSensor->temperature();
+    uint8_t typeInfo    = primaryOrientSensor->typeAndHealth();
+
+    ALTAIR_BNO055* theBNO055 = (ALTAIR_BNO055*) primaryOrientSensor;
+    Serial.print("yaw    = "); Serial.print(theBNO055->lastEvent().orientation.x);  Serial.print("   yawUInt8    = "); Serial.println(yawUInt8   , HEX) ;
+    Serial.print("roll   = "); Serial.print(theBNO055->lastEvent().orientation.y);  Serial.print("   rollUInt8   = "); Serial.println(rollUInt8  , HEX) ;
+    Serial.print("pitch  = "); Serial.print(theBNO055->lastEvent().orientation.z);  Serial.print("   pitchUInt8  = "); Serial.println(pitchUInt8 , HEX) ;
+
+    imu::Vector<3> acceleration = theBNO055->theBNO055()->getVector(Adafruit_BNO055::VECTOR_ACCELEROMETER);
+    uint8_t accelXUInt8 = primaryOrientSensor->accelXUInt8();
+    uint8_t accelYUInt8 = primaryOrientSensor->accelYUInt8();
+    uint8_t accelZUInt8 = primaryOrientSensor->accelZUInt8();
+
+    Serial.print("accelX = "); Serial.print(acceleration.x()); Serial.print("   accelXUInt8 = "); Serial.println(accelXUInt8, HEX) ;
+    Serial.print("accelY = "); Serial.print(acceleration.y()); Serial.print("   accelYUInt8 = "); Serial.println(accelYUInt8, HEX) ;
+    Serial.print("accelZ = "); Serial.print(acceleration.z()); Serial.print("   accelZUInt8 = "); Serial.println(accelZUInt8, HEX) ;
+
     int8_t*  packedRPM = (int8_t*)      deviceControl.sitAwareSystem()->arduinoMicro()->packedRPM();
     int8_t*  packedCur = (int8_t*)      deviceControl.sitAwareSystem()->arduinoMicro()->packedCurrent();
-    int8_t*  packedTem = (int8_t*)      deviceControl.sitAwareSystem()->arduinoMicro()->packedTemp();    // in units of 0.5 degrees C! (e.g 0x2B = 21.5 degrees C)
 
     sendStart();
-    send(0x27);                                         // Number of bytes of data that will be sent (0x27 = 39).
+    send(0x2B);                                         // Number of bytes of data that will be sent (0x2B = 43).
 
-    sendBareGPSTime(  hour     , minute   , second); 
+//    sendBareGPSTime(  hour     , minute   , second); 
     sendBareGPSLatLon(latitude , longitude        ); 
     sendBareGPSEle(   elevation                   ); 
 
-    send(  byte(( age       >>  8)      & 0xFF));
-    send(  byte(  age                   & 0xFF));
-    send(  byte(  hdop                  & 0xFF));       // 16 bytes total (up to here)
+    send(  byte(( age       >>  8)      & 0xFF));       
+//    send(  byte(  age                   & 0xFF));     // only send the upper byte of age (i.e., age / 256)
+    send(  byte(  hdop                  & 0xFF));       // 12 bytes total (up to here)
 
     send('T');
 
@@ -117,7 +143,17 @@ bool ALTAIR_GenTelInt::sendAllALTAIRInfo( TinyGPSPlus&                gps       
     send(  byte(  balTemp               & 0xFF));
     send(  byte(  balHum                & 0xFF));
 
+    send(  byte(  accelZUInt8           & 0xFF));
+    send(  byte(  accelXUInt8           & 0xFF));
+    send(  byte(  accelYUInt8           & 0xFF));
+
     send('T');
+
+    send(  byte(  yawUInt8              & 0xFF));
+    send(  byte(  pitchUInt8            & 0xFF));
+    send(  byte(  rollUInt8             & 0xFF));
+    send(  byte(  oSensTemp             & 0xFF));
+    send(  byte(  typeInfo              & 0xFF));  
 
     for (int i = 0; i < 4; ++i)     send(  byte(  packedRPM[i]          & 0xFF));
     for (int i = 0; i < 4; ++i)     send(  byte(  packedCur[i]          & 0xFF));
@@ -129,36 +165,7 @@ bool ALTAIR_GenTelInt::sendAllALTAIRInfo( TinyGPSPlus&                gps       
 
 // try moving work here (instead of a CPU-cycle-wasting delay)
 
-    ALTAIR_OrientSensor* primaryOrientSensor = deviceControl.sitAwareSystem()->orientSensors()->primary();
-    primaryOrientSensor->update();
-    int16_t  accelZ    = primaryOrientSensor->accelZ();
-    int16_t  accelX    = primaryOrientSensor->accelX();
-    int16_t  accelY    = primaryOrientSensor->accelY();
-    int16_t  yaw       = primaryOrientSensor->yaw();
-    int16_t  pitch     = primaryOrientSensor->pitch();
-    int16_t  roll      = primaryOrientSensor->roll();
-    int8_t   oSensTemp = primaryOrientSensor->temperature();
-    uint8_t  typeInfo  = primaryOrientSensor->typeAndHealth();
-
-    sendStart();
-    send(0x0F);                                         // Number of bytes of data that will be sent (0x0F = 15).
-
-    send(  byte(( accelZ       >>  8)   & 0xFF));
-    send(  byte(  accelZ                & 0xFF));
-    send(  byte(( accelX       >>  8)   & 0xFF));
-    send(  byte(  accelX                & 0xFF));
-    send(  byte(( accelY       >>  8)   & 0xFF));
-    send(  byte(  accelY                & 0xFF));
-    send(  byte(( yaw          >>  8)   & 0xFF));
-    send(  byte(  yaw                   & 0xFF));
-    send(  byte(( pitch        >>  8)   & 0xFF));
-    send(  byte(  pitch                 & 0xFF));
-    send(  byte(( roll         >>  8)   & 0xFF));
-    send(  byte(  roll                  & 0xFF));
-    send(  byte(  oSensTemp             & 0xFF));
-    send(  byte(  typeInfo              & 0xFF));  
-
-    send('T');
+    int8_t*  packedTem = (int8_t*)      deviceControl.sitAwareSystem()->arduinoMicro()->packedTemp();    // in units of 0.5 degrees C! (e.g 0x2B = 21.5 degrees C)
 
     int8_t   rssi      = lastRSSI();
     uint8_t  bat1V     = (deviceControl.sitAwareSystem()->genOpsBatt()->readVoltage() * 18.18F) ; // in units of 55 mV (would turn over at 14 V)
@@ -184,10 +191,10 @@ bool ALTAIR_GenTelInt::sendAllALTAIRInfo( TinyGPSPlus&                gps       
     uint16_t pd1ADRead =  lightControl.lightSourceMon()->ads1115ADC2()->readADC_SingleEnded( INTSPHERE_PD1_ADC_CHANNEL ) ;
     uint16_t pd2ADRead =  lightControl.lightSourceMon()->ads1115ADC2()->readADC_SingleEnded( INTSPHERE_PD2_ADC_CHANNEL ) ;
     uint16_t pd3ADRead =  lightControl.lightSourceMon()->ads1115ADC2()->readADC_SingleEnded( INTSPHERE_PD3_ADC_CHANNEL ) ;
-    int16_t  diffPD12  =  lightControl.lightSourceMon()->ads1115ADC2()->readADC_Differential_0_1(                      ) ;
+//    int16_t  diffPD12  =  lightControl.lightSourceMon()->ads1115ADC2()->readADC_Differential_0_1(                      ) ;
 
     sendStart();
-    send(0x23);                                         // Number of bytes of data that will be sent (0x23 = 35).
+    send(0x21);                                         // Number of bytes of data that will be sent (0x21 = 33).
 
 //    sendBareGPSTime(  hour     , minute   , second); 
 
@@ -228,8 +235,8 @@ bool ALTAIR_GenTelInt::sendAllALTAIRInfo( TinyGPSPlus&                gps       
     send(  byte(  pd2ADRead             & 0xFF));
     send(  byte(( pd3ADRead >>  8)      & 0xFF));
     send(  byte(  pd3ADRead             & 0xFF));
-    send(  byte(( diffPD12  >>  8)      & 0xFF));
-    send(  byte(  diffPD12              & 0xFF));
+//    send(  byte(( diffPD12  >>  8)      & 0xFF));
+//    send(  byte(  diffPD12              & 0xFF));
 
     return send('T');
 }
@@ -410,38 +417,39 @@ void ALTAIR_GenTelInt::groundStationPrintRxInfo(  byte  term[] ,  int termLength
     Serial.println();  
 //    Serial.println("\"");  
 
- if (termLength > 38) {
+ if (termLength > 42) {
+/*
       Serial.print(F("Transmitter station GMT time: "));  
       Serial.print(term[0], DEC); Serial.print(":"); 
       if (term[1] < 10) Serial.print("0"); Serial.print(term[1], DEC); Serial.print(":"); 
       if (term[2] < 10) Serial.print("0"); Serial.println(term[2], DEC);
 
 //      if (termLength > 42) {
+*/
         long lat = 0;
         long lon = 0;
         int  ele = 0;
         int  age = 0;
 
-        lat  = ((unsigned long) term[3])  << 24;
-        lat |= ((unsigned long) term[4])  << 16;
-        lat |= ((unsigned long) term[5])  << 8;
-        lat |= ((unsigned long) term[6]);
+        lat  = ((unsigned long) term[0])  << 24;
+        lat |= ((unsigned long) term[1])  << 16;
+        lat |= ((unsigned long) term[2])  << 8;
+        lat |= ((unsigned long) term[3]);
     
-        lon  = ((unsigned long) term[7]) << 24;
-        lon |= ((unsigned long) term[8]) << 16;
-        lon |= ((unsigned long) term[9]) << 8;
-        lon |= ((unsigned long) term[10]);
+        lon  = ((unsigned long) term[4]) << 24;
+        lon |= ((unsigned long) term[5]) << 16;
+        lon |= ((unsigned long) term[6]) << 8;
+        lon |= ((unsigned long) term[7]);
 
-        ele |= ((unsigned int)  term[11]) << 8;
-        ele |= ((unsigned int)  term[12]);
+        ele |= ((unsigned int)  term[8]) << 8;
+        ele |= ((unsigned int)  term[9]);
 
-        age |= ((unsigned int)  term[13]) << 8;
-        age |= ((unsigned int)  term[14]);
+        age  = (                term[10]);
 
         Serial.print(F("Latitude:  ")); Serial.println(lat);
         Serial.print(F("Longitude: ")); Serial.println(lon);
         Serial.print(F("Elevation above SL (in m): ")); Serial.println(ele);
-        Serial.print(F("GPS age (in milliseconds): ")); Serial.println(age);
+        Serial.print(F("GPS age (in units of 256 milliseconds): ")); Serial.println(age);
 //      }
     }
     Serial.flush();

@@ -38,20 +38,37 @@ typedef  enum { bno055_healthy     = 0,
 class ALTAIR_OrientSensor {
   public:
 
-    ALTAIR_OrientSensor(                                    ) {                                                }
+    ALTAIR_OrientSensor(                                               ) {                                                }
 
-    virtual void            initialize(                     ) = 0                                            ;
-    virtual void            update(                         ) = 0                                            ;
-            int16_t         convertFloatToInt16( float data ) { return (int16_t) ( data * SHRTMAX_DIVBY_360 ); }
+    virtual void           initialize(                                 ) = 0                                            ;
+    virtual void           update(                                     ) = 0                                            ;
+            int16_t        convertFloatToInt16(          float   data  ) { return (int16_t) ( data * SHRTMAX_DIVBY_360 ); }
+            int8_t         convertAccelInt16ToInt8(      int16_t accel )                                                ;
+            uint8_t        convertAccelInt16ToUInt8(     int16_t accel )                                                ;
+            uint8_t        convertYawInt16ToUInt8(       int16_t yaw   )                                                ;
+            int8_t         convertPitchRollInt16ToInt8(  int16_t angle )                                                ;
+            uint8_t        convertPitchRollInt16ToUInt8( int16_t angle )                                                ;
 
-    virtual int16_t         accelZ(                         ) = 0                                            ;
-    virtual int16_t         accelX(                         ) = 0                                            ;
-    virtual int16_t         accelY(                         ) = 0                                            ;
-    virtual int16_t         yaw(                            ) = 0                                            ;
-    virtual int16_t         pitch(                          ) = 0                                            ;
-    virtual int16_t         roll(                           ) = 0                                            ;
-    virtual int8_t          temperature(                    ) = 0                                            ;
-    virtual uint8_t         typeAndHealth(                  ) = 0                                            ;
+    virtual int16_t        accelZ(                                     ) = 0                                            ;
+    virtual int16_t        accelX(                                     ) = 0                                            ;
+    virtual int16_t        accelY(                                     ) = 0                                            ;
+    virtual int16_t        yaw(                                        ) = 0                                            ;
+    virtual int16_t        pitch(                                      ) = 0                                            ;
+    virtual int16_t        roll(                                       ) = 0                                            ;
+    virtual int8_t         temperature(                                ) = 0                                            ;
+    virtual uint8_t        typeAndHealth(                              ) = 0                                            ;
+
+            int8_t         accelZInt8(                                 ) { return convertAccelInt16ToInt8(    accelZ( )); }
+            int8_t         accelXInt8(                                 ) { return convertAccelInt16ToInt8(    accelX( )); }
+            int8_t         accelYInt8(                                 ) { return convertAccelInt16ToInt8(    accelY( )); }
+            uint8_t        accelZUInt8(                                ) { return convertAccelInt16ToUInt8(   accelZ( )); }
+            uint8_t        accelXUInt8(                                ) { return convertAccelInt16ToUInt8(   accelX( )); }
+            uint8_t        accelYUInt8(                                ) { return convertAccelInt16ToUInt8(   accelY( )); }
+            uint8_t        yawUInt8(                                   ) { return convertYawInt16ToUInt8(      yaw(   )); }
+            int8_t         pitchInt8(                                  ) { return convertPitchRollInt16ToInt8( pitch( )); }
+            int8_t         rollInt8(                                   ) { return convertPitchRollInt16ToInt8( roll(  )); }
+            uint8_t        pitchUInt8(                                 ) { return convertPitchRollInt16ToUInt8(pitch( )); }
+            uint8_t        rollUInt8(                                  ) { return convertPitchRollInt16ToUInt8(roll(  )); }
 
   private:
 

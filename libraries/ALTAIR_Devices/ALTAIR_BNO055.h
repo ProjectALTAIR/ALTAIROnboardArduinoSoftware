@@ -33,17 +33,20 @@ class ALTAIR_BNO055 : public ALTAIR_OrientSensor {
     Adafruit_BNO055*  theBNO055(                            ) { return                    &_theBNO055                ; }
 
     virtual void      initialize(                           )                                                        ;
-            void      update(                               ) { _theBNO055.getEvent(      &_lastEvent               ); }
+            void      update(                               ) { _theBNO055.getEvent(      &_lastEvent                                      ); 
+                                                                _accelerations = _theBNO055.getVector(Adafruit_BNO055::VECTOR_ACCELEROMETER); }
             void      printInfo(                            )                                                        ;
 
-    int16_t            accelZ(                              ) { return convertFloatToInt16(_lastEvent.acceleration.z); }
-    int16_t            accelX(                              ) { return convertFloatToInt16(_lastEvent.acceleration.x); }
-    int16_t            accelY(                              ) { return convertFloatToInt16(_lastEvent.acceleration.y); }
-    int16_t            yaw(                                 ) { return convertFloatToInt16(_lastEvent.orientation.z ); }
-    int16_t            pitch(                               ) { return convertFloatToInt16(_lastEvent.orientation.y ); }
-    int16_t            roll(                                ) { return convertFloatToInt16(_lastEvent.orientation.x ); }
-    int8_t             temperature(                         ) { return convertFloatToInt16(_lastEvent.temperature   ); }
+    int16_t            accelX(                              ) { return convertFloatToInt16(_accelerations.x()       ); }
+    int16_t            accelY(                              ) { return convertFloatToInt16(_accelerations.y()       ); }
+    int16_t            accelZ(                              ) { return convertFloatToInt16(_accelerations.z()       ); }
+    int16_t            yaw(                                 ) { return convertFloatToInt16(_lastEvent.orientation.x ); }  // *NOT* _lastEvent.orientation.z (Adafruit docs are *wrong*!!!)
+    int16_t            roll(                                ) { return convertFloatToInt16(_lastEvent.orientation.y ); }  // *NOT* _lastEvent.orientation.x (Adafruit docs are *wrong*!!!)
+    int16_t            pitch(                               ) { return convertFloatToInt16(_lastEvent.orientation.z ); }  // *NOT* _lastEvent.orientation.y (Adafruit docs are *wrong*!!!) 
+    int8_t             temperature(                         ) { return _theBNO055.getTemp(                          ); }
     uint8_t            typeAndHealth(                       )                                                        ;
+
+    sensors_event_t    lastEvent(                           ) { return                     _lastEvent                ; }
 
   protected:
 
@@ -51,5 +54,6 @@ class ALTAIR_BNO055 : public ALTAIR_OrientSensor {
     // this class is basically just a container for the Adafruit_BNO055 class
     Adafruit_BNO055  _theBNO055                                                    ;
     sensors_event_t  _lastEvent                                                    ;
+    imu::Vector<3>   _accelerations                                                ;
 };
 #endif
