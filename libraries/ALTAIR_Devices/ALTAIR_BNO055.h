@@ -19,7 +19,6 @@
 #define   ALTAIR_BNO055_h
 
 #include "ALTAIR_OrientSensor.h"
-#include <Adafruit_Sensor.h>
 #include <Adafruit_BNO055.h>
 
 #define   DEFAULT_BNO055_ADAFRUITID   55
@@ -27,26 +26,26 @@
 class ALTAIR_BNO055 : public ALTAIR_OrientSensor {
   public:
 
-    ALTAIR_BNO055(                byte    adafruitSensorID  )                                                        ;
-    ALTAIR_BNO055(                                          )                                                        ; // No argument => default value.
+    ALTAIR_BNO055(                byte    adafruitSensorID  )                                                         ;
+    ALTAIR_BNO055(                                          )                                                         ; // No argument => default value.
 
-    Adafruit_BNO055*  theBNO055(                            ) { return                    &_theBNO055                ; }
+    Adafruit_BNO055*  theBNO055(                            ) { return                    &_theBNO055                 ; }
 
-    virtual void      initialize(                           )                                                        ;
+    virtual void      initialize(                           )                                                         ;
             void      update(                               ) { _theBNO055.getEvent(      &_lastEvent                                      ); 
                                                                 _accelerations = _theBNO055.getVector(Adafruit_BNO055::VECTOR_ACCELEROMETER); }
-            void      printInfo(                            )                                                        ;
+            void      printInfo(                            )                                                         ;
 
-    int16_t            accelX(                              ) { return convertFloatToInt16(_accelerations.x()       ); }
-    int16_t            accelY(                              ) { return convertFloatToInt16(_accelerations.y()       ); }
-    int16_t            accelZ(                              ) { return convertFloatToInt16(_accelerations.z()       ); }
-    int16_t            yaw(                                 ) { return convertFloatToInt16(_lastEvent.orientation.x ); }  // *NOT* _lastEvent.orientation.z (Adafruit docs are *wrong*!!!)
-    int16_t            roll(                                ) { return convertFloatToInt16(_lastEvent.orientation.y ); }  // *NOT* _lastEvent.orientation.x (Adafruit docs are *wrong*!!!)
-    int16_t            pitch(                               ) { return convertFloatToInt16(_lastEvent.orientation.z ); }  // *NOT* _lastEvent.orientation.y (Adafruit docs are *wrong*!!!) 
-    int8_t             temperature(                         ) { return _theBNO055.getTemp(                          ); }
-    uint8_t            typeAndHealth(                       )                                                        ;
+    int16_t            accelX(                              ) { return  convertFloatToInt16(_accelerations.x()       ); }
+    int16_t            accelY(                              ) { return  convertFloatToInt16(_accelerations.y()       ); }
+    int16_t            accelZ(                              ) { return -convertFloatToInt16(_accelerations.z()       ); }  // invert sign, since acceleration on Earth is downward...
+    int16_t            yaw(                                 ) { return  convertFloatToInt16(_lastEvent.orientation.x ); }  // *NOT* _lastEvent.orientation.z (Adafruit docs are *wrong*!!!)
+    int16_t            roll(                                ) { return  convertFloatToInt16(_lastEvent.orientation.y ); }  // *NOT* _lastEvent.orientation.x (Adafruit docs are *wrong*!!!)
+    int16_t            pitch(                               ) { return  convertFloatToInt16(_lastEvent.orientation.z ); }  // *NOT* _lastEvent.orientation.y (Adafruit docs are *wrong*!!!) 
+    int8_t             temperature(                         ) { return  _theBNO055.getTemp(                          ); }
+    uint8_t            typeAndHealth(                       )                                                         ;
 
-    sensors_event_t    lastEvent(                           ) { return                     _lastEvent                ; }
+    sensors_event_t    lastEvent(                           ) { return                      _lastEvent                ; }
 
   protected:
 

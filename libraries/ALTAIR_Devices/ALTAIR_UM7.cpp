@@ -19,7 +19,8 @@
 
 #include "ALTAIR_UM7.h"
 
-#define   RX_READ_LENGTH   200
+#define   RX_READ_LENGTH     200
+#define   RX_READ_ATTEMPTS   500
 
 /**************************************************************************/
 /*!
@@ -43,11 +44,102 @@ ALTAIR_UM7::ALTAIR_UM7(                      ) :
 
 /**************************************************************************/
 /*!
- @brief  Initialization (does not need to do anything to initialize).  
+ @brief  Initialization (starts serial and checks health).  
 */
 /**************************************************************************/
 void ALTAIR_UM7::initialize()
 {
+    switch (_serialID) {
+      case 0:
+        Serial.begin(  115200, SERIAL_8N1 );
+        break;
+      case 1:
+        Serial1.begin( 115200, SERIAL_8N1 );
+        break;
+      case 2:
+        Serial2.begin( 115200, SERIAL_8N1 );
+        break;
+      case 3:
+        Serial3.begin( 115200, SERIAL_8N1 );
+        break;
+      default:
+        Serial.println(F("Unallowed serial ID provided in initialization of UM7 orientation sensor!"));
+        while(1);
+    }
+    checkUM7Health();
+}
+
+/**************************************************************************/
+/*!
+ @brief  Check the health of the UM7 sensor at initialization.  
+*/
+/**************************************************************************/
+void ALTAIR_UM7::checkUM7Health()
+{
+    byte tx_data[7];
+    byte rx_data[RX_READ_LENGTH];
+    int returnVal, nAttempts = 0;
+    bool dataReceived = false;
+    struct UM7packet new_packet;
+    tx_data[0] = 's';  // Send
+    tx_data[1] = 'n';  // New
+    tx_data[2] = 'p';  // Packet
+    tx_data[3] = 0x00; // packet type byte
+    tx_data[4] = 0x55; // address of DREG_HEALTH sensor health info register
+    tx_data[5] = 0x01; // checksum high byte
+    tx_data[6] = 0xA6; // checksum low byte  
+    while (nAttempts < RX_READ_ATTEMPTS) {
+      switch (_serialID) {
+        case 0:
+          if (Serial.available()) {
+            Serial.write(  tx_data, 7 );
+            Serial.readBytes(  rx_data, RX_READ_LENGTH );
+            dataReceived = true;
+          } 
+          break;
+        case 1:
+          if (Serial1.available()) {
+            Serial1.write( tx_data, 7 );
+            Serial1.readBytes( rx_data, RX_READ_LENGTH );
+            dataReceived = true;
+          }
+          break;
+        case 2:
+          if (Serial2.available()) {
+            Serial2.write( tx_data, 7 );
+            Serial2.readBytes( rx_data, RX_READ_LENGTH );
+            dataReceived = true;
+          }
+          break;
+        case 3:
+          if (Serial3.available()) {
+            Serial3.write( tx_data, 7 );
+            Serial3.readBytes( rx_data, RX_READ_LENGTH );
+            dataReceived = true;
+          }
+          break;
+        default:
+          Serial.println(F("Unallowed serial ID provided in initialization of UM7 orientation sensor!"));
+          while(1);
+      }
+      if (dataReceived) {
+        break;
+      } else {
+        ++nAttempts;
+      }
+    }
+    returnVal  = parse_serial_data(rx_data, RX_READ_LENGTH, tx_data[4], &new_packet);
+    if ( returnVal == 0 ) {
+      // Extract health info ...
+      float sats_used_byte = -999., hdop_byte = -999., sats_in_view_byte = -999., sensors_byte = -999.;
+      sats_used_byte    = new_packet.data[0];
+      hdop_byte         = new_packet.data[1];
+      sats_in_view_byte = new_packet.data[2];
+      sensors_byte      = new_packet.data[3];
+      // ... and print it out.
+      Serial.print("sats_used_byte = "); Serial.print(sats_used_byte); Serial.print("    hdop_byte = "); Serial.print(hdop_byte);
+         Serial.print("    sats_in_view_byte = "); Serial.print(sats_in_view_byte); Serial.print("    sensors_byte = "); Serial.println(sensors_byte);
+    }
 }
 
 /**************************************************************************/
@@ -62,8 +154,8 @@ struct UM7packet ALTAIR_UM7::getDataPacket() {
 
     byte tx_data[20];
     byte rx_data[RX_READ_LENGTH];
-    byte returnVal;
-    struct UM7packet new_packet;
+    byte returnVal, nAttempts = 0;
+    bool dataReceived = false;
     tx_data[0] = 's';  // Send
     tx_data[1] = 'n';  // New
     tx_data[2] = 'p';  // Packet
@@ -72,32 +164,51 @@ struct UM7packet ALTAIR_UM7::getDataPacket() {
     tx_data[5] = 0x02; // checksum high byte
     tx_data[6] = 0x32; // checksum low byte
 
-    switch (_serialID) {
-      case 0:
-        Serial.write(  tx_data, 7 );
-        Serial.readBytes(  rx_data, RX_READ_LENGTH );
+    while (nAttempts < RX_READ_ATTEMPTS) {
+      switch (_serialID) {
+        case 0:
+          if (Serial.available()) {
+            Serial.write(  tx_data, 7 );
+            Serial.readBytes(  rx_data, RX_READ_LENGTH );
+            dataReceived = true;
+          }
+          break;
+        case 1:
+          if (Serial1.available()) {
+            Serial1.write( tx_data, 7 );
+            Serial1.readBytes( rx_data, RX_READ_LENGTH );
+            dataReceived = true;
+          }
+          break;
+        case 2:
+          if (Serial2.available()) {
+            Serial2.write( tx_data, 7 );
+            Serial2.readBytes( rx_data, RX_READ_LENGTH );
+            dataReceived = true;
+          }
+          break;
+        case 3:
+          if (Serial3.available()) {
+            Serial3.write( tx_data, 7 );
+            Serial3.readBytes( rx_data, RX_READ_LENGTH );
+            dataReceived = true;
+          }
+          break;
+        default:
+          Serial.println(F("Unallowed serial ID provided in initialization of UM7 orientation sensor!"));
+          while(1);
+      }
+      if (dataReceived) {
         break;
-      case 1:
-        Serial1.write( tx_data, 7 );
-        Serial1.readBytes( rx_data, RX_READ_LENGTH );
-        break;
-      case 2:
-        Serial2.write( tx_data, 7 );
-        Serial2.readBytes( rx_data, RX_READ_LENGTH );
-        break;
-      case 3:
-        Serial3.write( tx_data, 7 );
-        Serial3.readBytes( rx_data, RX_READ_LENGTH );
-        break;
-      default:
-        Serial.println(F("Unallowed serial ID provided in initialization of UM7 orientation sensor!"));
-        while(1);
+      } else {
+        ++nAttempts;
+      }
     }
-    returnVal = parse_serial_data(rx_data, RX_READ_LENGTH, tx_data[4], &new_packet);
-    if ( returnVal != 0 ) Serial.println(F("A bad data packet has been returned by the UM7 orientation sensor!"));
-    _lastDataPacket = new_packet;
+    returnVal = parse_serial_data(rx_data, RX_READ_LENGTH, tx_data[4], &_dataPacket);
+    if ( returnVal != 0 ) { Serial.print(F("A bad data packet has been returned by the UM7 orientation sensor! -- with returnVal: ")); Serial.println(returnVal, HEX); }
+    else                  { memcpy(&_lastGoodDataPacket, &_dataPacket, sizeof(_dataPacket)); }
 
-    return new_packet;
+    return _dataPacket;
 }
 
 /**************************************************************************/
@@ -113,8 +224,8 @@ struct UM7packet ALTAIR_UM7::getHealthPacket() {
 
     byte tx_data[7];
     byte rx_data[RX_READ_LENGTH];
-    byte returnVal; 
-    struct UM7packet new_packet;
+    byte returnVal, nAttempts = 0; 
+    bool dataReceived = false;
     tx_data[0] = 's';  // Send
     tx_data[1] = 'n';  // New
     tx_data[2] = 'p';  // Packet
@@ -123,32 +234,51 @@ struct UM7packet ALTAIR_UM7::getHealthPacket() {
     tx_data[5] = 0x02; // checksum high byte
     tx_data[6] = 0x22; // checksum low byte  
 
-    switch (_serialID) {
-      case 0:
-        Serial.write( tx_data, 7 );
-        Serial.readBytes(  rx_data, RX_READ_LENGTH );
+    while (nAttempts < RX_READ_ATTEMPTS) {
+      switch (_serialID) {
+        case 0:
+          if (Serial.available()) {
+            Serial.write( tx_data, 7 );
+            Serial.readBytes(  rx_data, RX_READ_LENGTH );
+            dataReceived = true;
+          }
+          break;
+        case 1:
+          if (Serial1.available()) {
+            Serial1.write( tx_data, 7 );
+            Serial1.readBytes( rx_data, RX_READ_LENGTH );
+            dataReceived = true;
+          }
+          break;
+        case 2:
+          if (Serial2.available()) {
+            Serial2.write( tx_data, 7 );
+            Serial2.readBytes( rx_data, RX_READ_LENGTH );
+            dataReceived = true;
+          }
+          break;
+        case 3:
+          if (Serial3.available()) {
+            Serial3.write( tx_data, 7 );
+            Serial3.readBytes( rx_data, RX_READ_LENGTH );
+            dataReceived = true;
+          }
+          break;
+        default:
+          Serial.println(F("Unallowed serial ID provided in initialization of UM7 orientation sensor!"));
+          while(1);
+      }
+      if (dataReceived) {
         break;
-      case 1:
-        Serial1.write( tx_data, 7 );
-        Serial1.readBytes( rx_data, RX_READ_LENGTH );
-        break;
-      case 2:
-        Serial2.write( tx_data, 7 );
-        Serial2.readBytes( rx_data, RX_READ_LENGTH );
-        break;
-      case 3:
-        Serial3.write( tx_data, 7 );
-        Serial3.readBytes( rx_data, RX_READ_LENGTH );
-        break;
-      default:
-        Serial.println(F("Unallowed serial ID provided in initialization of UM7 orientation sensor!"));
-        while(1);
+      } else {
+        ++nAttempts;
+      }
     }
-    returnVal = parse_serial_data(rx_data, RX_READ_LENGTH, tx_data[4], &new_packet);
-    if ( returnVal != 0 ) Serial.println(F("A bad health packet has been returned by the UM7 orientation sensor!"));
-    _lastHealthPacket = new_packet;
+    returnVal = parse_serial_data(rx_data, RX_READ_LENGTH, tx_data[4], &_healthPacket);
+    if ( returnVal != 0 ) { Serial.print(F("A bad health packet has been returned by the UM7 orientation sensor! -- with returnVal: ")); Serial.println(returnVal, HEX); }
+    else                  { memcpy(&_lastGoodHealthPacket, &_healthPacket, sizeof(_healthPacket)); }
 
-    return new_packet;
+    return _healthPacket;
 }
 
 /**************************************************************************/
@@ -190,7 +320,7 @@ float ALTAIR_UM7::getRoll( struct UM7packet dataPacket ) {
 */
 /**************************************************************************/
 float ALTAIR_UM7::getXAccel( struct UM7packet dataPacket ) {
-    return convertBytesToFloat(dataPacket.data);
+    return SENSORS_GRAVITY_EARTH * convertBytesToFloat(dataPacket.data);
 }
 
 /**************************************************************************/
@@ -199,7 +329,7 @@ float ALTAIR_UM7::getXAccel( struct UM7packet dataPacket ) {
 */
 /**************************************************************************/
 float ALTAIR_UM7::getYAccel( struct UM7packet dataPacket ) {
-    return convertBytesToFloat(&(dataPacket.data[4]));
+    return SENSORS_GRAVITY_EARTH * convertBytesToFloat(&(dataPacket.data[4]));
 }
 
 /**************************************************************************/
@@ -208,7 +338,7 @@ float ALTAIR_UM7::getYAccel( struct UM7packet dataPacket ) {
 */
 /**************************************************************************/
 float ALTAIR_UM7::getZAccel( struct UM7packet dataPacket ) {
-    return convertBytesToFloat(&(dataPacket.data[8]));
+    return SENSORS_GRAVITY_EARTH * convertBytesToFloat(&(dataPacket.data[8]));
 }
 
 /**************************************************************************/
@@ -226,8 +356,8 @@ float ALTAIR_UM7::getTemperature( struct UM7packet healthPacket ) {
 */
 /**************************************************************************/
 byte ALTAIR_UM7::getTypeAndHealth( struct UM7packet healthPacket ) {
-    // if no failures to initialize, and if norms of acc and mag are not too ridiculous:
-    if (healthPacket.data[0] & 0x3E == 0) {  
+    // if no failures to initialize, and if norm of acc (but not necessarily mag) are not too ridiculous:
+    if ((healthPacket.data[3] & 0x1E) == 0) {  
        return ((byte) um7_healthy);
     } else {
        return ((byte) um7_unhealthy);

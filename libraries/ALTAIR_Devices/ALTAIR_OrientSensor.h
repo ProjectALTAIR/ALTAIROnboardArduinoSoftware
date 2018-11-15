@@ -22,6 +22,7 @@
 #define  ALTAIR_OrientSensor_h
 
 #include "Arduino.h"
+#include <Adafruit_Sensor.h>
 
 #define  SHRTMAX_DIVBY_360          91.02222                 // = 2^15 / 360.
 

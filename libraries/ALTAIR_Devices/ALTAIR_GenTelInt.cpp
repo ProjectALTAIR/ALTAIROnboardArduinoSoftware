@@ -99,20 +99,30 @@ bool ALTAIR_GenTelInt::sendAllALTAIRInfo( TinyGPSPlus&                gps       
     uint8_t yawUInt8    = primaryOrientSensor->yawUInt8();
     int8_t  oSensTemp   = primaryOrientSensor->temperature();
     uint8_t typeInfo    = primaryOrientSensor->typeAndHealth();
+    uint8_t accelXUInt8 = primaryOrientSensor->accelXUInt8();
+    uint8_t accelYUInt8 = primaryOrientSensor->accelYUInt8();
+    uint8_t accelZUInt8 = primaryOrientSensor->accelZUInt8();
 
+/*
     ALTAIR_BNO055* theBNO055 = (ALTAIR_BNO055*) primaryOrientSensor;
     Serial.print("yaw    = "); Serial.print(theBNO055->lastEvent().orientation.x);  Serial.print("   yawUInt8    = "); Serial.println(yawUInt8   , HEX) ;
     Serial.print("roll   = "); Serial.print(theBNO055->lastEvent().orientation.y);  Serial.print("   rollUInt8   = "); Serial.println(rollUInt8  , HEX) ;
     Serial.print("pitch  = "); Serial.print(theBNO055->lastEvent().orientation.z);  Serial.print("   pitchUInt8  = "); Serial.println(pitchUInt8 , HEX) ;
 
     imu::Vector<3> acceleration = theBNO055->theBNO055()->getVector(Adafruit_BNO055::VECTOR_ACCELEROMETER);
-    uint8_t accelXUInt8 = primaryOrientSensor->accelXUInt8();
-    uint8_t accelYUInt8 = primaryOrientSensor->accelYUInt8();
-    uint8_t accelZUInt8 = primaryOrientSensor->accelZUInt8();
 
     Serial.print("accelX = "); Serial.print(acceleration.x()); Serial.print("   accelXUInt8 = "); Serial.println(accelXUInt8, HEX) ;
     Serial.print("accelY = "); Serial.print(acceleration.y()); Serial.print("   accelYUInt8 = "); Serial.println(accelYUInt8, HEX) ;
     Serial.print("accelZ = "); Serial.print(acceleration.z()); Serial.print("   accelZUInt8 = "); Serial.println(accelZUInt8, HEX) ;
+*/
+    Serial.print("   yawUInt8    = "); Serial.println(yawUInt8   , HEX) ;
+    Serial.print("   rollUInt8   = "); Serial.println(rollUInt8  , HEX) ;
+    Serial.print("   pitchUInt8  = "); Serial.println(pitchUInt8 , HEX) ;
+    Serial.print("   accelXUInt8 = "); Serial.println(accelXUInt8, HEX) ;
+    Serial.print("   accelYUInt8 = "); Serial.println(accelYUInt8, HEX) ;
+    Serial.print("   accelZUInt8 = "); Serial.println(accelZUInt8, HEX) ;
+    Serial.print("   orient sensor temp = "); Serial.println(oSensTemp, HEX) ;
+    Serial.print("   orient sensor type & health = "); Serial.println(typeInfo, HEX) ;
 
     int8_t*  packedRPM = (int8_t*)      deviceControl.sitAwareSystem()->arduinoMicro()->packedRPM();
     int8_t*  packedCur = (int8_t*)      deviceControl.sitAwareSystem()->arduinoMicro()->packedCurrent();
