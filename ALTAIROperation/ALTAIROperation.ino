@@ -1,6 +1,4 @@
 // Our Arduino code for full operation of the ALTAIR payload
-#include <TinyGPS++.h>
-
 #include <ALTAIR_GlobalMotorControl.h>
 #include <ALTAIR_GlobalDeviceControl.h>
 #include <ALTAIR_GlobalLightControl.h>
@@ -15,7 +13,6 @@ long           previousMillis[5]                  ;
 ALTAIR_GlobalMotorControl   motorControl          ;
 ALTAIR_GlobalDeviceControl  deviceControl         ;
 ALTAIR_GlobalLightControl   lightControl          ;
-TinyGPSPlus                 gps                   ;        // nav mast GPS on I2C (addr = 0x42), and also UM7 with DFRobot GPS input on Serial3
 
 void setup() {
 
@@ -70,7 +67,7 @@ void loop() {
 
 void storeDataOnMicroSDCard() {
 
-  deviceControl.dataStoreSystem()->storeTimestamp(gps);      // disable until microSD problems fixed
+  deviceControl.dataStoreSystem()->storeTimestamp( deviceControl.sitAwareSystem()->gpsSensors()->primary() );   
 
 }
 
@@ -116,7 +113,7 @@ bool getGPSandHeadingAtInterval(long interval)
     compassmagHeading = deviceControl.sitAwareSystem()->orientSensors()->hmc5883l()->getHeading();
 
 // Then, get the GPS
-    retval            = deviceControl.sitAwareSystem()->gpsSensors()->neom8n()->getGPS(  &gps   );
+    retval            = deviceControl.sitAwareSystem()->gpsSensors()->primary()->getGPS();
   }
   return retval;
 }
@@ -131,8 +128,8 @@ void sendStationNameToBackupRadiosAtInterval(long interval)
     lightControl.intSphereSource()->setLightsBackupRadio();
     lightControl.diffLEDSource()->setLightsBackupRadio();
 
-    backup1->sendCallSign();
-    backup1->sendEndMessage();
+    if (!(backup1->sendCallSign()))   Serial.println(F("Could not send call sign to backup1 radio!"));
+    if (!(backup1->sendEndMessage())) Serial.println(F("Could not send end message to backup1 radio!"));
 
     delay(20);
 
@@ -169,9 +166,8 @@ void sendStatusToPrimaryRadioAndReadCommandsAtInterval(long interval)
     lightControl.intSphereSource()->setLightsPrimaryRadio();
     lightControl.diffLEDSource()->setLightsPrimaryRadio();
 
-//     primary->sendGPS(        gps             );
-    primary->sendAllALTAIRInfo( gps           ,
-                                motorControl  ,
+//     primary->sendGPS(        deviceControl.sitAwareSystem()->gpsSensors()->primary()        );
+    primary->sendAllALTAIRInfo( motorControl  ,
                                 deviceControl ,
                                 lightControl    );
 
@@ -192,25 +188,21 @@ void sendStatusToPrimaryRadioAndReadCommandsAtInterval(long interval)
 
 void sendGPSCompassStatusToComputerAtInterval(long interval) {
 
-  unsigned long age, date, chars;
-  unsigned short sentences, failed;
-  byte month, day, hour, minute, second, hundredths;
-  int year;
-
   unsigned long currentMillis = millis();
   if (currentMillis - previousMillis[0] > interval) {
+    ALTAIR_GPSSensor* gps = deviceControl.sitAwareSystem()->gpsSensors()->primary();
     previousMillis[0] = currentMillis;   
 
-    Serial.print(F("ALTAIR Latitude: "));    Serial.println(gps.location.lat(), 6);
-    Serial.print(F("ALTAIR Longitude: "));   Serial.println(gps.location.lng(), 6);
-    Serial.print(F("ALTAIR LatLong Age: ")); Serial.println(gps.location.age());
-    Serial.print(F("ALTAIR Year: "));        Serial.println(gps.date.year());
-    Serial.print(F("ALTAIR Month: "));       Serial.println(gps.date.month());
-    Serial.print(F("ALTAIR Day: "));         Serial.println(gps.date.day());
-    Serial.print(F("ALTAIR Hour: "));        Serial.println(gps.time.hour());
-    Serial.print(F("ALTAIR Minute: "));      Serial.println(gps.time.minute());
-    Serial.print(F("ALTAIR Second: "));      Serial.println(gps.time.second());
-    Serial.print(F("ALTAIR Hundredth: "));   Serial.println(gps.time.centisecond());
+    Serial.print(F("ALTAIR Latitude: "));    Serial.println(gps->lat());
+    Serial.print(F("ALTAIR Longitude: "));   Serial.println(gps->lon());
+    Serial.print(F("ALTAIR LatLong Age: ")); Serial.println(gps->age());
+    Serial.print(F("ALTAIR Year: "));        Serial.println(gps->year());
+    Serial.print(F("ALTAIR Month: "));       Serial.println(gps->month());
+    Serial.print(F("ALTAIR Day: "));         Serial.println(gps->day());
+    Serial.print(F("ALTAIR Hour: "));        Serial.println(gps->hour());
+    Serial.print(F("ALTAIR Minute: "));      Serial.println(gps->minute());
+    Serial.print(F("ALTAIR Second: "));      Serial.println(gps->second());
+//    Serial.print(F("ALTAIR Hundredth: "));   Serial.println(gps.time.centisecond());
 //    Serial.print(F("ALTAIR GPSTime Age: ")); Serial.println(gps.time.age());                  // no need to have this, it always reads the same thing
     Serial.print(F("ALTAIR compass magnetometer heading: ")); Serial.println(compassmagHeading);
   }
