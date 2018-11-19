@@ -33,8 +33,7 @@ typedef  enum { bno055_healthy     = 0,
                 bno055_unhealthy   = 4,
                 um7_unhealthy      = 5,
                 hmc6343_unhealthy  = 6,
-                hmc5883l_unhealthy = 7,
-                unknown_osensor    = 8  } orientsensor_t;
+                hmc5883l_unhealthy = 7 } orientsensor_t;
 
 class ALTAIR_OrientSensor {
   public:

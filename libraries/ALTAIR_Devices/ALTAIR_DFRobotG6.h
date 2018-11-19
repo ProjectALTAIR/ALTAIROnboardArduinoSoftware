@@ -41,13 +41,14 @@ class ALTAIR_DFRobotG6 : public ALTAIR_GPSSensor {
     virtual uint8_t   hour(           )  ;
     virtual uint8_t   minute(         )  ;
     virtual uint8_t   second(         )  ;
+    virtual double    time(           )  { return           _time              ; }
 
   private:
 
     double           _lat                ;
     double           _lon                ;
     double           _ele                ;
-    double           _time               ;  // time in seconds since 0000 UT on January 6, 1980
+    double           _time               ;  // time in seconds since 0000 UT at the beginning of the UTC day _today_ (_not_ since 0000 UT on January 6, 1980!)
 
 };
 #endif    //   ifndef ALTAIR_DFRobotG6_h

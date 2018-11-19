@@ -24,8 +24,7 @@
 typedef  enum { neom8n_healthy      = 0,
                 dfrobotg6_healthy   = 1,
                 neom8n_unhealthy    = 2,
-                dfrobotg6_unhealthy = 3,
-                unknown_gpssensor   = 4  } gpssensor_t;
+                dfrobotg6_unhealthy = 3 } gpssensor_t;
 
 class ALTAIR_GPSSensor {
   public:
@@ -47,6 +46,7 @@ class ALTAIR_GPSSensor {
     virtual uint8_t         hour(                  ) = 0 ;
     virtual uint8_t         minute(                ) = 0 ;
     virtual uint8_t         second(                ) = 0 ;
+    virtual double          time(                  ) = 0 ;
 
   private:
 

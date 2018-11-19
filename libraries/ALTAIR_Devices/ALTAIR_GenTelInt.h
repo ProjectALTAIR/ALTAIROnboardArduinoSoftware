@@ -32,9 +32,9 @@
 #define  CALL_SIGN_STRING     " VE7XJA STATION ALTAIR "
 #define  END_MESSAGE_STRING   " OVER "
 
-typedef  enum { dnt900 ,
-                shx144 ,
-                rfm23bp } radio_t;
+typedef  enum { dnt900  = 0,
+                shx144  = 1,
+                rfm23bp = 2 } radio_t;
 
 class    ALTAIR_GPSSensor;
 class    ALTAIR_GlobalMotorControl;

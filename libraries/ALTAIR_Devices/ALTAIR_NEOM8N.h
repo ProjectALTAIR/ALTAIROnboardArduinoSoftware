@@ -49,6 +49,7 @@ class ALTAIR_NEOM8N : public ALTAIR_GPSSensor {
     virtual uint8_t   hour(           )    { return           _gps.time.hour(      ); }
     virtual uint8_t   minute(         )    { return           _gps.time.minute(    ); }
     virtual uint8_t   second(         )    { return           _gps.time.second(    ); }
+    virtual double    time(           )    { return           0.0                   ; }
 
   private:
 
