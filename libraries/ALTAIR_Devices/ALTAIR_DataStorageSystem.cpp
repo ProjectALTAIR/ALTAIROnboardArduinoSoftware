@@ -20,7 +20,7 @@
 /**************************************************************************/
 
 #include "ALTAIR_DataStorageSystem.h"
-#include <TinyGPS++.h>
+#include "ALTAIR_GPSSensor.h"
 
 /**************************************************************************/
 /*!
@@ -108,11 +108,11 @@ uint16_t ALTAIR_DataStorageSystem::remainingSpace(                )
  @brief  Store a GPS timestamp.
 */
 /**************************************************************************/
-void   ALTAIR_DataStorageSystem::storeTimestamp( TinyGPSPlus& gps )
+void   ALTAIR_DataStorageSystem::storeTimestamp( ALTAIR_GPSSensor* gps )
 {
   _theSDCardFile = _SD.open(DEFAULT_SDCARD_FILENAME, FILE_WRITE   )   ;  // try opening and closing before and after
   _theSDCardFile.print("GPS UTC time: ");  
-  _theSDCardFile.print(gps.time.hour());  
+  _theSDCardFile.print(gps->hour());  
   _theSDCardFile.print("   Milliseconds since CPU start: ");  
   _theSDCardFile.println(millis());  
   _theSDCardFile.close();                                                // i.e., add this file close line too

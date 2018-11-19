@@ -16,20 +16,78 @@
 /**************************************************************************/
 
 #include "ALTAIR_DFRobotG6.h"
-#include <TinyGPS++.h>
-#include <Wire.h>
+#include "ALTAIR_UM7.h"
+
 
 /**************************************************************************/
 /*!
- @brief  Get the GPS, and place the data in the TinyGPSPlus object pointed
-         to in the argument.
+ @brief  Get the GPS, and place the data in the _lat, _lon, and _ele data
+         members.  The DFRobot G6 is connected through the UM7, so we get
+         the GPS from there.
 */
 /**************************************************************************/
-bool      ALTAIR_DFRobotG6::getGPS(      TinyGPSPlus*     gps    )
+bool       ALTAIR_DFRobotG6::getGPS(                       )
 {
+    return ALTAIR_UM7::getGPS( &_lat, &_lon, &_ele, &_time );
+}
 
-// will implement later!
-    return false ;
+/**************************************************************************/
+/*!
+ @brief  Convert the GPS time to the present UTC year.
+*/
+/**************************************************************************/
+uint16_t   ALTAIR_DFRobotG6::year(                         )
+{
+    return 0;
+}
 
+/**************************************************************************/
+/*!
+ @brief  Convert the GPS time to the present UTC month.
+*/
+/**************************************************************************/
+uint8_t   ALTAIR_DFRobotG6::month(                         )
+{
+    return 0;
+}
+
+/**************************************************************************/
+/*!
+ @brief  Convert the GPS time to the present UTC day.
+*/
+/**************************************************************************/
+uint8_t   ALTAIR_DFRobotG6::day(                           )
+{
+    return 0;
+}
+
+/**************************************************************************/
+/*!
+ @brief  Convert the GPS time to the present UTC hour.
+*/
+/**************************************************************************/
+uint8_t   ALTAIR_DFRobotG6::hour(                          )
+{
+    return 0;
+}
+
+/**************************************************************************/
+/*!
+ @brief  Convert the GPS time to the present UTC minute.
+*/
+/**************************************************************************/
+uint8_t   ALTAIR_DFRobotG6::minute(                        )
+{
+    return 0;
+}
+
+/**************************************************************************/
+/*!
+ @brief  Convert the GPS time to the present UTC second.
+*/
+/**************************************************************************/
+uint8_t   ALTAIR_DFRobotG6::second(                        )
+{
+    return 0;
 }
 

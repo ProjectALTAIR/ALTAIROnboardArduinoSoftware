@@ -46,7 +46,7 @@ class ALTAIR_HMC5883L : public ALTAIR_OrientSensor {
   protected:
 
   private:
-    Adafruit_HMC5883_Unified  _theHMC5883  ;
+    Adafruit_HMC5883_Unified  _theHMC5883 ;
     sensors_event_t           _lastEvent  ;
 };
 #endif

@@ -14,11 +14,11 @@
 /**************************************************************************/
 
 #include "ALTAIR_GenTelInt.h"
+#include "ALTAIR_GPSSensor.h"
 #include "ALTAIR_GlobalMotorControl.h"
 #include "ALTAIR_GlobalDeviceControl.h"
 #include "ALTAIR_GlobalLightControl.h"
 #include "ALTAIR_ArduinoMicro.h"
-#include <TinyGPS++.h>
 #include <Adafruit_BME280.h>
 
 
@@ -37,18 +37,18 @@ ALTAIR_GenTelInt::ALTAIR_GenTelInt()
  @brief  Send GPS info.
 */
 /**************************************************************************/
-bool ALTAIR_GenTelInt::sendGPS(TinyGPSPlus& gps) 
+bool ALTAIR_GenTelInt::sendGPS(ALTAIR_GPSSensor* gps) 
 {
-    uint8_t hour      = gps.time.hour();
-    uint8_t minute    = gps.time.minute();
-    uint8_t second    = gps.time.second();
-    int32_t latitude  = gps.location.lat() * 1000000;  // Latitude,  in millionths of a degree.
-    int32_t longitude = gps.location.lng() * 1000000;  // Longitude, in millionths of a degree.
-    int16_t elevation = gps.altitude.meters();         // Elevation above mean sea level in meters.  NOTE: as this is signed 16 bit, this will *turn over*
-                                                       // when above 32.77 km!  Would need to add & transmit an extra byte, if one preferred a higher limit.
-                                                       // (Or make it unsigned, which would cause issues for launches from Death Valley or the Dead Sea. :)
-                                                       // (One could get clever, and make it unsigned, but add, then later remove, 1000 meters, but I'm not 
-                                                       //  that clever.)
+    uint8_t hour      = gps->hour();
+    uint8_t minute    = gps->minute();
+    uint8_t second    = gps->second();
+    int32_t latitude  = gps->lat() * 1000000;  // Latitude,  in millionths of a degree.
+    int32_t longitude = gps->lon() * 1000000;  // Longitude, in millionths of a degree.
+    int16_t elevation = gps->ele();            // Elevation above mean sea level in meters.  NOTE: as this is signed 16 bit, this will *turn over*
+                                               // when above 32.77 km!  Would need to add & transmit an extra byte, if one preferred a higher limit.
+                                               // (Or make it unsigned, which would cause issues for launches from Death Valley or the Dead Sea. :)
+                                               // (One could get clever, and make it unsigned, but add, then later remove, 1000 meters, but I'm not 
+                                               //  that clever.)
     sendStart();
     send(0x0E);
 
@@ -62,21 +62,21 @@ bool ALTAIR_GenTelInt::sendGPS(TinyGPSPlus& gps)
  @brief  Send every bit of ALTAIR info that is displayed in AIFCOMSS.
 */
 /**************************************************************************/
-bool ALTAIR_GenTelInt::sendAllALTAIRInfo( TinyGPSPlus&                gps           ,
-                                          ALTAIR_GlobalMotorControl&  motorControl  ,
+bool ALTAIR_GenTelInt::sendAllALTAIRInfo( ALTAIR_GlobalMotorControl&  motorControl  ,
                                           ALTAIR_GlobalDeviceControl& deviceControl ,
                                           ALTAIR_GlobalLightControl&  lightControl   ) 
 {
+    ALTAIR_GPSSensor* gps = deviceControl.sitAwareSystem()->gpsSensors()->primary();
 /*
-    uint8_t  hour      = gps.time.hour();
-    uint8_t  minute    = gps.time.minute();
-    uint8_t  second    = gps.time.second();
+    uint8_t  hour         = gps->hour();
+    uint8_t  minute       = gps->minute();
+    uint8_t  second       = gps->second();
 */
-    int32_t  latitude  = gps.location.lat() * 1000000;  // Latitude,  in millionths of a degree.
-    int32_t  longitude = gps.location.lng() * 1000000;  // Longitude, in millionths of a degree.
-    uint16_t age       = gps.location.age();            // Milliseconds since last GPS update (or default value USHRT_MAX if never received).
-    int16_t  elevation = gps.altitude.meters();         // Elevation above mean sea level in meters.  NOTE: above in previous function.
-    int8_t   hdop      = gps.hdop.value();              // Horizontal degree of precision.  A number typically between 1 and 50.
+    int32_t  latitude     = gps->lat() * 1000000;  // Latitude,  in millionths of a degree.
+    int32_t  longitude    = gps->lon() * 1000000;  // Longitude, in millionths of a degree.
+    uint16_t age          = gps->age();            // Milliseconds since last GPS update (or default value USHRT_MAX if never received).
+    int16_t  elevation    = gps->ele();            // Elevation above mean sea level in meters.  NOTE: above in previous function.
+    int8_t   hdop         = gps->hdop();           // Horizontal degree of precision.  A number typically between 1 and 50.
 
     uint16_t outPres   = (deviceControl.sitAwareSystem()->bmeMast()->readPressure()    / 2.0F) ; // in units of 2 Pa (fits nicely into a uint16_t)
 //    uint8_t  outPres   = (deviceControl.sitAwareSystem()->bmeMast()->readPressure()    / 500.0F) ; // in units of 500 Pa (fits nicely into a uint8_t) 
@@ -396,7 +396,7 @@ void ALTAIR_GenTelInt::readALTAIRInfo(  byte command[],  bool isGroundStation )
         return;
       }
     } else {
-      Serial.print(F("Cannot read commands from the ground station, since the"));
+      Serial.print(F("Cannot read commands from the ground station, since the "));
       Serial.print(radioName());
       Serial.println(F(" radio is busy"));
     }

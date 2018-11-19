@@ -66,6 +66,7 @@ void ALTAIR_UM7::initialize()
         Serial.println(F("Unallowed serial ID provided in initialization of UM7 orientation sensor!"));
         while(1);
     }
+    setIncomingGPSBaudRate();
     checkUM7Health();
 }
 
@@ -78,7 +79,7 @@ void ALTAIR_UM7::checkUM7Health()
 {
     byte tx_data[7];
     byte rx_data[RX_READ_LENGTH];
-    int returnVal, nAttempts = 0;
+    int  returnVal, nAttempts = 0;
     bool dataReceived = false;
     struct UM7packet new_packet;
     tx_data[0] = 's';  // Send
@@ -144,6 +145,65 @@ void ALTAIR_UM7::checkUM7Health()
 
 /**************************************************************************/
 /*!
+ @brief  Set the incoming GPS baud rate of the UM7 sensor at initialization.  
+*/
+/**************************************************************************/
+void ALTAIR_UM7::setIncomingGPSBaudRate()
+{
+    byte tx_data[11];
+    int  nAttempts = 0;
+    bool dataSent  = false;
+    tx_data[0]  = 's';  // Send
+    tx_data[1]  = 'n';  // New
+    tx_data[2]  = 'p';  // Packet
+    tx_data[3]  = 0x80; // send a single word (4 bytes) of data
+    tx_data[4]  = 0x00; // address of general communications settings register
+    tx_data[5]  = 0x53; // UM7 serial communication rate = 115200 baud; DFRobot GPS serial communication rate = 38400 baud
+    tx_data[6]  = 0x00; // 
+    tx_data[7]  = 0x00; // 
+    tx_data[8]  = 0x00; // 
+    tx_data[9]  = 0x02; // checksum high byte
+    tx_data[10] = 0x24; // checksum low byte  
+    while (nAttempts < RX_READ_ATTEMPTS) {
+      switch (_serialID) {
+        case 0:
+          if (Serial.availableForWrite() >= 11) {
+            Serial.write(  tx_data, 11 );
+            dataSent = true;
+          } 
+          break;
+        case 1:
+          if (Serial1.availableForWrite() >= 11) {
+            Serial1.write( tx_data, 11 );
+            dataSent = true;
+          }
+          break;
+        case 2:
+          if (Serial2.availableForWrite() >= 11) {
+            Serial2.write( tx_data, 11 );
+            dataSent = true;
+          }
+          break;
+        case 3:
+          if (Serial3.availableForWrite() >= 11) {
+            Serial3.write( tx_data, 11 );
+            dataSent = true;
+          }
+          break;
+        default:
+          Serial.println(F("Unallowed serial ID provided in initialization of UM7 orientation sensor!"));
+          while(1);
+      }
+      if (dataSent) {
+        break;
+      } else {
+        ++nAttempts;
+      }
+    }
+}
+
+/**************************************************************************/
+/*!
  @brief  Get the main data packet (containing the orientation and acceleration 
          info).  This can then be followed by the static member fuctions 
          (for example, getYaw(struct UM7packet dataPacket)) that parse the 
@@ -154,7 +214,7 @@ struct UM7packet ALTAIR_UM7::getDataPacket() {
 
     byte tx_data[20];
     byte rx_data[RX_READ_LENGTH];
-    byte returnVal, nAttempts = 0;
+    int  returnVal, nAttempts = 0;
     bool dataReceived = false;
     tx_data[0] = 's';  // Send
     tx_data[1] = 'n';  // New
@@ -224,7 +284,7 @@ struct UM7packet ALTAIR_UM7::getHealthPacket() {
 
     byte tx_data[7];
     byte rx_data[RX_READ_LENGTH];
-    byte returnVal, nAttempts = 0; 
+    int  returnVal, nAttempts = 0; 
     bool dataReceived = false;
     tx_data[0] = 's';  // Send
     tx_data[1] = 'n';  // New
@@ -402,6 +462,80 @@ byte ALTAIR_UM7::getnSensors( struct UM7packet healthPacket ) {
 
 /**************************************************************************/
 /*!
+ @brief  Get the GPS (which is, in practice, through the DFRobot G6 GPS
+         sensor that is attached via serial to the UM7).
+*/
+/**************************************************************************/
+bool ALTAIR_UM7::getGPS( double *lat, double* lon, double* ele, double* time ) {
+
+    byte tx_data[20];
+    byte rx_data[RX_READ_LENGTH];
+    struct UM7packet new_packet;
+    int  returnVal, nAttempts = 0;
+    bool dataReceived = false;
+    tx_data[0] = 's';  // Send
+    tx_data[1] = 'n';  // New
+    tx_data[2] = 'p';  // Packet
+    tx_data[3] = 0x70; // get a batch of 12 register words (= 48 bytes)
+    tx_data[4] = 0x7D; // start with the GPS latitude info: address of DREG_GPS_LATITUDE register
+    tx_data[5] = 0x02; // checksum high byte
+    tx_data[6] = 0x3E; // checksum low byte
+
+    while (nAttempts < RX_READ_ATTEMPTS) {
+      switch ( DEFAULT_UM7_SERIALID ) {
+        case 0:
+          if (Serial.available()) {
+            Serial.write(  tx_data, 7 );
+            Serial.readBytes(  rx_data, RX_READ_LENGTH );
+            dataReceived = true;
+          }
+          break;
+        case 1:
+          if (Serial1.available()) {
+            Serial1.write( tx_data, 7 );
+            Serial1.readBytes( rx_data, RX_READ_LENGTH );
+            dataReceived = true;
+          }
+          break;
+        case 2:
+          if (Serial2.available()) {
+            Serial2.write( tx_data, 7 );
+            Serial2.readBytes( rx_data, RX_READ_LENGTH );
+            dataReceived = true;
+          }
+          break;
+        case 3:
+          if (Serial3.available()) {
+            Serial3.write( tx_data, 7 );
+            Serial3.readBytes( rx_data, RX_READ_LENGTH );
+            dataReceived = true;
+          }
+          break;
+        default:
+          Serial.println(F("Unallowed serial ID provided in initialization of UM7 orientation sensor!"));
+          while(1);
+      }
+      if (dataReceived) {
+        break;
+      } else {
+        ++nAttempts;
+      }
+    }
+    returnVal = parse_serial_data(rx_data, RX_READ_LENGTH, tx_data[4], &new_packet);
+    if ( returnVal != 0 ) { 
+        Serial.print(F("A bad GPS packet has been returned by the UM7 orientation sensor! -- with returnVal: ")); Serial.println(returnVal, HEX); 
+        return false;
+    }
+    *lat  = convertBytesToFloat(  new_packet.data     );
+    *lon  = convertBytesToFloat(&(new_packet.data[4] ));
+    *ele  = convertBytesToFloat(&(new_packet.data[8] ));
+    *time = convertBytesToFloat(&(new_packet.data[20]));
+
+    return true;
+}
+
+/**************************************************************************/
+/*!
  @brief  Convert 4 bytes to a float.
 */
 /**************************************************************************/
@@ -412,14 +546,6 @@ float ALTAIR_UM7::convertBytesToFloat( byte* data ) {
    }
    return converter.value;
 }
-
-/**************************************************************************/
-/*!
- @brief  Convert 4 bytes to a float.
-*/
-/**************************************************************************/
-
-
 
 /**************************************************************************/
 /*!

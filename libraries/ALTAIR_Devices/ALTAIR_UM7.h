@@ -41,7 +41,6 @@ typedef union {
              float     value;
 } ByteToFloat;
 
-
 class ALTAIR_UM7 : public ALTAIR_OrientSensor {
   public:
     ALTAIR_UM7(                           const  char       serialID           );
@@ -66,15 +65,21 @@ class ALTAIR_UM7 : public ALTAIR_OrientSensor {
     static   float     getTemperature(    struct UM7packet  healthPacket       );
     static   byte      getTypeAndHealth(  struct UM7packet  healthPacket       );
 
+    static   bool      getGPS(                   double*    lat, 
+                                                 double*    lon,
+                                                 double*    ele,
+                                                 double*    time               );
+
     static   float     convertBytesToFloat(      byte*      data               );
 
-             byte      parse_serial_data( const  byte*      rx_data         ,   
+    static   byte      parse_serial_data( const  byte*      rx_data         ,   
                                                  byte       rx_length       , 
                                                  byte       requestedAddress, 
                                           struct UM7packet* packet             );
 
     void               initialize(                                             );
     void               checkUM7Health(                                         );
+    void               setIncomingGPSBaudRate(                                 );
 
     int16_t            accelZ(                                                 ) { return convertFloatToInt16(getZAccel(         _lastGoodDataPacket  )      ); }
     int16_t            accelX(                                                 ) { return convertFloatToInt16(getXAccel(         _lastGoodDataPacket  )      ); }

@@ -36,7 +36,7 @@ typedef  enum { dnt900 ,
                 shx144 ,
                 rfm23bp } radio_t;
 
-class    TinyGPSPlus;
+class    ALTAIR_GPSSensor;
 class    ALTAIR_GlobalMotorControl;
 class    ALTAIR_GlobalDeviceControl;
 class    ALTAIR_GlobalLightControl;
@@ -45,9 +45,8 @@ class ALTAIR_GenTelInt {
   public:
     virtual bool         send(              unsigned char               aChar                   ) = 0;
     virtual bool         send(              const    uint8_t*           aString                 ) = 0;
-            bool         sendGPS(           TinyGPSPlus&                gps                     )    ;
-            bool         sendAllALTAIRInfo( TinyGPSPlus&                gps             ,
-                                            ALTAIR_GlobalMotorControl&  motorControl    ,
+            bool         sendGPS(           ALTAIR_GPSSensor*           gps                     )    ;
+            bool         sendAllALTAIRInfo( ALTAIR_GlobalMotorControl&  motorControl    ,
                                             ALTAIR_GlobalDeviceControl& deviceControl   ,
                                             ALTAIR_GlobalLightControl&  lightControl            )    ;
             bool         sendCommandToALTAIR(        byte               commandByte1    ,

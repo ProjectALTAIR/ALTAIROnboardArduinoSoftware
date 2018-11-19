@@ -16,16 +16,15 @@
 /**************************************************************************/
 
 #include "ALTAIR_NEOM8N.h"
-#include <TinyGPS++.h>
 #include <Wire.h>
 
 /**************************************************************************/
 /*!
- @brief  Get the GPS, and place the data in the TinyGPSPlus object pointed
-         to in the argument.  Return true if successful.
+ @brief  Get the GPS, and place the data in the _gps TinyGPSPlus data
+         member.  Return true if successful.
 */
 /**************************************************************************/
-bool      ALTAIR_NEOM8N::getGPS(      TinyGPSPlus*     gps    )
+bool      ALTAIR_NEOM8N::getGPS(              )
 {
     bool retval = false;
 
@@ -53,9 +52,9 @@ bool      ALTAIR_NEOM8N::getGPS(      TinyGPSPlus*     gps    )
         for (uint8_t i = 0; i < bytes2Read; i++) {
             uint8_t theByte = Wire.read();
             if (theByte == NEOM8N_ERRORBYTE) return false; // got some TWI error. Return
-//             retval = gps->encode(theByte);
+//             retval = _gps.encode(theByte);
 //             Serial.write(char(theByte));
-            bool isEncoded = gps->encode(theByte);
+            bool isEncoded = _gps.encode(theByte);
             retval |= isEncoded;
         }
         totalBytes -= bytes2Read;

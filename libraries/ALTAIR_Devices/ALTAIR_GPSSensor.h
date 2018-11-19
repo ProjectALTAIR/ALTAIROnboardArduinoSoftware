@@ -21,7 +21,11 @@
 
 #include "Arduino.h"
 
-class TinyGPSPlus;
+typedef  enum { neom8n_healthy      = 0,
+                dfrobotg6_healthy   = 1,
+                neom8n_unhealthy    = 2,
+                dfrobotg6_unhealthy = 3,
+                unknown_gpssensor   = 4  } gpssensor_t;
 
 class ALTAIR_GPSSensor {
   public:
@@ -29,7 +33,20 @@ class ALTAIR_GPSSensor {
     ALTAIR_GPSSensor(                              )     {  }
 
     virtual void            initialize(            ) = 0 ;
-    virtual bool            getGPS(TinyGPSPlus* gps) = 0 ;
+    virtual bool            getGPS(                ) = 0 ;
+    virtual uint8_t         typeAndHealth(         ) = 0 ;
+
+    virtual double          lat(                   ) = 0 ;
+    virtual double          lon(                   ) = 0 ;
+    virtual long            ele(                   ) = 0 ;    // In meters above mean sea level.
+    virtual byte            hdop(                  ) = 0 ;    // Horizontal Degree Of Precision.  A number typically between 1 and 50.
+    virtual uint32_t        age(                   ) = 0 ;
+    virtual uint16_t        year(                  ) = 0 ;
+    virtual uint8_t         month(                 ) = 0 ;
+    virtual uint8_t         day(                   ) = 0 ;
+    virtual uint8_t         hour(                  ) = 0 ;
+    virtual uint8_t         minute(                ) = 0 ;
+    virtual uint8_t         second(                ) = 0 ;
 
   private:
 

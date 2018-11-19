@@ -31,20 +31,20 @@
 #define   MY_SD_CARD_SIZE             8000          // in MB
 #define   SD_FILESYS_OVERHEAD          100          // in MB  (an approximate value, for now)
 
-class     TinyGPSPlus;
+class     ALTAIR_GPSSensor;
 
 class     ALTAIR_DataStorageSystem {
   public:
 
-    ALTAIR_DataStorageSystem(                            )                 ;
+    ALTAIR_DataStorageSystem(                                 )            ;
 
 
-    void                initialize(                      )                 ;
+    void                initialize(                           )            ;
 
-    uint16_t            occupiedSpace(                   )                 ;  // current occupied  space on the disk, in Mb
-    uint16_t            remainingSpace(                  )                 ;  // current remaining space on the disk, in Mb
+    uint16_t            occupiedSpace(                        )            ;  // current occupied  space on the disk, in Mb
+    uint16_t            remainingSpace(                       )            ;  // current remaining space on the disk, in Mb
 
-    void                storeTimestamp( TinyGPSPlus& gps )                 ;
+    void                storeTimestamp( ALTAIR_GPSSensor* gps )            ;
 
   protected:
 
