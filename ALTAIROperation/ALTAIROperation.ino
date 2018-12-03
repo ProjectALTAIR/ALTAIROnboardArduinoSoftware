@@ -49,7 +49,7 @@ void loop() {
 
   deviceControl.sitAwareSystem()->arduinoMicro()->getDataAfterInterval(450);
 
-  sendStatusToPrimaryRadioAndReadCommandsAtInterval(1000);
+  sendStatusToPrimaryRadioAtInterval(1000);
 
 //  delay(100);
   if (backupRadiosOn) sendStationNameToBackupRadiosAtInterval(1333);
@@ -60,6 +60,8 @@ void loop() {
   printNavMastSensorValsAndAdjSettingsAtInterval(2000);
 
   storeDataOnMicroSDCard();
+
+  readCommands();
   
 //  delay(100);
 
@@ -69,6 +71,17 @@ void storeDataOnMicroSDCard() {
 
   deviceControl.dataStoreSystem()->storeTimestamp( deviceControl.sitAwareSystem()->gpsSensors()->primary() );   
 
+}
+
+void readCommands() {
+  byte command[2];
+  deviceControl.telemSystem()->primary()->readALTAIRInfo( command );
+  if (command[0] != 0) {
+    if (command[1] != 0) {
+      Serial.print(F("command[0] = ")); Serial.print(command[0], HEX); Serial.print(F("  command[1] = ")); Serial.println(command[1], HEX);
+      performCommand(command[0], command[1]);
+    }
+  }
 }
 
 void printNavMastSensorValsAndAdjSettingsAtInterval(long interval) {
@@ -123,7 +136,7 @@ void sendStationNameToBackupRadiosAtInterval(long interval)
   unsigned long currentMillis = millis();
   ALTAIR_GenTelInt* backup1 = deviceControl.telemSystem()->backup1();
   if (currentMillis - previousMillis[2] > interval) { 
-    Serial.println(F("Writing station name to the first backup radio"));
+    Serial.print(F("Writing station name to the first backup radio: ")); Serial.println(backup1->radioName());
     previousMillis[2] = currentMillis;
     lightControl.intSphereSource()->setLightsBackupRadio();
     lightControl.diffLEDSource()->setLightsBackupRadio();
@@ -136,14 +149,16 @@ void sendStationNameToBackupRadiosAtInterval(long interval)
     if (backupRadio2On) {
       ALTAIR_GenTelInt* backup2 = deviceControl.telemSystem()->backup2();
 
-      backup2->sendCallSign();
-      backup2->sendEndMessage();
+      if (!(backup2->sendCallSign()))   { Serial.print(F("Could not send call sign to backup2 radio!: "));   Serial.println(backup2->radioName()); }
+      if (!(backup2->sendEndMessage())) { Serial.print(F("Could not send end message to backup2 radio!: ")); Serial.println(backup2->radioName()); }
     }
 
     delay(40);
     lightControl.intSphereSource()->resetLights();
     lightControl.diffLEDSource()->resetLights();
 
+    Serial.println(F("done with backup radios"));
+/*
     byte command[2];
     backup1->readALTAIRInfo( command );
     if (command[0] != 0) {
@@ -151,18 +166,22 @@ void sendStationNameToBackupRadiosAtInterval(long interval)
         performCommand(command[0], command[1]);
       }
     }
+*/
 
   }
 }
 
 
-void sendStatusToPrimaryRadioAndReadCommandsAtInterval(long interval)
+void sendStatusToPrimaryRadioAtInterval(long interval)
 {
   unsigned long currentMillis = millis();
   ALTAIR_GenTelInt* primary = deviceControl.telemSystem()->primary();
+  delay(40);
+
   if (!primary->isBusy() && currentMillis - previousMillis[1] > interval) {
     previousMillis[1] = currentMillis;
-    Serial.println(F("*** Writing status to the primary radio ***"));
+   
+    Serial.print(F("*** Writing status to the primary radio: "));  Serial.println(primary->radioName());
     lightControl.intSphereSource()->setLightsPrimaryRadio();
     lightControl.diffLEDSource()->setLightsPrimaryRadio();
 
@@ -175,13 +194,6 @@ void sendStatusToPrimaryRadioAndReadCommandsAtInterval(long interval)
     lightControl.intSphereSource()->resetLights();
     lightControl.diffLEDSource()->resetLights();
 
-    byte command[2];
-    primary->readALTAIRInfo( command );
-    if (command[0] != 0) {
-      if (command[1] != 0) {
-        performCommand(command[0], command[1]);
-      }
-    }
   }
 }
 
