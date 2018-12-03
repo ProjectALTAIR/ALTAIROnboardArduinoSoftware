@@ -66,12 +66,11 @@ bool ALTAIR_GenTelInt::sendAllALTAIRInfo( ALTAIR_GlobalMotorControl&  motorContr
                                           ALTAIR_GlobalDeviceControl& deviceControl ,
                                           ALTAIR_GlobalLightControl&  lightControl   ) 
 {
+    byte     sendString1[50];
+    byte     sendString2[50];
+
     ALTAIR_GPSSensor* gps = deviceControl.sitAwareSystem()->gpsSensors()->primary();
-/*
-    uint8_t  hour         = gps->hour();
-    uint8_t  minute       = gps->minute();
-    uint8_t  second       = gps->second();
-*/
+
     int32_t  latitude     = gps->lat() * 1000000;  // Latitude,  in millionths of a degree.
     int32_t  longitude    = gps->lon() * 1000000;  // Longitude, in millionths of a degree.
     uint16_t age          = gps->age();            // Milliseconds since last GPS update (or default value USHRT_MAX if never received).
@@ -79,16 +78,13 @@ bool ALTAIR_GenTelInt::sendAllALTAIRInfo( ALTAIR_GlobalMotorControl&  motorContr
     int8_t   hdop         = gps->hdop();           // Horizontal degree of precision.  A number typically between 1 and 50.
 
     uint16_t outPres   = (deviceControl.sitAwareSystem()->bmeMast()->readPressure()    / 2.0F) ; // in units of 2 Pa (fits nicely into a uint16_t)
-//    uint8_t  outPres   = (deviceControl.sitAwareSystem()->bmeMast()->readPressure()    / 500.0F) ; // in units of 500 Pa (fits nicely into a uint8_t) 
     int8_t   outTemp   =  deviceControl.sitAwareSystem()->bmeMast()->readTemperature()         ; // in degrees C
     uint8_t  outHum    =  deviceControl.sitAwareSystem()->bmeMast()->readHumidity()            ; // in %
     uint16_t inPres    = (deviceControl.sitAwareSystem()->bmePayload()->readPressure() / 2.0F) ; // in units of 2 Pa (fits nicely into a uint16_t)
-//    uint8_t inPres     = (deviceControl.sitAwareSystem()->bmePayload()->readPressure() / 500.0F) ; // in units of 500 Pa (fits nicely into a uint8_t)
     int8_t   inTemp    =  deviceControl.sitAwareSystem()->bmePayload()->readTemperature()      ; // in degrees C
     uint8_t  inHum     =  deviceControl.sitAwareSystem()->bmePayload()->readHumidity()         ; // in %
 // If the connector up to the balloon valve is unconnected, or gets pulled out on the fly (by a cutdown), the internal balloon values below will read as all zeros
     uint16_t balPres   = (deviceControl.sitAwareSystem()->bmeBalloon()->readPressure() / 2.0F) ; // in units of 2 Pa (fits nicely into a uint16_t)
-//    uint8_t  balPres   = (deviceControl.sitAwareSystem()->bmeBalloon()->readPressure() / 500.0F) ; // in units of 500 Pa (fits nicely into a uint8_t)
     int8_t   balTemp   =  deviceControl.sitAwareSystem()->bmeBalloon()->readTemperature()      ; // in degrees C
     uint8_t  balHum    =  deviceControl.sitAwareSystem()->bmeBalloon()->readHumidity()         ; // in %
 
@@ -103,27 +99,6 @@ bool ALTAIR_GenTelInt::sendAllALTAIRInfo( ALTAIR_GlobalMotorControl&  motorContr
     uint8_t accelYUInt8 = primaryOrientSensor->accelYUInt8();
     uint8_t accelZUInt8 = primaryOrientSensor->accelZUInt8();
 
-/*
-    ALTAIR_BNO055* theBNO055 = (ALTAIR_BNO055*) primaryOrientSensor;
-    Serial.print("yaw    = "); Serial.print(theBNO055->lastEvent().orientation.x);  Serial.print("   yawUInt8    = "); Serial.println(yawUInt8   , HEX) ;
-    Serial.print("roll   = "); Serial.print(theBNO055->lastEvent().orientation.y);  Serial.print("   rollUInt8   = "); Serial.println(rollUInt8  , HEX) ;
-    Serial.print("pitch  = "); Serial.print(theBNO055->lastEvent().orientation.z);  Serial.print("   pitchUInt8  = "); Serial.println(pitchUInt8 , HEX) ;
-
-    imu::Vector<3> acceleration = theBNO055->theBNO055()->getVector(Adafruit_BNO055::VECTOR_ACCELEROMETER);
-
-    Serial.print("accelX = "); Serial.print(acceleration.x()); Serial.print("   accelXUInt8 = "); Serial.println(accelXUInt8, HEX) ;
-    Serial.print("accelY = "); Serial.print(acceleration.y()); Serial.print("   accelYUInt8 = "); Serial.println(accelYUInt8, HEX) ;
-    Serial.print("accelZ = "); Serial.print(acceleration.z()); Serial.print("   accelZUInt8 = "); Serial.println(accelZUInt8, HEX) ;
-
-    Serial.print("   yawUInt8    = "); Serial.println(yawUInt8   , HEX) ;
-    Serial.print("   rollUInt8   = "); Serial.println(rollUInt8  , HEX) ;
-    Serial.print("   pitchUInt8  = "); Serial.println(pitchUInt8 , HEX) ;
-    Serial.print("   accelXUInt8 = "); Serial.println(accelXUInt8, HEX) ;
-    Serial.print("   accelYUInt8 = "); Serial.println(accelYUInt8, HEX) ;
-    Serial.print("   accelZUInt8 = "); Serial.println(accelZUInt8, HEX) ;
-    Serial.print("   orient sensor temp = "); Serial.println(oSensTemp, HEX) ;
-    Serial.print("   orient sensor type & health = "); Serial.println(typeInfo, HEX) ;
-*/
     Serial.print("   GPS sensor type & health = "); Serial.println(gps->typeAndHealth(), HEX) ;
     Serial.print("   GPS latitude = ");    Serial.println(gps->lat())   ;
     Serial.print("   GPS longitude = ");   Serial.println(gps->lon())   ;
@@ -133,51 +108,62 @@ bool ALTAIR_GenTelInt::sendAllALTAIRInfo( ALTAIR_GlobalMotorControl&  motorContr
     int8_t*  packedRPM = (int8_t*)      deviceControl.sitAwareSystem()->arduinoMicro()->packedRPM();
     int8_t*  packedCur = (int8_t*)      deviceControl.sitAwareSystem()->arduinoMicro()->packedCurrent();
 
-    sendStart();
-    send(0x2B);                                         // Number of bytes of data that will be sent (0x2B = 43).
+    sendString1[0]  = (unsigned char)  TX_START_BYTE;
+    sendString1[1]  = (unsigned char)  (0x2B);           // Number of bytes of data that will be sent (0x2B = 43).
 
-//    sendBareGPSTime(  hour     , minute   , second); 
-    sendBareGPSLatLon(latitude , longitude        ); 
-    sendBareGPSEle(   elevation                   ); 
+    sendString1[2]  = byte((latitude  >> 24) & 0xFF);
+    sendString1[3]  = byte((latitude  >> 16) & 0xFF);
+    sendString1[4]  = byte((latitude  >>  8) & 0xFF);
+    sendString1[5]  = byte( latitude         & 0xFF);
 
-    send(  byte(( age       >>  8)      & 0xFF));       
-//    send(  byte(  age                   & 0xFF));     // only send the upper byte of age (i.e., age / 256)
-    send(  byte(  hdop                  & 0xFF));       // 12 bytes total (up to here)
+    sendString1[6]  = byte((longitude >> 24) & 0xFF);
+    sendString1[7]  = byte((longitude >> 16) & 0xFF);
+    sendString1[8]  = byte((longitude >>  8) & 0xFF);
+    sendString1[9]  = byte( longitude        & 0xFF);
 
-    send('T');
+    sendString1[10] = byte((elevation >>  8) & 0xFF);
+    sendString1[11] = byte( elevation        & 0xFF);
 
-    send(  byte(( outPres   >>  8)      & 0xFF));
-    send(  byte(  outPres               & 0xFF));
-    send(  byte(  outTemp               & 0xFF));
-    send(  byte(  outHum                & 0xFF));
-    send(  byte(( inPres    >>  8)      & 0xFF));
-    send(  byte(  inPres                & 0xFF));
-    send(  byte(  inTemp                & 0xFF));
-    send(  byte(  inHum                 & 0xFF));
-    send(  byte(( balPres   >>  8)      & 0xFF));
-    send(  byte(  balPres               & 0xFF));
-    send(  byte(  balTemp               & 0xFF));
-    send(  byte(  balHum                & 0xFF));
+    sendString1[12] = byte((age       >>  8) & 0xFF);    // only send the upper byte of age (i.e., age / 256)
+    sendString1[13] = byte( hdop             & 0xFF);
 
-    send(  byte(  accelZUInt8           & 0xFF));
-    send(  byte(  accelXUInt8           & 0xFF));
-    send(  byte(  accelYUInt8           & 0xFF));
+    sendString1[14] =       'T'                     ;
 
-    send('T');
+    sendString1[15] = byte((outPres   >>  8) & 0xFF);
+    sendString1[16] = byte( outPres          & 0xFF);
+    sendString1[17] = byte( outTemp          & 0xFF);
+    sendString1[18] = byte( outHum           & 0xFF);
+    sendString1[19] = byte((inPres    >>  8) & 0xFF);
+    sendString1[20] = byte( inPres           & 0xFF);
+    sendString1[21] = byte( inTemp           & 0xFF);
+    sendString1[22] = byte( inHum            & 0xFF);
+    sendString1[23] = byte((balPres   >>  8) & 0xFF);
+    sendString1[24] = byte( balPres          & 0xFF);
+    sendString1[25] = byte( balTemp          & 0xFF);
+    sendString1[26] = byte( balHum           & 0xFF);
 
-    send(  byte(  yawUInt8              & 0xFF));
-    send(  byte(  pitchUInt8            & 0xFF));
-    send(  byte(  rollUInt8             & 0xFF));
-    send(  byte(  oSensTemp             & 0xFF));
-    send(  byte(  typeInfo              & 0xFF));  
+    sendString1[27] = byte( accelZUInt8      & 0xFF);
+    sendString1[28] = byte( accelXUInt8      & 0xFF);
+    sendString1[29] = byte( accelYUInt8      & 0xFF);
 
-    for (int i = 0; i < 4; ++i)     send(  byte(  packedRPM[i]          & 0xFF));
-    for (int i = 0; i < 4; ++i)     send(  byte(  packedCur[i]          & 0xFF));
+    sendString1[30] =       'T'                     ;
 
-    send('T');
+    sendString1[31] = byte(   yawUInt8       & 0xFF);
+    sendString1[32] = byte( pitchUInt8       & 0xFF);
+    sendString1[33] = byte(  rollUInt8       & 0xFF);
+    sendString1[34] = byte( oSensTemp        & 0xFF);
+    sendString1[35] = byte( typeInfo         & 0xFF);
 
-//    delay(50);
-//    delay(200);
+    for (int i = 0; i < 4; ++i)     sendString1[36+i]  =  byte(  packedRPM[i]          & 0xFF);
+    for (int i = 0; i < 4; ++i)     sendString1[40+i]  =  byte(  packedCur[i]          & 0xFF);
+
+    sendString1[44] =       'T'                     ;
+
+//    if (send(sendString1, 45)) Serial.println(F("Successfully sent sendString1"));
+    if ((radioType() != rfm23bp) || (lastSentString2())) {
+        send(sendString1, 45);
+        if (radioType() == rfm23bp) return true;
+    }
 
 // try moving work here (instead of a CPU-cycle-wasting delay)
 
@@ -189,7 +175,6 @@ bool ALTAIR_GenTelInt::sendAllALTAIRInfo( ALTAIR_GlobalMotorControl&  motorContr
 
     ALTAIR_DataStorageSystem* sdCard =  deviceControl.dataStoreSystem();
     uint16_t occSpace  =      sdCard->occupiedSpace();
-//    uint16_t freeSpace =      sdCard->remainingSpace();
 
     uint8_t  powerMot1 = (motorControl.propSystem()->portOuterMotor()->powerSetting() * 10.0F) ; // an integer containing 10x the present power setting
     uint8_t  powerMot2 = (motorControl.propSystem()->portInnerMotor()->powerSetting() * 10.0F) ; // an integer containing 10x the present power setting
@@ -207,54 +192,50 @@ bool ALTAIR_GenTelInt::sendAllALTAIRInfo( ALTAIR_GlobalMotorControl&  motorContr
     uint16_t pd1ADRead =  lightControl.lightSourceMon()->ads1115ADC2()->readADC_SingleEnded( INTSPHERE_PD1_ADC_CHANNEL ) ;
     uint16_t pd2ADRead =  lightControl.lightSourceMon()->ads1115ADC2()->readADC_SingleEnded( INTSPHERE_PD2_ADC_CHANNEL ) ;
     uint16_t pd3ADRead =  lightControl.lightSourceMon()->ads1115ADC2()->readADC_SingleEnded( INTSPHERE_PD3_ADC_CHANNEL ) ;
-//    int16_t  diffPD12  =  lightControl.lightSourceMon()->ads1115ADC2()->readADC_Differential_0_1(                      ) ;
 
-    sendStart();
-    send(0x21);                                         // Number of bytes of data that will be sent (0x21 = 33).
+    sendString2[0]  = (unsigned char)  TX_START_BYTE;
+    sendString2[1]  = (unsigned char)  (0x21);           // Number of bytes of data that will be sent (0x21 = 33).
 
-//    sendBareGPSTime(  hour     , minute   , second); 
+    for (int i = 0; i < 8; ++i)     sendString2[2+i]  =  byte(  packedTem[i]          & 0xFF);
 
-    for (int i = 0; i < 8; ++i)     send(  byte(  packedTem[i]          & 0xFF)); 
+    sendString2[10] = byte(  rssi            & 0xFF);
 
-    send(  byte(  rssi                  & 0xFF));
+    sendString2[11] = byte(  bat1V           & 0xFF);
+    sendString2[12] = byte(  bat2V           & 0xFF);
 
-    send(  byte(  bat1V                 & 0xFF));
-    send(  byte(  bat2V                 & 0xFF));    // 11 bytes of data (up to here)
+    sendString2[13] =       'T'                     ;
 
-    send('T');
+    sendString2[14] = byte(( occSpace >>  8) & 0xFF);
+    sendString2[15] = byte(  occSpace        & 0xFF);
 
-    send(  byte(( occSpace  >>  8)      & 0xFF));
-    send(  byte(  occSpace              & 0xFF));
-//    send(  byte(( freeSpace >>  8)      & 0xFF));
-//    send(  byte(  freeSpace             & 0xFF));
+    sendString2[16] = byte(  powerMot1       & 0xFF);
+    sendString2[17] = byte(  powerMot2       & 0xFF);
+    sendString2[18] = byte(  powerMot3       & 0xFF);
+    sendString2[19] = byte(  powerMot4       & 0xFF);
 
-    send(  byte(  powerMot1             & 0xFF));
-    send(  byte(  powerMot2             & 0xFF));
-    send(  byte(  powerMot3             & 0xFF));
-    send(  byte(  powerMot4             & 0xFF));
+    sendString2[20] = byte(  axlRotSet       & 0xFF);
+    sendString2[21] = byte(  axlRotAng       & 0xFF);
+    sendString2[22] = byte(  bleedVSet       & 0xFF);
+    sendString2[23] = byte(  bleedVAng       & 0xFF);
+    sendString2[24] = byte(  cutdwnSet       & 0xFF);
+    sendString2[25] = byte(  cutdwnAng       & 0xFF);
 
-//    send('T');
+    sendString2[26] =       'T'                     ;
 
-    send(  byte(  axlRotSet             & 0xFF));    
-    send(  byte(  axlRotAng             & 0xFF));    
-    send(  byte(  bleedVSet             & 0xFF));    
-    send(  byte(  bleedVAng             & 0xFF));    
-    send(  byte(  cutdwnSet             & 0xFF));    
-    send(  byte(  cutdwnAng             & 0xFF));    
+    sendString2[27] = byte(  lightStat       & 0xFF);
+    sendString2[28] = byte(( pd1ADRead >> 8) & 0xFF);
+    sendString2[29] = byte(  pd1ADRead       & 0xFF);
+    sendString2[30] = byte(( pd2ADRead >> 8) & 0xFF);
+    sendString2[31] = byte(  pd2ADRead       & 0xFF);
+    sendString2[32] = byte(( pd3ADRead >> 8) & 0xFF);
+    sendString2[33] = byte(  pd3ADRead       & 0xFF);
 
-    send('T');
+    sendString2[34] =       'T'                     ;
 
-    send(  byte(  lightStat             & 0xFF));
-    send(  byte(( pd1ADRead >>  8)      & 0xFF));
-    send(  byte(  pd1ADRead             & 0xFF));
-    send(  byte(( pd2ADRead >>  8)      & 0xFF));
-    send(  byte(  pd2ADRead             & 0xFF));
-    send(  byte(( pd3ADRead >>  8)      & 0xFF));
-    send(  byte(  pd3ADRead             & 0xFF));
-//    send(  byte(( diffPD12  >>  8)      & 0xFF));
-//    send(  byte(  diffPD12              & 0xFF));
+//    if (send(sendString2, 35)) Serial.println(F("Successfully sent sendString2"));
+    send(sendString2, 35);
 
-    return send('T');
+    return true;
 }
 
 /**************************************************************************/
@@ -265,10 +246,19 @@ bool ALTAIR_GenTelInt::sendAllALTAIRInfo( ALTAIR_GlobalMotorControl&  motorContr
 bool ALTAIR_GenTelInt::sendCommandToALTAIR(byte commandByte1 , 
                                            byte commandByte2  )
 {
+/*
            send(      (unsigned char)           RX_START_BYTE ) ;
            send(                                0x02          ) ;
            send(                                commandByte1  ) ;
     return send(                                commandByte2  ) ;
+*/
+    byte   sendString[4];
+    sendString[0]  =  (unsigned char)           RX_START_BYTE   ;
+    sendString[1]  =  (unsigned char)          (0x02)           ;
+    sendString[2]  =                            commandByte1    ;
+    sendString[3]  =                            commandByte2    ;
+    if (send(sendString, 4)) { Serial.print(radioName()); Serial.println(F("  successfully sent sendString")); }
+    return true;
 }
 
 
@@ -356,9 +346,10 @@ void ALTAIR_GenTelInt::readALTAIRInfo(  byte command[],  bool isGroundStation )
     long        readTry                  =              0 ;
     byte        startByte                =  RX_START_BYTE ;
     if (isGroundStation)  startByte      =  TX_START_BYTE ;
+                command[0]               =              0 ;
+                command[1]               =              0 ;
     if (!isBusy()) {
-//      Serial.print(F("Reading radio "));
-//      Serial.println(radioName());
+//      Serial.print(F("Reading radio: "));  Serial.println(radioName());
       while (true) {
         while (!available() && readTry < MAX_READ_TRIES) {
           ++readTry;
@@ -367,10 +358,12 @@ void ALTAIR_GenTelInt::readALTAIRInfo(  byte command[],  bool isGroundStation )
         if (readTry < MAX_READ_TRIES) {
           do {
 //            Serial.println(F("Reading a byte from radio"));
+//            Serial.println(F("here1"));
 
             byte b = read();
 //             term[termIndex++] = b;
-    
+//            if (isGroundStation) Serial.println(b, HEX);
+
             if (b == startByte && hasBegun == 0) {
               hasBegun = 1;
             }
@@ -379,9 +372,11 @@ void ALTAIR_GenTelInt::readALTAIRInfo(  byte command[],  bool isGroundStation )
               hasBegun = 2;
             }
             else if (hasBegun == 2) {
-            //Serial.println(b, HEX);
+//              Serial.println(F("here1.1"));
               term[termIndex++] = b;
+//              Serial.println(F("here1.2"));
             } 
+//            Serial.println(F("here2"));
             if (termLength == termIndex && termLength > 0) break;
 //             if (termIndex == MAX_TERM_LENGTH) break;
           } while (available());
@@ -406,6 +401,47 @@ void ALTAIR_GenTelInt::readALTAIRInfo(  byte command[],  bool isGroundStation )
       Serial.print(radioName());
       Serial.println(F(" radio is busy"));
     }
+//    Serial.println(F("here3"));
+}
+
+
+/**************************************************************************/
+/*!
+ @brief  Just print out data sent down from ALTAIR to a ground station.
+*/
+/**************************************************************************/
+void ALTAIR_GenTelInt::printALTAIRInfo(  )
+{
+    long        readTry                  =              0 ;
+//    if (!isBusy()) {
+      Serial.print(F("Reading radio "));
+      Serial.println(radioName());
+      while (true) {
+        while (!available() && readTry < MAX_READ_TRIES) {
+          ++readTry;
+//           delay(5);
+        }
+        if (readTry < MAX_READ_TRIES) {
+          do {
+//            Serial.println(F("Reading a byte from radio"));
+
+            byte b = read();
+
+            Serial.print(b, HEX);
+    
+          } while (available());
+        } else {
+//          Serial.println(F("Radio is not available for reading"));
+//          break;
+        }
+      }
+/*
+    } else {
+      Serial.print(F("Cannot read commands from the ground station, since the "));
+      Serial.print(radioName());
+      Serial.println(F(" radio is busy"));
+    }
+*/
 }
 
 

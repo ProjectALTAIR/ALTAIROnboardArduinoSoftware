@@ -169,6 +169,40 @@ bool ALTAIR_DNT900::send(const uint8_t* aString) {
 
 /**************************************************************************/
 /*!
+ @brief  Send an array of bytes.  (Returns false if send is unsuccessful.)
+*/
+/**************************************************************************/
+bool ALTAIR_DNT900::send(const uint8_t* anArray, const uint8_t arrayLen) {
+
+    int i = 0;
+    while ((digitalRead(_dntCTSPin) == HIGH) && (i < DNT_MAX_SEND_TRIES)) {
+        ++i;
+    }
+    if (i < DNT_MAX_SEND_TRIES) {
+        switch (_serialID) {
+          case 0:
+            return Serial.write(  anArray, arrayLen );
+          case 1:
+            return Serial1.write( anArray, arrayLen );
+          case 2:
+            return Serial2.write( anArray, arrayLen );
+          case 3:
+            return Serial3.write( anArray, arrayLen );
+          default:
+            Serial.println(F("Unallowed serial ID provided in initialization of DNT900 radio transceiver!"));
+            while(1);
+            return false;
+        }
+    } else {
+        Serial.println(F("Unable to write to DNT: CTS pin is high"));
+        return false;
+    }
+
+
+}
+
+/**************************************************************************/
+/*!
  @brief  Send a string of ASCII characters, as a series of individual
          chars, individually in sequence from the first char to the null
          char at the end of the string.  (Returns false if send is

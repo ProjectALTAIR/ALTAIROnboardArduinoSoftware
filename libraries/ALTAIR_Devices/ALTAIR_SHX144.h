@@ -33,6 +33,8 @@ class ALTAIR_SHX144 : public ALTAIR_GenTelInt {
   public:
     virtual bool    send(              unsigned char  aChar                                  );
     virtual bool    send(              const uint8_t* aString                                );
+    virtual bool    send(              const uint8_t* anArray         ,
+                                       const uint8_t  arrayLen                               );
     virtual bool    sendAsIndivChars(  const uint8_t* aString                                );
     virtual bool    available(                                                               ); // If a byte is available for reading, returns true.
     virtual bool    isBusy(                                                                  );
@@ -43,6 +45,8 @@ class ALTAIR_SHX144 : public ALTAIR_GenTelInt {
     virtual char    lastRSSI(                                                                ); // The RSSI value of most recently received message,
                                                                                                 // return value is in dBm, response of +127 means 
                                                                                                 // failed to get the last RSSI value.
+    virtual bool    lastSentString2()                                           { return true ; }
+
     ALTAIR_SHX144(                     const char     serialID, 
                                        const char     fakeShxProgramRxPin, 
                                        const char     shxProgramPin, 

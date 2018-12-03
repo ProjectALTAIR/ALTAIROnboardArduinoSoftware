@@ -26,7 +26,8 @@
 /**************************************************************************/
 ALTAIR_RFM23BP::ALTAIR_RFM23BP(byte RFM23_chipselectpin  , byte RFM23_interruptpin  ) :
                    _theRFM23BP(     RFM23_chipselectpin  ,      RFM23_interruptpin  ) ,
-          _RFM23_chipselectpin(     RFM23_chipselectpin                             )
+          _RFM23_chipselectpin(     RFM23_chipselectpin                             ) ,
+          _lastSentString2(         false                                           )
 {
 }
 
@@ -37,7 +38,8 @@ ALTAIR_RFM23BP::ALTAIR_RFM23BP(byte RFM23_chipselectpin  , byte RFM23_interruptp
 /**************************************************************************/
 ALTAIR_RFM23BP::ALTAIR_RFM23BP(                                                     ) :
                    _theRFM23BP( DEFAULT_RFM_CHIPSELECTPIN, DEFAULT_RFM_INTERRUPTPIN ) ,
-          _RFM23_chipselectpin( DEFAULT_RFM_CHIPSELECTPIN                           )
+          _RFM23_chipselectpin( DEFAULT_RFM_CHIPSELECTPIN                           ) ,
+          _lastSentString2(     false                                               )
 {
 }
 
@@ -65,8 +67,11 @@ bool ALTAIR_RFM23BP::initialize(const char* aString) {
 /**************************************************************************/
 bool ALTAIR_RFM23BP::send(unsigned char aChar) {
 
-    const unsigned char aCharStr[2] = { aChar, '\0' };
-    return _theRFM23BP.send(aCharStr, 2);
+//    Don't null-terminate.
+//    const unsigned char aCharStr[2] = { aChar, '\0' };
+//    return _theRFM23BP.send(aCharStr, 2);
+    const unsigned char aCharStr[1] = { aChar };
+    return _theRFM23BP.send(aCharStr, 1);
 
 }
 
@@ -84,6 +89,26 @@ bool ALTAIR_RFM23BP::send(const uint8_t* aString) {
     stringLen++;   // to get the null character at end
     if (stringLen <= _theRFM23BP.maxMessageLength(                 )) {
         _theRFM23BP.send(       aString,               stringLen    )   ;
+        _theRFM23BP.waitPacketSent(                                 )   ;
+        digitalWrite(          _RFM23_chipselectpin ,  LOW          )   ;   // try adding this
+        byte   received_byte =  SPI.transfer(          RFM_SPI_BYTE )   ;   // try adding this
+        digitalWrite(          _RFM23_chipselectpin ,  HIGH         )   ;   // try adding this
+        return true;
+    } else {
+        return false;
+    }
+
+}
+
+/**************************************************************************/
+/*!
+ @brief  Send an array of bytes.  (Returns false if send is unsuccessful.)
+*/
+/**************************************************************************/
+bool ALTAIR_RFM23BP::send(const uint8_t* anArray, const uint8_t arrayLen) {
+
+    if (arrayLen <= _theRFM23BP.maxMessageLength(                  )) {
+        _theRFM23BP.send(       anArray,               arrayLen     )   ;
         _theRFM23BP.waitPacketSent(                                 )   ;
         digitalWrite(          _RFM23_chipselectpin ,  LOW          )   ;   // try adding this
         byte   received_byte =  SPI.transfer(          RFM_SPI_BYTE )   ;   // try adding this
@@ -167,6 +192,55 @@ bool ALTAIR_RFM23BP::readMessage(unsigned char* buffer, unsigned char* length) {
 
 /**************************************************************************/
 /*!
+ @brief  Read a command sent up to ALTAIR from a ground station, or data
+         sent down from ALTAIR to a ground station.
+*/
+/**************************************************************************/
+void ALTAIR_RFM23BP::readALTAIRInfo(  byte command[],  bool isGroundStation )
+{
+    byte        buffer[MAX_TERM_LENGTH]                   ;
+    byte        bufferLength                              ;
+    byte        term[MAX_TERM_LENGTH]    =             "" ;
+    int         termIndex                =              0 ;
+    int         termLength               =              0 ;
+    long        readTry                  =              0 ;
+    byte        startByte                =  RX_START_BYTE ;
+    if (isGroundStation)  startByte      =  TX_START_BYTE ;
+                command[0]               =              0 ;
+                command[1]               =              0 ;
+    while (true) {
+//        Serial.println(F("here1"));
+        while (!available() && readTry < MAX_READ_TRIES) {
+          ++readTry;
+           delay(5);
+        }
+        if (readTry < MAX_READ_TRIES) {
+//            Serial.print(F("here2: ")); Serial.println(readTry);
+            bool readSuccess = readMessage(buffer, &bufferLength);
+            if (readSuccess && (buffer[0] == startByte) && (buffer[1] < MAX_TERM_LENGTH)) {
+//              Serial.println(F("here3"));
+              termLength = ((int) (buffer[1]));
+              for (termIndex = 0; termIndex < termLength; ++termIndex) {
+                term[termIndex] = buffer[termIndex+2];
+//                if (isGroundStation) Serial.println(term[termIndex], HEX);
+              }
+//              Serial.print(F("term[0] = ")); Serial.print(term[0], HEX); Serial.print(F("  term[1] = ")); Serial.println(term[1], HEX);
+              command[0] = term[0];
+              command[1] = term[1];
+              if (isGroundStation) groundStationPrintRxInfo(term, termLength);
+              break;
+            }
+        } else {
+//          Serial.println(F("Radio is not available for reading"));
+          break;
+        }
+    } 
+    return;
+}
+
+
+/**************************************************************************/
+/*!
  @brief  Return the name of the radio
 */
 /**************************************************************************/
@@ -200,4 +274,13 @@ char ALTAIR_RFM23BP::lastRSSI() {
 
 }
 
+/**************************************************************************/
+/*!
+ @brief  Did we last send string2? (Or string1?)
+*/
+/**************************************************************************/
+bool ALTAIR_RFM23BP::lastSentString2() {
+           _lastSentString2 = !_lastSentString2;
+    return _lastSentString2;
+}
 

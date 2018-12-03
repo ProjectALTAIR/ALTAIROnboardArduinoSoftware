@@ -63,13 +63,20 @@ bool ALTAIR_SHX144::initialize(const char* aString) {
   
 //    delay(200);
 
-    shxProgramSerial.write(byte('S'));
-    shxProgramSerial.write(byte('E'));
-    shxProgramSerial.write(byte('T'));
-    shxProgramSerial.write(byte('M'));
-    shxProgramSerial.write(byte('O'));
-    shxProgramSerial.write(byte('D'));
-    shxProgramSerial.write(byte('\r'));               // '\r' = ASCII 13 = carriage return
+    int bytesSent = 0;
+
+    bytesSent += shxProgramSerial.write(byte('S'));
+    bytesSent += shxProgramSerial.write(byte('E'));
+    bytesSent += shxProgramSerial.write(byte('T'));
+    bytesSent += shxProgramSerial.write(byte('M'));
+    bytesSent += shxProgramSerial.write(byte('O'));
+    bytesSent += shxProgramSerial.write(byte('D'));
+    bytesSent += shxProgramSerial.write(byte('\r'));               // '\r' = ASCII 13 = carriage return
+
+    if (bytesSent != 7) {
+        Serial.println("Problem initializing SHX144");
+        while(1);
+    }
 
     delay(200);
 
@@ -145,6 +152,30 @@ bool ALTAIR_SHX144::send(const uint8_t* aString) {
         return Serial2.write((const char*) aString);
       case 3:
         return Serial3.write((const char*) aString);
+      default:
+        Serial.println(F("Unallowed serial ID provided in initialization of SHX1 radio transceiver!"));
+        while(1);
+        return false;
+    }
+
+}
+
+/**************************************************************************/
+/*!
+ @brief  Send an array of bytes.  (Returns false if send is unsuccessful.)
+*/
+/**************************************************************************/
+bool ALTAIR_SHX144::send(const uint8_t* anArray, const uint8_t arrayLen) {
+
+    switch (_serialID) {
+      case 0:
+        return Serial.write(  anArray, arrayLen );
+      case 1:
+        return Serial1.write( anArray, arrayLen );
+      case 2:
+        return Serial2.write( anArray, arrayLen );
+      case 3:
+        return Serial3.write( anArray, arrayLen );
       default:
         Serial.println(F("Unallowed serial ID provided in initialization of SHX1 radio transceiver!"));
         while(1);

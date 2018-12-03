@@ -30,6 +30,8 @@ class ALTAIR_DNT900 : public ALTAIR_GenTelInt {
   public:
     virtual bool    send(              unsigned char  aChar                                  );
     virtual bool    send(              const uint8_t* aString                                );
+    virtual bool    send(              const uint8_t* anArray         ,
+                                       const uint8_t  arrayLen                               );
     virtual bool    sendAsIndivChars(  const uint8_t* aString                                );
     virtual bool    sendCallSign()                                              { return true ; } // Call sign   not necessary on ISM band DNT 900.
     virtual bool    sendEndMessage()                                            { return true ; } // End message not necessary on ISM band DNT 900.
@@ -42,6 +44,8 @@ class ALTAIR_DNT900 : public ALTAIR_GenTelInt {
     virtual char    lastRSSI(                                                                );   // The RSSI value of the most recently received 
                                                                                                   // message.  Return value is in dBm, response of 
                                                                                                   // +127 means: failed to get the last RSSI value.
+    virtual bool    lastSentString2()                                           { return true ; }
+
     ALTAIR_DNT900(const char serialID, const char     dntHwResetPin = DEFAULT_DNTHWRESETPIN, 
                                        const char     dntCTSPin     = DEFAULT_DNTCTSPIN, 
                                        const char     dntRTSPin     = DEFAULT_DNTRTSPIN      );

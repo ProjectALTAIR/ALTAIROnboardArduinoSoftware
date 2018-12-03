@@ -30,18 +30,24 @@ class ALTAIR_RFM23BP : public ALTAIR_GenTelInt {
   public:
     virtual bool    send(              unsigned char  aChar                                  );
     virtual bool    send(              const uint8_t* aString                                );
+    virtual bool    send(              const uint8_t* anArray         ,
+                                       const uint8_t  arrayLen                               );
     virtual bool    sendAsIndivChars(  const uint8_t* aString                                );
     virtual bool    available(                                                               ); // If a byte is available for reading, returns true.
     virtual bool    isBusy(                                                                  );
-    virtual bool    initialize(        const char*    aString = ""                           );
+    virtual bool    initialize(        const char*    aString         = ""                   );
     virtual byte    read(                                                                    );
     virtual bool    readMessage(       unsigned char* buffer, 
                                        unsigned char* length                                 );
+    virtual void    readALTAIRInfo(    byte           command[]       ,                         // Read a command sent up, and/or any info sent down.
+                                       bool           isGroundStation = false                );
     virtual const char*   radioName(                                                         );
     virtual radio_t radioType(                                                               );
     virtual char    lastRSSI(                                                                ); // The RSSI value of most recently received message,
                                                                                                 // return value is in dBm, response of +127 means 
                                                                                                 // failed to get the last RSSI value.
+    virtual bool    lastSentString2(                                                         );
+
     ALTAIR_RFM23BP(                    byte           RFM23_chipselectpin, 
                                        byte           RFM23_interruptpin                     );
     ALTAIR_RFM23BP(                                                                          ); // No arguments => all default values.
@@ -52,6 +58,7 @@ class ALTAIR_RFM23BP : public ALTAIR_GenTelInt {
     // this class is basically just a container for the RadioHead RH_RF22 class
     RH_RF22    _theRFM23BP                                                                    ;
     byte       _RFM23_chipselectpin                                                           ;
+    bool       _lastSentString2                                                               ;
   
 };
 #endif

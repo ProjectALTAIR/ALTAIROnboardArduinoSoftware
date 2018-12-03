@@ -45,6 +45,8 @@ class ALTAIR_GenTelInt {
   public:
     virtual bool         send(              unsigned char               aChar                   ) = 0;
     virtual bool         send(              const    uint8_t*           aString                 ) = 0;
+    virtual bool         send(              const    uint8_t*           anArray         ,
+                                            const    uint8_t            arrayLen                ) = 0;
             bool         sendGPS(           ALTAIR_GPSSensor*           gps                     )    ;
             bool         sendAllALTAIRInfo( ALTAIR_GlobalMotorControl&  motorControl    ,
                                             ALTAIR_GlobalDeviceControl& deviceControl   ,
@@ -59,13 +61,16 @@ class ALTAIR_GenTelInt {
     virtual bool         isBusy(                                                                ) = 0;
     virtual bool         initialize(        const    char*              aString         = ""    ) = 0;
     virtual byte         read(                                                                  ) = 0;
-            void         readALTAIRInfo(             byte               command[]       ,
+    virtual void         readALTAIRInfo(             byte               command[]       ,              // Read a command sent up, and/or any info sent down.
                                                      bool               isGroundStation = false )    ;
+            void         printALTAIRInfo(                                                       )    ; // Just print out (to USB Serial) any info sent down from ALTAIR.
     virtual const char*  radioName(                                                             ) = 0;
     virtual radio_t      radioType(                                                             ) = 0;
     virtual char         lastRSSI(                                                              ) = 0; // The RSSI value of the most recently received 
                                                                                                        // message.  Return value is in dBm, response of 
                                                                                                        // +127 means failed to get the last RSSI value.
+    virtual bool         lastSentString2(                                                       ) = 0;
+
   protected:
             bool         sendBareGPS(                uint8_t            hour            ,
                                                      uint8_t            minute          ,

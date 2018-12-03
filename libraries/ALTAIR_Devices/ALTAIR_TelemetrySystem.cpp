@@ -80,9 +80,21 @@ void ALTAIR_TelemetrySystem::initialize( bool backupRadiosOn , bool backupRadio2
 /**************************************************************************/
 void ALTAIR_TelemetrySystem::switchToBackup1(                              )
 {
-     ALTAIR_GenTelInt*  formerPrimary = primary();
-                       _primaryRadio  = backup1();
-                   _firstBackupRadio  = formerPrimary;
+     Serial.println(F("switching to backup 1 radio"));
+     if (backup1()->radioType() == 0) {
+       Serial.println(F("re-initializing DNT900 radio..."));
+       if (!_dnt900.initialize()) {
+         Serial.println(F("DNT900 radio init failed"));
+         while(1);
+       }
+     }
+                       _primaryRadio  =   backup1();
+                  _secondBackupRadio  = &_rfm23bp;
+     if (_primaryRadio->radioType() == 0) {
+                   _firstBackupRadio  = &_shx144;
+     } else {
+                   _firstBackupRadio  = &_dnt900;
+     }
 }
 
 /**************************************************************************/
@@ -92,10 +104,13 @@ void ALTAIR_TelemetrySystem::switchToBackup1(                              )
 /**************************************************************************/
 void ALTAIR_TelemetrySystem::switchToBackup2(                              )
 {
-     ALTAIR_GenTelInt*  formerPrimary = primary();
-                       _primaryRadio  = backup2();
-                  _secondBackupRadio  = backup1();
-                   _firstBackupRadio  = formerPrimary;
+                       _primaryRadio  =   backup2();
+                   _firstBackupRadio  = &_dnt900;
+     if (_primaryRadio->radioType() == 1) {
+                  _secondBackupRadio  = &_rfm23bp;
+     } else {
+                  _secondBackupRadio  = &_shx144;
+     }
 }
 
 
