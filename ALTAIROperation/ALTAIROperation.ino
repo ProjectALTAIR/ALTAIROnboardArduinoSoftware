@@ -3,12 +3,12 @@
 #include <ALTAIR_GlobalDeviceControl.h>
 #include <ALTAIR_GlobalLightControl.h>
 
-float          compassmagHeading          =  -999.;        // will be set to the heading in degrees East of true North, uncorrected for magnetic declination angle
-
 bool           backupRadiosOn             =  true ;        // If this is set to false, then _neither_ backup radio will be on.
 bool           backupRadio2On             =  true ;        // If this is set to true, _and_ if backupRadiosOn is _also_ set to true, then backupRadio2 will be 
                                                            //    initialized and will transmit and receive.  (Otherwise, backupRadio2 will not be initialized.)
-long           previousMillis[5]                  ;
+unsigned long  previousMillis[6]                  ;
+unsigned long  commandTimeoutInterval     =  2000 ;        // in milliseconds
+float          compassmagHeading          =  -999.;        // will be set to the heading in degrees East of true North, uncorrected for magnetic declination angle
 
 ALTAIR_GlobalMotorControl   motorControl          ;
 ALTAIR_GlobalDeviceControl  deviceControl         ;
@@ -74,14 +74,42 @@ void storeDataOnMicroSDCard() {
 }
 
 void readCommands() {
-  byte command[2];
-  deviceControl.telemSystem()->primary()->readALTAIRInfo( command );
+  byte command[2] = { 0, 0 };
+  unsigned long currentMillis = millis();
+
+  if (backupRadiosOn && backupRadio2On) deviceControl.telemSystem()->rfm23bp()->readALTAIRInfo( command );
   if (command[0] != 0) {
     if (command[1] != 0) {
-      Serial.print(F("command[0] = ")); Serial.print(command[0], HEX); Serial.print(F("  command[1] = ")); Serial.println(command[1], HEX);
-      performCommand(command[0], command[1]);
+      if (currentMillis - previousMillis[5] > commandTimeoutInterval) {
+        Serial.print(F("RFM23BP command[0] = ")); Serial.print(command[0], HEX); Serial.print(F("  command[1] = ")); Serial.println(command[1], HEX);
+        performCommand(command[0], command[1]);
+        previousMillis[5] = currentMillis;
+      }
     }
   }
+
+  if (backupRadiosOn) deviceControl.telemSystem()->shx144()->readALTAIRInfo( command );
+  if (command[0] != 0) {
+    if (command[1] != 0) {
+      if (currentMillis - previousMillis[5] > commandTimeoutInterval) {
+        Serial.print(F("SHX144 command[0] = ")); Serial.print(command[0], HEX); Serial.print(F("  command[1] = ")); Serial.println(command[1], HEX);
+        performCommand(command[0], command[1]);
+        previousMillis[5] = currentMillis;
+      }
+    }
+  }
+
+  deviceControl.telemSystem()->dnt900()->readALTAIRInfo( command );
+  if (command[0] != 0) {
+    if (command[1] != 0) {
+      if (currentMillis - previousMillis[5] > commandTimeoutInterval) {
+        Serial.print(F("DNT900 command[0] = ")); Serial.print(command[0], HEX); Serial.print(F("  command[1] = ")); Serial.println(command[1], HEX);
+        performCommand(command[0], command[1]);
+        previousMillis[5] = currentMillis;
+      }
+    }
+  }
+
 }
 
 void printNavMastSensorValsAndAdjSettingsAtInterval(long interval) {
