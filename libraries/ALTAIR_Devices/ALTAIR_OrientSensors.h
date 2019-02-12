@@ -4,7 +4,11 @@
     @author   Justin Albert (jalbert@uvic.ca)
     @license  GPL
 
-    This is the class for the ALTAIR orientation sensors:
+    This is the class containing all 4 of the ALTAIR orientation sensors:
+    1) the Adafruit BNO055 (accel/gyro/mag), located on the mast; 2)
+    the CHRobotics UM7 (accel/gyro/mag), located inside the payload; 3)
+    the Sparkfun HMC6343 (accel/mag), located on the mast; and 4) the
+    compass HMC5883L magnetometer (just mag), located inside the mast.
 
     Justin Albert  jalbert@uvic.ca     began on 6 Sep. 2018
 
