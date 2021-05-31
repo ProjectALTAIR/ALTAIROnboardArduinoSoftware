@@ -21,7 +21,7 @@
 #define   ALTAIR_LightSourceMonitoring_h
 
 #include <Adafruit_Sensor.h>
-#include <Adafruit_ADS1015.h>    // is the proper header for the Adafruit ADS 1115 ADCs (as well)
+#include <Adafruit_ADS1X15.h>
 
 #define   DEFAULT_ADS1115ADC_I2CADDRESS               0x48
 #define   DEFAULT_ADS1115ADC2_I2CADDRESS              0x49
@@ -37,10 +37,10 @@ class ALTAIR_LightSourceMonitoring {
   public:
     virtual void         initialize(  )                           ;
 
-    Adafruit_ADS1115*    ads1115ADC1( )    { return &_ads1115ADC1 ; }
-    Adafruit_ADS1115*    ads1115ADC2( )    { return &_ads1115ADC2 ; }
-    Adafruit_ADS1115*    ads1115ADC3( )    { return &_ads1115ADC3 ; }
-    Adafruit_ADS1115*    ads1115ADC4( )    { return &_ads1115ADC4 ; }
+    Adafruit_ADS1X15*    ads1115ADC1( )    { return &_ads1115ADC1 ; }
+    Adafruit_ADS1X15*    ads1115ADC2( )    { return &_ads1115ADC2 ; }
+    Adafruit_ADS1X15*    ads1115ADC3( )    { return &_ads1115ADC3 ; }
+    Adafruit_ADS1X15*    ads1115ADC4( )    { return &_ads1115ADC4 ; }
 
     ALTAIR_LightSourceMonitoring(     )                           ;
 
@@ -48,10 +48,10 @@ class ALTAIR_LightSourceMonitoring {
 
   private:
 
-    Adafruit_ADS1115    _ads1115ADC1                              ;
-    Adafruit_ADS1115    _ads1115ADC2                              ;
-    Adafruit_ADS1115    _ads1115ADC3                              ;
-    Adafruit_ADS1115    _ads1115ADC4                              ;
+    Adafruit_ADS1X15    _ads1115ADC1                              ;
+    Adafruit_ADS1X15    _ads1115ADC2                              ;
+    Adafruit_ADS1X15    _ads1115ADC3                              ;
+    Adafruit_ADS1X15    _ads1115ADC4                              ;
 };
 #endif    //   ifndef ALTAIR_LightSourceMonitoring_h
 
