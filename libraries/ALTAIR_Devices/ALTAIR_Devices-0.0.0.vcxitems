@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding ="utf-8" ?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" >
+  <PropertyGroup Label="Globals" >
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <ItemsProjectGuid>{7bf48cf4-c69b-4079-88d0-7c74f4a8e628}</ItemsProjectGuid>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(MSBuildThisFileDirectory)</AdditionalIncludeDirectories>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ProjectCapability Include="SourceItemsFromImports" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="$(MSBuildThisFileDirectory)ALTAIR_ArduinoMicro.cpp" />
+<ClCompile Include="$(MSBuildThisFileDirectory)ALTAIR_BNO055.cpp" />
+<ClCompile Include="$(MSBuildThisFileDirectory)ALTAIR_DataStorageSystem.cpp" />
+<ClCompile Include="$(MSBuildThisFileDirectory)ALTAIR_DFRobotG6.cpp" />
+<ClCompile Include="$(MSBuildThisFileDirectory)ALTAIR_DNT900.cpp" />
+<ClCompile Include="$(MSBuildThisFileDirectory)ALTAIR_GenTelInt.cpp" />
+<ClCompile Include="$(MSBuildThisFileDirectory)ALTAIR_GlobalDeviceControl.cpp" />
+<ClCompile Include="$(MSBuildThisFileDirectory)ALTAIR_GPSSensors.cpp" />
+<ClCompile Include="$(MSBuildThisFileDirectory)ALTAIR_HMC5883L.cpp" />
+<ClCompile Include="$(MSBuildThisFileDirectory)ALTAIR_HMC6343.cpp" />
+<ClCompile Include="$(MSBuildThisFileDirectory)ALTAIR_NEOM8N.cpp" />
+<ClCompile Include="$(MSBuildThisFileDirectory)ALTAIR_OrientSensor.cpp" />
+<ClCompile Include="$(MSBuildThisFileDirectory)ALTAIR_OrientSensors.cpp" />
+<ClCompile Include="$(MSBuildThisFileDirectory)ALTAIR_RFM23BP.cpp" />
+<ClCompile Include="$(MSBuildThisFileDirectory)ALTAIR_RPMSensor.cpp" />
+<ClCompile Include="$(MSBuildThisFileDirectory)ALTAIR_SHX144.cpp" />
+<ClCompile Include="$(MSBuildThisFileDirectory)ALTAIR_SituatAwarenessSystem.cpp" />
+<ClCompile Include="$(MSBuildThisFileDirectory)ALTAIR_TCA9548A.cpp" />
+<ClCompile Include="$(MSBuildThisFileDirectory)ALTAIR_TelemetrySystem.cpp" />
+<ClCompile Include="$(MSBuildThisFileDirectory)ALTAIR_UM7.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="$(MSBuildThisFileDirectory)ALTAIR_ArduinoMicro.h" />
+<ClInclude Include="$(MSBuildThisFileDirectory)ALTAIR_Battery.h" />
+<ClInclude Include="$(MSBuildThisFileDirectory)ALTAIR_BNO055.h" />
+<ClInclude Include="$(MSBuildThisFileDirectory)ALTAIR_CurrentSensor.h" />
+<ClInclude Include="$(MSBuildThisFileDirectory)ALTAIR_DataStorageSystem.h" />
+<ClInclude Include="$(MSBuildThisFileDirectory)ALTAIR_DFRobotG6.h" />
+<ClInclude Include="$(MSBuildThisFileDirectory)ALTAIR_DNT900.h" />
+<ClInclude Include="$(MSBuildThisFileDirectory)ALTAIR_GenTelInt.h" />
+<ClInclude Include="$(MSBuildThisFileDirectory)ALTAIR_GlobalDeviceControl.h" />
+<ClInclude Include="$(MSBuildThisFileDirectory)ALTAIR_GPSSensor.h" />
+<ClInclude Include="$(MSBuildThisFileDirectory)ALTAIR_GPSSensors.h" />
+<ClInclude Include="$(MSBuildThisFileDirectory)ALTAIR_HMC5883L.h" />
+<ClInclude Include="$(MSBuildThisFileDirectory)ALTAIR_HMC6343.h" />
+<ClInclude Include="$(MSBuildThisFileDirectory)ALTAIR_NEOM8N.h" />
+<ClInclude Include="$(MSBuildThisFileDirectory)ALTAIR_OrientSensor.h" />
+<ClInclude Include="$(MSBuildThisFileDirectory)ALTAIR_OrientSensors.h" />
+<ClInclude Include="$(MSBuildThisFileDirectory)ALTAIR_RFM23BP.h" />
+<ClInclude Include="$(MSBuildThisFileDirectory)ALTAIR_RPMSensor.h" />
+<ClInclude Include="$(MSBuildThisFileDirectory)ALTAIR_SHX144.h" />
+<ClInclude Include="$(MSBuildThisFileDirectory)ALTAIR_SituatAwarenessSystem.h" />
+<ClInclude Include="$(MSBuildThisFileDirectory)ALTAIR_TCA9548A.h" />
+<ClInclude Include="$(MSBuildThisFileDirectory)ALTAIR_TelemetrySystem.h" />
+<ClInclude Include="$(MSBuildThisFileDirectory)ALTAIR_TempSensor.h" />
+<ClInclude Include="$(MSBuildThisFileDirectory)ALTAIR_UM7.h" />
+  </ItemGroup>
+  <ItemGroup>
+    
+  </ItemGroup>
+  <ItemGroup>
+    
+  </ItemGroup>
+</Project>

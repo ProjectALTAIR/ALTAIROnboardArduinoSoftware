@@ -25,17 +25,41 @@
 #define ALTAIR_RPMSensor_h
 
 #include "Arduino.h"
+#include "QTRSensors.h"
+
+#define RPM_AVEREGING_WINDOW_SIZE        3
+#define RPM_EDGE_DETECTION_THRESHOLD     100
+#define RPM_NUMBER_OF_TAPES              2
 
 class ALTAIR_RPMSensor {
   public:
+      ALTAIR_RPMSensor();
+      ALTAIR_RPMSensor(uint8_t analog_input_pin);
 
-    ALTAIR_RPMSensor() :    _rpm(         0.   )     {                     }
+      float                 rpm;
+      uint16_t                   analog_rpm                                 ;
+      
+      int                   RPM_risingEdge_counter;
+      int                   RPM_fallingEdge_counter;
+      int                   _analog_input_pin;
+      int                   RPM_window[RPM_AVEREGING_WINDOW_SIZE];
+      int                   RPM_windowSum;
+      float                 RPM_windowAverage;
+      QTRSensors RPMSensor;
+  //float                   rpm(              )     { return _rpm       ;   }
+  //void                    setRPM( float rpm )     {        _rpm = rpm ;   }
+    void                    store_analog_RPM(   );
+    void                    risingEdge_detection();
+    void                    fallingEdge_detection();
+    void                    calculate_RPM(int rpm_measurement_millis);
+    //void                    provideRPM_I2C(     );
+    //void                    retrieveRPM_I2C(    ) ;
 
-    float                    rpm(              )     { return _rpm       ; }
-    void                     setRPM( float rpm )     {        _rpm = rpm ; }
+    
 
-  private:
-    float                   _rpm                                         ;
+  
+      
+    
 
 };
 #endif    //   ifndef ALTAIR_RPMSensor_h

@@ -14,6 +14,20 @@ const int     numCurrentValsToAverage   =       20;
 float         currentInAmps[4][numCurrentValsToAverage];  // average the past 20 values
 byte          packedCurrent[4];
 
+byte packCurrent(float theCurrent) {
+  float scaledCurrent = theCurrent*4.;
+  byte packCurr;
+  if (scaledCurrent >= 0. && scaledCurrent < 127.) {
+    packCurr = scaledCurrent;
+  } else if (scaledCurrent >= -128. && scaledCurrent < 0.) {
+    packCurr = scaledCurrent + 256.;
+  } else if (scaledCurrent >= 127.) {
+    packCurr = 127;
+  } else {
+    packCurr = 128;
+  }
+  return packCurr;
+}
 
 void setup() {
   
@@ -55,5 +69,5 @@ void loop() {
   Serial.print(packedCurrent[2], HEX);  Serial.print(" ");
   Serial.print(packedCurrent[3], HEX);  Serial.println("      ");
   Serial.println("---");
-  delay(50);
+  delay(500);
 }
