@@ -34,21 +34,32 @@
 class ALTAIR_RPMSensor {
   public:
       ALTAIR_RPMSensor();
-      ALTAIR_RPMSensor(uint8_t analog_input_pin);
+      //ALTAIR_RPMSensor(int test);
+      //ALTAIR_RPMSensor(const uint8_t analog_input_pin);
 
-      float                 rpm;
-      uint16_t                   analog_rpm                                 ;
-      
-      int                   RPM_risingEdge_counter;
-      int                   RPM_fallingEdge_counter;
-      int                   _analog_input_pin;
-      int                   RPM_window[RPM_AVEREGING_WINDOW_SIZE];
-      int                   RPM_windowSum;
-      float                 RPM_windowAverage;
+      float                 rpm = 0.;
+      float                 _rpm_rising = 0.;
+      float                 _rpm_falling = 0.;
+      int                   _isRisingEdge = 0;
+      int                   _isFallingEdge = 0;
+      int                   _window_Index = 0;
+      uint16_t              analog_rpm = 0                                 ;
+      int                   _analog_input_pin = 0;
+
+      const uint8_t SensorCount = 1;
+      uint16_t sensorValues[1];
+
+      int                   RPM_risingEdge_counter = 0;
+      int                   RPM_fallingEdge_counter = 0;
+      uint16_t              RPM_window[RPM_AVEREGING_WINDOW_SIZE] = {0};
+      uint16_t              RPM_windowSum = 0;
+      float                 RPM_windowAverage = 0.;
       QTRSensors RPMSensor;
   //float                   rpm(              )     { return _rpm       ;   }
   //void                    setRPM( float rpm )     {        _rpm = rpm ;   }
+    void                    initialize_QTRsensor(const uint8_t* analog_input_pin);
     void                    store_analog_RPM(   );
+    void                    Edge_detection();
     void                    risingEdge_detection();
     void                    fallingEdge_detection();
     void                    calculate_RPM(int rpm_measurement_millis);

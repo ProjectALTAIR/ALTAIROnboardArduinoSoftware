@@ -20,6 +20,7 @@
 #define   ALTAIR_ARDUINOMICRO_h
 
 #include "Arduino.h"
+#include "Wire.h"
 
 #define   ARDUINOMICRO_I2CADDRESS                 0x08
 #define   ARDUINOMICRO_DATABYTES                    16
@@ -32,15 +33,18 @@ class ALTAIR_ArduinoMicro {
     virtual  void        initialize(                             )    {                         }
     virtual  void        getDataAfterInterval(    long interval  )    ;
 
-             byte*       packedRPM(                              )    { return _packedRPM     ; }
+             byte*       packedRPS(                              )    { return _packedRPS     ; }
              byte*       packedCurrent(                          )    { return _packedCurrent ; }
              byte*       packedTemp(                             )    { return _packedTemp    ; }
     
   private:
 
     unsigned long       _dataLastObtainedAtMillis                     ;
-             byte       _packedRPM[4]                                 ;
+             byte       _packedRPS[4]                                 ;
              byte       _packedCurrent[4]                             ;
              byte       _packedTemp[8]                                ;
+             int        RPM[4];
+             int        Current[4];
+             int        Temp[8];
 };
 #endif    //   ifndef ALTAIR_ARDUINOMICRO_h

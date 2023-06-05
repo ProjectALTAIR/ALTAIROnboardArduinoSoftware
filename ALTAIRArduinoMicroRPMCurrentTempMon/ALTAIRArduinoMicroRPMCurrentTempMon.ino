@@ -2,84 +2,13 @@
 //     through, each of the 4 propulsion motors and electronic speed controllers (ESCs).  
 // The Micro acts as an I2C slave (with slave address 08), and it reports 16 signed byte values
 //     (4 RPMs, 4 currents, and 8 temperatures) over I2C, which each correspond to the most 
-//     recent measurements, when info is requested by the Mega 2560 I2C master.
+//     recent measurements, when info is requested by the Grand Central I2C master.
 
 #include <Wire.h>
-
-// Pulse timing for measuring the 4 RPMs.
-const int     rpmTimerPin[4]            =     {  5,  7, 11, 13 };
-const int     usbInputCheckPin          =       14;                // Pin 14 is actually the MISO pin on the Arduino Micro (see below)
-const int     numRPMPulsesToAverage     =       20;
-const long    numMicrosBeforeRPMTimeout =  1000000;
-const long    numMicrosPerMinute        = 60000000;
-const int     numMicrosDelayBtwReads    =       20;
-const int     numPulsesPerRevolution    =        4;
-byte          packedRPM[4];
-
-const int     currentSensorPin[4]       =     { A0, A1, A2, A3 };
-int           currentSensorValue[4];
-const int     numCurrentValsToAverage   =       20;
-float         currentInAmps[4][numCurrentValsToAverage];  // average the past 20 values
-byte          packedCurrent[4];
-
-const int     tempSensorPin[8]          =     { A4, A5, A6, A7,    A8, A9, A10, A11  };
-int           tempSensorValue[8];
-float         tempInCelsius[8];
-byte          packedTemp[8];
+#include <ALTAIR_RPMSensor.h>
 
 
-// get truncated (i.e. robust) mean of the pulse durations
-float averageNumMicrosPerPulse(long *rpmPulseDuration) {
-  long longestPulse = -999, secondLongestPulse = -999, shortestPulse = -999, secondShortestPulse = -999;
-  long truncatedSumOfPulseDurations, sumOfPulseDurations = 0;
-  for (int i = 0; i < numRPMPulsesToAverage; ++i) {
-     sumOfPulseDurations += abs(rpmPulseDuration[i]);
-     if (abs(rpmPulseDuration[i]) > longestPulse) {
-       secondLongestPulse = longestPulse;
-       longestPulse = abs(rpmPulseDuration[i]);
-     }
-     if (abs(rpmPulseDuration[i]) < shortestPulse || shortestPulse == -999) {
-       secondShortestPulse = shortestPulse;
-       shortestPulse = abs(rpmPulseDuration[i]);
-     }
-  }
-  truncatedSumOfPulseDurations = sumOfPulseDurations - longestPulse - secondLongestPulse - shortestPulse - secondShortestPulse;
-  return truncatedSumOfPulseDurations / (numRPMPulsesToAverage - 4.);
-}
-
-float getRPM(int pinNumber) {
-  byte presentReading = digitalRead(pinNumber);
-  unsigned long initialTime = micros();
-  unsigned long previousTime = initialTime;
-  unsigned long presentTime = initialTime;
-  long rpmPulseDuration[numRPMPulsesToAverage];
-  for (int i = 0; i < numRPMPulsesToAverage; ++i) {
-    int j = 0;
-// only consider the pulse to have ended if three digitalReads in a row differ from presentReading
-    while (1) {
-      if (digitalRead(pinNumber) != presentReading) {
-        delayMicroseconds(numMicrosDelayBtwReads);
-        if (digitalRead(pinNumber) != presentReading) {
-          delayMicroseconds(numMicrosDelayBtwReads);
-          if (digitalRead(pinNumber) != presentReading) {
-            break;
-          }
-        }
-      }
-      ++j;
-      if (j%10000 == 0) presentTime = micros();
-      if (presentTime - initialTime > numMicrosBeforeRPMTimeout) return 0.0;
-    }
-    presentTime = micros();
-    rpmPulseDuration[i] = presentTime - previousTime;
-    if (presentReading == HIGH) rpmPulseDuration[i] = -rpmPulseDuration[i];
-    previousTime = presentTime;
-    presentReading = !presentReading;
-  }
-  return numMicrosPerMinute/(numPulsesPerRevolution*averageNumMicrosPerPulse(rpmPulseDuration)); 
-}
-
-byte packRPM(float theRPM) {
+byte packRPS(float theRPM) {
   float theRPS = theRPM/60.;
   byte packRPS;
   if (theRPS >= 0. && theRPS < 127.) {
@@ -124,13 +53,45 @@ byte packCurrent(float theCurrent) {
   return packCurr;
 }
 
+
+const int RPM_sensorCount = 4;
+
+byte          packedRPS[4];
+byte          packedCurrent[4];
+byte          packedTemp[8];
+
+
+
+const uint8_t RPM_sensor_pins[4] = {A0, A1, A2, A3};
+const int RPM_measurement_time = 500;
+
+int i = 0;
+
+int start_millis = 0;
+int current_millis = 0;
+
+// Instantiate 4 RPM Sensors
+ALTAIR_RPMSensor arrayof_RPMSensors[4];
+
 void setup() {
+  
+  Serial.println("Begin Sensor initialization");
+  for(int i = 0; i<RPM_sensorCount; i++){
+    arrayof_RPMSensors[i].initialize_QTRsensor((const uint8_t*) RPM_sensor_pins[i]);
+    //arrayof_RPMSensors[i].RPMSensor.setTypeAnalog();
+    arrayof_RPMSensors[i].RPMSensor.setSensorPins((const uint8_t*) { RPM_sensor_pins[i] }, (const uint8_t) 1);
+
+    Serial.println("RPM Sensors initialized");
+  }
+  
+  
+  
   Wire.begin(8);
   Wire.onRequest(sendInfo);
   
   Serial.begin(9600);
  
-  for (int i = 0; i < 4; ++i) {
+  /*for (int i = 0; i < 4; ++i) {
     for (int j = 0; j < numCurrentValsToAverage; ++j) currentInAmps[i][j] = 0.;
   }
   // Initialize digital RPM timer pins as input.  (Note that the analog-read pins don't require this initialization.)
@@ -138,10 +99,78 @@ void setup() {
     pinMode(rpmTimerPin[i], INPUT);
   }
   // Initialize special SPI MISO pin = 14 as an input (to see if device has its USB port plugged in)
-  pinMode(usbInputCheckPin, INPUT);
+  pinMode(usbInputCheckPin, INPUT);*/
 }
 
 void loop() {
+  current_millis = millis();
+  start_millis = current_millis;
+  //qtr.read(sensorValues);
+    //Serial.println(sensorValues[0]);
+  Serial.println("Start of measurement");
+  for ( int i = 0; i < RPM_sensorCount; i++) {
+    arrayof_RPMSensors[i].RPM_risingEdge_counter = 0;
+    arrayof_RPMSensors[i].RPM_fallingEdge_counter = 0;
+    Serial.print(arrayof_RPMSensors[i]._analog_input_pin); Serial.print("  ");
+  }
+  Serial.println(" ");
+  while(current_millis-start_millis < RPM_measurement_time){
+    for (int i = 0; i < RPM_sensorCount; i++) {    
+      arrayof_RPMSensors[i].store_analog_RPM();
+          // Readout in class using QTRSensor library
+      //arrayof_RPMSensors[i].RPMSensor.read(arrayof_RPMSensors[i].sensorValues);
+      //Serial.print(arrayof_RPMSensors[i].sensorValues[0]); Serial.print("  ");
+      
+          // Tipical arduino analogReadG
+      //Serial.print(analogRead(RPM_sensor_pins[i])); Serial.print("  ");
+      
+      //Serial.print(arrayof_RPMSensors[i].analog_rpm); Serial.print("  ");
+      
+      arrayof_RPMSensors[i].Edge_detection();
+      /*arrayof_RPMSensors[i].RPM_windowAverage = static_cast<float>(arrayof_RPMSensors[i].RPM_windowSum) / RPM_AVEREGING_WINDOW_SIZE;
+      //arrayof_RPMSensors[i].risingEdge_detection();
+          if (arrayof_RPMSensors[i].analog_rpm > arrayof_RPMSensors[i].RPM_windowAverage + RPM_EDGE_DETECTION_THRESHOLD) {
+            arrayof_RPMSensors[i].RPM_risingEdge_counter++;
+            Serial.println("Rising Edge detected  #"); Serial.println(arrayof_RPMSensors[i].RPM_risingEdge_counter);
+          }
+      //arrayof_RPMSensors[i].fallingEdge_detection();
+          if (arrayof_RPMSensors[i].analog_rpm < arrayof_RPMSensors[i].RPM_windowAverage - RPM_EDGE_DETECTION_THRESHOLD) {
+            arrayof_RPMSensors[i].RPM_fallingEdge_counter++;
+            Serial.print("Falling Edge detected  #"); Serial.println(arrayof_RPMSensors[i].RPM_fallingEdge_counter);
+
+          }
+      */
+      
+
+    }
+    //Serial.println(arrayof_RPMSensors[0].analog_rpm);
+    current_millis = millis();
+    //Serial.print("millis: "); Serial.println(current_millis-start_millis);    
+  }
+  Serial.println("End of measurement ");
+    
+  Serial.println("Current RPM values: ");
+  for (int i = 0; i < RPM_sensorCount; i++) {
+    arrayof_RPMSensors[i].calculate_RPM(RPM_measurement_time);
+
+    Serial.print("# of Edges  ");
+    Serial.print(arrayof_RPMSensors[i].RPM_risingEdge_counter); Serial.print("  ");
+    Serial.print(arrayof_RPMSensors[i].RPM_fallingEdge_counter); Serial.print(" --> ");
+  
+    //Serial.print(arrayof_RPMSensors[i]._rpm_rising); Serial.print("  "); 
+    //Serial.println(arrayof_RPMSensors[i]._rpm_falling);
+  
+    Serial.print(arrayof_RPMSensors[i].rpm); Serial.println(" RPM ");
+    packedRPS[i] = packRPS(arrayof_RPMSensors[i].rpm);
+  }
+
+  Serial.println(" ");
+  Serial.println("----");
+  delay(5000);
+
+  
+  
+  /* OLD CODE---------------------------------------------
   double rpm[4] = { 0., 0., 0., 0. };
   float  currentRunningAverage[4] = { 0., 0., 0., 0. };
 
@@ -209,11 +238,12 @@ void loop() {
         Serial.print(packedTemp[4], HEX);     Serial.print(" "); Serial.print(packedTemp[5], HEX);  Serial.print(" ");
         Serial.print(packedTemp[6], HEX);     Serial.print(" "); Serial.print(packedTemp[7], HEX);  Serial.println("      "); Serial.println("      ");
   }
+  OLD CODE----------------------------------------------------------------------------------
+  */
 }
 
 void sendInfo() {
-  for (int i = 0; i < 4; ++i) Wire.write(packedRPM[i]);
+  for (int i = 0; i < 4; ++i) Wire.write(packedRPS[i]);
   for (int i = 0; i < 4; ++i) Wire.write(packedCurrent[i]);
   for (int i = 0; i < 8; ++i) Wire.write(packedTemp[i]);  
 }
-

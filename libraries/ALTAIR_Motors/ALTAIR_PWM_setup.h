@@ -74,6 +74,9 @@ void initialize_PWM_registers() {
   // Enable
   TCC0->CTRLA.bit.ENABLE = 1;                        // Enable timer TCC0
   while (TCC0->SYNCBUSY.bit.ENABLE);                 // Wait for synchronization
+
+  Serial.println("PWM control pins initialized!");
+
 }
 
 void PWM_motor_control(int PWM_pinChoice){
@@ -81,6 +84,20 @@ void PWM_motor_control(int PWM_pinChoice){
     int PWM_value = 0;
 
   switch (PWM_pinChoice) {
+    case 1:
+      // All Motors
+      Serial.println("Set control value for all motors from 0 to 10: ");
+      while (Serial.available() == 0) {}
+      PWM_control_value = Serial.parseInt();
+      if(PWM_control_value == 0){
+        PWM_value = PWM_INITIALIZATION_VALUE;
+      }else{
+        PWM_value = PWM_INITIALIZATION_VALUE + 200 + 100*PWM_control_value;
+      }
+      for(int i = 0; i < 4; i++) {TCC0->CCBUF[i].reg = PWM_value;}
+      break;
+   
+    
     case 30:
       // Pin D30 = POR_PA23 = TCC0, Channel 3
       Serial.println("Set control value from 0 to 10: ");
@@ -137,6 +154,7 @@ void PWM_motor_control(int PWM_pinChoice){
       Serial.println("Please choose a valid selection. Motors are connected to Pins D30, D31, D32 and D33");
       break;
   }
-
+  Serial.print("PWM on Pin "); Serial.print(PWM_pinChoice);
+  Serial.print(" set to "); Serial.println(PWM_control_value);
 }
 #endif      //  ifndef ALTAIR_PWM_setup_h

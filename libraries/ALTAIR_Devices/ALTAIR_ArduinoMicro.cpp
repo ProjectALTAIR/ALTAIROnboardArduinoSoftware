@@ -42,12 +42,17 @@ void ALTAIR_ArduinoMicro::getDataAfterInterval(    long interval  )
     _dataLastObtainedAtMillis = currentMillis;
 
     Wire.requestFrom( ARDUINOMICRO_I2CADDRESS , ARDUINOMICRO_DATABYTES );
-    for (int i = 0; i < 4; ++i) _packedRPM[i]     = Wire.read();
+    for (int i = 0; i < 4; ++i) _packedRPS[i]     = Wire.read();
     for (int i = 0; i < 4; ++i) _packedCurrent[i] = Wire.read();
     for (int i = 0; i < 8; ++i) _packedTemp[i]    = Wire.read();
 
-//    for (int i = 0; i < 4; ++i) { Serial.print("_packedRPM["); Serial.print(i); Serial.print("]     = "); Serial.println(_packedRPM[i]    , HEX) ; }
-//    for (int i = 0; i < 4; ++i) { Serial.print("_packedCurrent["); Serial.print(i); Serial.print("] = "); Serial.println(_packedCurrent[i], HEX) ; }
-//    for (int i = 0; i < 8; ++i) { Serial.print("_packedTemp["); Serial.print(i); Serial.print("]    = "); Serial.println(_packedTemp[i]   , HEX) ; }
+    for (int i = 0; i < 4; ++i) RPM[i] = int(_packedRPS[i]) * 60;
+    for (int i = 0; i < 4; ++i) Current[i] = int(_packedCurrent[i]);  // conversion missing
+    for (int i = 0; i < 8; ++i) Temp[i] = int(_packedTemp[i]);        // conversion missing
+
+    for (int i = 0; i < 4; ++i) { Serial.print("Current["); Serial.print(i); Serial.print("] = "); Serial.println(Current[i]) ; }
+    for (int i = 0; i < 8; ++i) { Serial.print("Temperature["); Serial.print(i); Serial.print("]    = "); Serial.println(Temp[i]) ; }
+    for (int i = 0; i < 4; ++i) { Serial.print("RPM["); Serial.print(i); Serial.print("]     = "); Serial.println(RPM[i]) ; }
+
   }
 }

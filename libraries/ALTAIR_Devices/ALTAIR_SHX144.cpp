@@ -18,6 +18,7 @@
 #include "ALTAIR_SHX144.h"
 #include <SoftwareSerial.h>
 
+
 /**************************************************************************/
 /*!
  @brief  Constructor.
