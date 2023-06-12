@@ -79,7 +79,7 @@ void setup() {
   for(int i = 0; i<RPM_sensorCount; i++){
     arrayof_RPMSensors[i].initialize_QTRsensor((const uint8_t*) RPM_sensor_pins[i]);
     //arrayof_RPMSensors[i].RPMSensor.setTypeAnalog();
-    arrayof_RPMSensors[i].RPMSensor.setSensorPins((const uint8_t*) { RPM_sensor_pins[i] }, (const uint8_t) 1);
+    arrayof_RPMSensors[i].RPMSensor()->setSensorPins((const uint8_t*) { RPM_sensor_pins[i] }, (const uint8_t) 1);
 
     Serial.println("RPM Sensors initialized");
   }
@@ -109,39 +109,15 @@ void loop() {
     //Serial.println(sensorValues[0]);
   Serial.println("Start of measurement");
   for ( int i = 0; i < RPM_sensorCount; i++) {
-    arrayof_RPMSensors[i].RPM_risingEdge_counter = 0;
-    arrayof_RPMSensors[i].RPM_fallingEdge_counter = 0;
-    Serial.print(arrayof_RPMSensors[i]._analog_input_pin); Serial.print("  ");
+    arrayof_RPMSensors[i].resetRisingEdge_counter();
+    arrayof_RPMSensors[i].resetFallingEdge_counter();
+    Serial.print(arrayof_RPMSensors[i].analog_input_pin()); Serial.print("  ");
   }
   Serial.println(" ");
   while(current_millis-start_millis < RPM_measurement_time){
     for (int i = 0; i < RPM_sensorCount; i++) {    
       arrayof_RPMSensors[i].store_analog_RPM();
-          // Readout in class using QTRSensor library
-      //arrayof_RPMSensors[i].RPMSensor.read(arrayof_RPMSensors[i].sensorValues);
-      //Serial.print(arrayof_RPMSensors[i].sensorValues[0]); Serial.print("  ");
-      
-          // Tipical arduino analogReadG
-      //Serial.print(analogRead(RPM_sensor_pins[i])); Serial.print("  ");
-      
-      //Serial.print(arrayof_RPMSensors[i].analog_rpm); Serial.print("  ");
-      
       arrayof_RPMSensors[i].Edge_detection();
-      /*arrayof_RPMSensors[i].RPM_windowAverage = static_cast<float>(arrayof_RPMSensors[i].RPM_windowSum) / RPM_AVEREGING_WINDOW_SIZE;
-      //arrayof_RPMSensors[i].risingEdge_detection();
-          if (arrayof_RPMSensors[i].analog_rpm > arrayof_RPMSensors[i].RPM_windowAverage + RPM_EDGE_DETECTION_THRESHOLD) {
-            arrayof_RPMSensors[i].RPM_risingEdge_counter++;
-            Serial.println("Rising Edge detected  #"); Serial.println(arrayof_RPMSensors[i].RPM_risingEdge_counter);
-          }
-      //arrayof_RPMSensors[i].fallingEdge_detection();
-          if (arrayof_RPMSensors[i].analog_rpm < arrayof_RPMSensors[i].RPM_windowAverage - RPM_EDGE_DETECTION_THRESHOLD) {
-            arrayof_RPMSensors[i].RPM_fallingEdge_counter++;
-            Serial.print("Falling Edge detected  #"); Serial.println(arrayof_RPMSensors[i].RPM_fallingEdge_counter);
-
-          }
-      */
-      
-
     }
     //Serial.println(arrayof_RPMSensors[0].analog_rpm);
     current_millis = millis();
@@ -154,14 +130,14 @@ void loop() {
     arrayof_RPMSensors[i].calculate_RPM(RPM_measurement_time);
 
     Serial.print("# of Edges  ");
-    Serial.print(arrayof_RPMSensors[i].RPM_risingEdge_counter); Serial.print("  ");
-    Serial.print(arrayof_RPMSensors[i].RPM_fallingEdge_counter); Serial.print(" --> ");
+    Serial.print(arrayof_RPMSensors[i].risingEdge_counter()); Serial.print("  ");
+    Serial.print(arrayof_RPMSensors[i].fallingEdge_counter()); Serial.print(" --> ");
   
     //Serial.print(arrayof_RPMSensors[i]._rpm_rising); Serial.print("  "); 
     //Serial.println(arrayof_RPMSensors[i]._rpm_falling);
   
-    Serial.print(arrayof_RPMSensors[i].rpm); Serial.println(" RPM ");
-    packedRPS[i] = packRPS(arrayof_RPMSensors[i].rpm);
+    Serial.print(arrayof_RPMSensors[i].rpm()); Serial.println(" RPM ");
+    packedRPS[i] = arrayof_RPMSensors[i].packRPS(arrayof_RPMSensors[i].rpm());
   }
 
   Serial.println(" ");

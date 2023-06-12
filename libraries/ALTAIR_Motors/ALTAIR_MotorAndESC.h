@@ -43,22 +43,26 @@ class ALTAIR_MotorAndESC {
 
     ALTAIR_MotorAndESC()                                                           ;
 
-    void                     initializePinMode()     { pinMode(_pwmPin, OUTPUT)    ; }
+    //void                     initializePinMode()     { pinMode(_pwmPin, OUTPUT)    ; }  // Not needed on GrandCentral
     void                     initializePWMRegister()                               ;
-    bool                     isInitialized()         { return  _isInitialized      ; }
-    bool                     isRunning()             { return (_powerSetting > 0.) ; }
+    bool                     isInitialized()          { return  _isInitialized      ; }
+    bool                     isRunning()              { return (_pwmControlValue > 0.) ; }
 
-    float                    powerSetting()          { return  _powerSetting       ; } // Power setting can be from 0 through MAX_SAFE_PROPMOTOR_SETTING.
-    bool                     incrementPower()                                      ;   // Increase power setting by 1.    Returns true if successful.
-    bool                     decrementPower()                                      ;   // Decrease power setting by 1.    Returns true if successful.
-    bool                     halfIncrementPower()                                  ;   // Increase power setting by 0.5.  Returns true if successful.
-    bool                     halfDecrementPower()                                  ;   // Decrease power setting by 0.5.  Returns true if successful.
-    bool                     setPowerTo( float newPowerSetting )                   ;   // Returns true if successful.
+    float                    PWMControlValue()        { return  _pwmControlValue    ; } // Control setting can be from 0 through PWM_MAX_SAFE_CONTROL_VALUE.
+    int                      PWMValue()               { return _pwmValue;}
+    
+      // Incremential Control is implemented in Propulsion System Class
+    //bool                     incrementPWMControl()                                      ;   // Increase power setting by 1.    Returns true if successful.
+    //bool                     decrementPWMControl()                                      ;   // Decrease power setting by 1.    Returns true if successful.
+    //bool                     halfIncrementPWMControl()                                  ;   // Increase power setting by 0.5.  Returns true if successful.
+    //bool                     halfDecrementPWMControl()                                  ;   // Decrease power setting by 0.5.  Returns true if successful.
+    
+    bool                     setPWMControlValueTo( float newPWMControlValue )                   ;   // Returns true if successful.
 
-    ALTAIR_RPMSensor&        rpmSensor()             { return _rpmSensor           ; }
-    ALTAIR_CurrentSensor&    currentSensor()         { return _currentSensor       ; }
-    ALTAIR_TempSensor&       motorTempSensor()       { return _tempSensor[0]       ; }
-    ALTAIR_TempSensor&       escTempSensor()         { return _tempSensor[1]       ; }
+    //ALTAIR_RPMSensor&        rpmSensor()             { return _rpmSensor           ; }
+    //ALTAIR_CurrentSensor&    currentSensor()         { return _currentSensor       ; }
+    //ALTAIR_TempSensor&       motorTempSensor()       { return _tempSensor[0]       ; }
+    //ALTAIR_TempSensor&       escTempSensor()         { return _tempSensor[1]       ; }
 
     void                     makePortOuter()                                       ;
     void                     makePortInner()                                       ;
@@ -70,14 +74,16 @@ class ALTAIR_MotorAndESC {
     void                     resetPWMRegister()                                    ;
 
   private:
-    float                    _powerSetting                                         ;
-    bool                     _isInitialized                                        ;
-    ALTAIR_RPMSensor         _rpmSensor                                            ;
-    ALTAIR_CurrentSensor     _currentSensor                                        ;
-    ALTAIR_TempSensor        _tempSensor[2]                                        ;
+    int                     _pwmValue                                         ;
+    float                   _pwmControlValue;
+    bool                    _isInitialized                                        ;
+    
+    //ALTAIR_RPMSensor        _rpmSensor                                            ;
+    //ALTAIR_CurrentSensor    _currentSensor                                        ;
+    //ALTAIR_TempSensor       _tempSensor[2]                                        ;
 
-    byte                     _pwmPin                                               ;
-    location_t               _location                                             ;
+    byte                    _pwmPin                                               ;
+    location_t              _location                                             ;
 
 };
 #endif    //   ifndef ALTAIR_MotorAndESC_h

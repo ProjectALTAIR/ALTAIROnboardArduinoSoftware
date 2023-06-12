@@ -50,8 +50,8 @@ void ALTAIR_ArduinoMicro::getDataAfterInterval(    long interval  )
     for (int i = 0; i < 4; ++i) Current[i] = int(_packedCurrent[i]);  // conversion missing
     for (int i = 0; i < 8; ++i) Temp[i] = int(_packedTemp[i]);        // conversion missing
 
-    for (int i = 0; i < 4; ++i) { Serial.print("Current["); Serial.print(i); Serial.print("] = "); Serial.println(Current[i]) ; }
-    for (int i = 0; i < 8; ++i) { Serial.print("Temperature["); Serial.print(i); Serial.print("]    = "); Serial.println(Temp[i]) ; }
+    //for (int i = 0; i < 4; ++i) { Serial.print("Current["); Serial.print(i); Serial.print("] = "); Serial.println(Current[i]) ; }
+    //for (int i = 0; i < 8; ++i) { Serial.print("Temperature["); Serial.print(i); Serial.print("]    = "); Serial.println(Temp[i]) ; }
     for (int i = 0; i < 4; ++i) { Serial.print("RPM["); Serial.print(i); Serial.print("]     = "); Serial.println(RPM[i]) ; }
 
   }

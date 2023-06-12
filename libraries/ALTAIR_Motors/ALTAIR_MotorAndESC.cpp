@@ -35,7 +35,8 @@
 */
 /**************************************************************************/
 ALTAIR_MotorAndESC::ALTAIR_MotorAndESC() :
-  _powerSetting(  0.0                  ) ,
+  _pwmValue(  0                  ) ,
+  //_pwmControlValue( 0.0),
   _isInitialized(   false              )
 {
 }
@@ -97,7 +98,28 @@ void ALTAIR_MotorAndESC::makeStbdOuter(                             )
 /**************************************************************************/
 void ALTAIR_MotorAndESC::initializePWMRegister(                     )
 {
-  resetPWMRegister()                                   ;
+  // Prop Motors need correct Initialization PWM value every time they are (re)powered
+  // This routine is not to first setup the registers! This is only done once
+  // in ALTAIR_PropulsionSystem.initializePWMOutputRegisters()
+  _pwmValue = PWM_INITIALIZATION_VALUE;
+  switch(_location) {
+    case portOuter:
+      TCC0->CCBUF[3].reg = PWM_INITIALIZATION_VALUE;
+      while (TCC0->SYNCBUSY.bit.CC3);
+      break                                                              ;
+    case portInner:
+      TCC0->CCBUF[2].reg = PWM_INITIALIZATION_VALUE;
+      while (TCC0->SYNCBUSY.bit.CC2);
+      break                                                              ;
+    case stbdInner:
+      TCC0->CCBUF[1].reg = PWM_INITIALIZATION_VALUE;
+      while (TCC0->SYNCBUSY.bit.CC1);
+      break                                                              ;
+    case stbdOuter:
+      TCC0->CCBUF[0].reg = PWM_INITIALIZATION_VALUE;
+      while (TCC0->SYNCBUSY.bit.CC0);
+  }
+  
   setInitialized()                                     ;
 }
 
@@ -110,18 +132,31 @@ void ALTAIR_MotorAndESC::initializePWMRegister(                     )
 /**************************************************************************/
 void ALTAIR_MotorAndESC::resetPWMRegister(                         )
 {
+  if(_pwmControlValue == 0.) { 
+    _pwmValue = PWM_INITIALIZATION_VALUE;
+  } else {
+    _pwmValue = PWM_INITIALIZATION_VALUE + PWM_THRESHOLD_DELTA + int(PWM_STEP_DELTA * (_pwmControlValue - 1));
+  }
   switch(_location) {
     case portOuter:
-      PORT_MOTOR_PWMOUTPUT_REG_A  = PWM_PEDESTAL_VALUE + 2*_powerSetting ;
+      //PORT_MOTOR_PWMOUTPUT_REG_A  = PWM_PEDESTAL_VALUE + 2*_pwmValue ;
+      TCC0->CCBUF[3].reg = _pwmValue;
+      while (TCC0->SYNCBUSY.bit.CC3);
       break                                                              ;
     case portInner:
-      PORT_MOTOR_PWMOUTPUT_REG_B  = PWM_PEDESTAL_VALUE + 2*_powerSetting ;
+      //PORT_MOTOR_PWMOUTPUT_REG_B  = PWM_PEDESTAL_VALUE + 2*_pwmValue ;
+      TCC0->CCBUF[2].reg = _pwmValue;
+      while (TCC0->SYNCBUSY.bit.CC2);
       break                                                              ;
     case stbdInner:
-      STBD_MOTOR_PWMOUTPUT_REG_B  = PWM_PEDESTAL_VALUE + 2*_powerSetting ;
+      //STBD_MOTOR_PWMOUTPUT_REG_B  = PWM_PEDESTAL_VALUE + 2*_pwmValue ;
+      TCC0->CCBUF[1].reg = _pwmValue;
+      while (TCC0->SYNCBUSY.bit.CC1);
       break                                                              ;
     case stbdOuter:
-      STBD_MOTOR_PWMOUTPUT_REG_A  = PWM_PEDESTAL_VALUE + 2*_powerSetting ;
+      //STBD_MOTOR_PWMOUTPUT_REG_A  = PWM_PEDESTAL_VALUE + 2*_pwmValue ;
+      TCC0->CCBUF[0].reg = _pwmValue;
+      while (TCC0->SYNCBUSY.bit.CC0);
   }
 }
 
@@ -130,78 +165,78 @@ void ALTAIR_MotorAndESC::resetPWMRegister(                         )
 
 /**************************************************************************/
 /*!
- @brief  Increases the power setting by 1.
+ @brief  Increases the PWM control value by 1.
 */
 /**************************************************************************/
-bool ALTAIR_MotorAndESC::incrementPower(                            )
+/*bool ALTAIR_MotorAndESC::incrementPWMControl(                            )
 {
-   if ( powerSetting() + 1.  <= MAX_SAFE_PROPMOTOR_SETTING ) {
-       _powerSetting++               ;
+   if ( PWMControlValue() + 1.  <= PWM_MAX_SAFE_CONTROL_VALUE ) {
+       _pwmControlValue++               ;
        resetPWMRegister()            ;
        return true                   ;
    } else {
        return false                  ;
    }
-}
+}*/
 
 /**************************************************************************/
 /*!
- @brief  Decreases the power setting by 1.
+ @brief  Decreases the PWM control value by 1.
 */
 /**************************************************************************/
-bool ALTAIR_MotorAndESC::decrementPower(                            )
+/*bool ALTAIR_MotorAndESC::decrementPWMControl(                            )
 {
-   if ( powerSetting() - 1.  >= 0. ) {
-       _powerSetting--               ;
+   if ( PWMControlValue() - 1.  >= 0. ) {
+       _pwmControlValue--               ;
        resetPWMRegister()            ;  
        return true                   ;
    } else {
        return false                  ;
    }
-}
+}*/
 
 /**************************************************************************/
 /*!
- @brief  Increases the power setting by 0.5.
+ @brief  Increases the PWM control value by 0.5.
 */
 /**************************************************************************/
-bool ALTAIR_MotorAndESC::halfIncrementPower(                        )
+/*bool ALTAIR_MotorAndESC::halfIncrementPWMControl(                        )
 {
-   if ( powerSetting() + 0.5  <= MAX_SAFE_PROPMOTOR_SETTING ) {
-       _powerSetting          += 0.5 ;
+   if ( PWMControlValue() + 0.5  <= PWM_MAX_SAFE_CONTROL_VALUE ) {
+       _pwmControlValue          += 0.5 ;
        resetPWMRegister()            ;  
        return true                   ;
    } else {
        return false                  ;
    }
-}
+}*/
 
 /**************************************************************************/
 /*!
- @brief  Decreases the power setting by 0.5.
+ @brief  Decreases the PWM control value by 0.5.
 */
 /**************************************************************************/
-bool ALTAIR_MotorAndESC::halfDecrementPower(                        )
+/*bool ALTAIR_MotorAndESC::halfDecrementPWMControl(                        )
 {
-   if ( powerSetting() - 0.5  >= 0. ) {
-       _powerSetting          -= 0.5 ;
+   if ( PWMControlValue() - 0.5  >= 0. ) {
+       _pwmControlValue          -= 0.5 ;
        resetPWMRegister()            ;  
        return true                   ;
    } else {
        return false                  ;
    }
-}
+}*/
 
 /**************************************************************************/
 /*!
- @brief  Sets the power to a new setting between 0 and 
-         MAX_SAFE_PROPMOTOR_SETTING.
+ @brief  Sets the PWM control value to a new setting between 0 and 
+         PWM_MAX_SAFE_CONTROL_VALUE.
 */
 /**************************************************************************/
-bool ALTAIR_MotorAndESC::setPowerTo( float newPowerSetting   )
+bool ALTAIR_MotorAndESC::setPWMControlValueTo( float newPWMControlValue   )
 {
-   if ( newPowerSetting >= 0. && newPowerSetting <= MAX_SAFE_PROPMOTOR_SETTING ) {
-       _powerSetting           = newPowerSetting  ;
+   if ( newPWMControlValue >= 0. && newPWMControlValue <= PWM_MAX_SAFE_CONTROL_VALUE ) {
+       _pwmControlValue           = newPWMControlValue  ;
        resetPWMRegister()                         ;  
        return true                                ;
    } else {
