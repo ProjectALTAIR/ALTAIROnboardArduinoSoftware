@@ -37,7 +37,8 @@ ALTAIR_CurrentSensor  arrayofCurrentSensors[CURRENT_SENSOR_COUNT];
 
 void setup() {
   
-  Serial.println("Begin Sensor initialization");
+  //Serial.println("Begin Sensor initialization");
+  
   // RPM Sensors
   for(int i = 0; i<RPM_SENSOR_COUNT; i++){
     arrayof_RPMSensors[i].initializeQTRsensor((const uint8_t*) RPM_sensor_pins[i]);
@@ -70,7 +71,7 @@ void setup() {
 }
 
 void loop() {
-  Serial.println("Start of measurement");
+  //Serial.println("Start of measurement");
 
   // Temperature Sensor measurements
   for ( int i = 0; i < TEMP_SENSOR_COUNT; i++) {
@@ -119,13 +120,9 @@ void loop() {
   // Print measurements
   Serial.println("Temperature Sensors:");
   for ( int i = 0; i < TEMP_SENSOR_COUNT; i++) {
-      /*for ( int j = 0; j < CURRENT_AVEREGING_WINDOW_SIZE; j++){
-        Serial.print(arrayofCurrentSensors[i].currentWindow()[j]); Serial.print(" ");
-      }*/
-      //Serial.println(" ");
-      //Serial.print(arrayofTempSensors[i].temp()); Serial.print("  ");
-      Serial.print(packedTemp[i]); Serial.print("  ");
-      Serial.print(packedTemp_byte[i]);
+      Serial.print(static_cast<float>(arrayofTempSensors[i].tempWindowSum())/TEMP_AVEREGING_WINDOW_SIZE);
+      //Serial.print(packedTemp[i]); Serial.print("  ");
+      //Serial.print(packedTemp_byte[i]);
       
       Serial.print(" --> ");
       Serial.print(arrayofTempSensors[i].temp()); Serial.println(" °C");
