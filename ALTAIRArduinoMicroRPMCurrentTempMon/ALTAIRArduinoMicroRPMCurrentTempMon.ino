@@ -5,144 +5,160 @@
 //     recent measurements, when info is requested by the Grand Central I2C master.
 
 #include <Wire.h>
-#include <ALTAIR_RPMSensor.h>
+#include "ALTAIR_RPMSensor.h"
+#include "ALTAIR_TempSensor.h"
+#include "ALTAIR_CurrentSensor.h"
 
 
-byte packRPS(float theRPM) {
-  float theRPS = theRPM/60.;
-  byte packRPS;
-  if (theRPS >= 0. && theRPS < 127.) {
-    packRPS = theRPS;
-  } else if (theRPS >= -128. && theRPS < 0.) {
-    packRPS = theRPS + 256.;
-  } else if (theRPS >= 127.) {
-    packRPS = 127;
-  } else {
-    packRPS = 128;
-  }
-  return packRPS;
-}
+unsigned short          packedRPM[RPM_SENSOR_COUNT];
+unsigned short          packedCurrent[CURRENT_SENSOR_COUNT];
+unsigned short          packedTemp[TEMP_SENSOR_COUNT];
 
-byte packTemp(float theTemp) {
-  float scaledTemp = theTemp*2.;
-  byte thePackedTemp;
-  if (scaledTemp >= 0. && scaledTemp < 127.) {
-    thePackedTemp = scaledTemp;
-  } else if (scaledTemp >= -128. && scaledTemp < 0.) {
-    thePackedTemp = scaledTemp + 256.;
-  } else if (scaledTemp >= 127.) {
-    thePackedTemp = 127;
-  } else {
-    thePackedTemp = 128;
-  }
-  return thePackedTemp;
-}
-
-byte packCurrent(float theCurrent) {
-  float scaledCurrent = theCurrent*4.;
-  byte packCurr;
-  if (scaledCurrent >= 0. && scaledCurrent < 127.) {
-    packCurr = scaledCurrent;
-  } else if (scaledCurrent >= -128. && scaledCurrent < 0.) {
-    packCurr = scaledCurrent + 256.;
-  } else if (scaledCurrent >= 127.) {
-    packCurr = 127;
-  } else {
-    packCurr = 128;
-  }
-  return packCurr;
-}
+byte          packedRPS_byte[RPM_SENSOR_COUNT];
+byte          packedCurrent_byte[CURRENT_SENSOR_COUNT];
+byte          packedTemp_byte[TEMP_SENSOR_COUNT];
 
 
-const int RPM_sensorCount = 4;
-
-byte          packedRPS[4];
-byte          packedCurrent[4];
-byte          packedTemp[8];
-
-
-
-const uint8_t RPM_sensor_pins[4] = {A0, A1, A2, A3};
+const uint8_t RPM_sensor_pins[RPM_SENSOR_COUNT] = {A0, A1};
 const int RPM_measurement_time = 500;
 
-int i = 0;
+int tempSensorPins[TEMP_SENSOR_COUNT] = {A4, A5, A6, A7};
+
+int currentSensorPins[CURRENT_SENSOR_COUNT] = {A2, A3};
 
 int start_millis = 0;
 int current_millis = 0;
 
-// Instantiate 4 RPM Sensors
-ALTAIR_RPMSensor arrayof_RPMSensors[4];
+// Instantiate Sensors
+ALTAIR_RPMSensor      arrayof_RPMSensors[RPM_SENSOR_COUNT];
+ALTAIR_TempSensor     arrayofTempSensors[TEMP_SENSOR_COUNT];
+ALTAIR_CurrentSensor  arrayofCurrentSensors[CURRENT_SENSOR_COUNT];
+
 
 void setup() {
   
   Serial.println("Begin Sensor initialization");
-  for(int i = 0; i<RPM_sensorCount; i++){
-    arrayof_RPMSensors[i].initialize_QTRsensor((const uint8_t*) RPM_sensor_pins[i]);
+  // RPM Sensors
+  for(int i = 0; i<RPM_SENSOR_COUNT; i++){
+    arrayof_RPMSensors[i].initializeQTRsensor((const uint8_t*) RPM_sensor_pins[i]);
     //arrayof_RPMSensors[i].RPMSensor.setTypeAnalog();
     arrayof_RPMSensors[i].RPMSensor()->setSensorPins((const uint8_t*) { RPM_sensor_pins[i] }, (const uint8_t) 1);
 
     Serial.println("RPM Sensors initialized");
   }
   
-  
-  
+  // Temperature Sensors
+  for ( int i = 0; i < TEMP_SENSOR_COUNT; i++) {
+    arrayofTempSensors[i].initializeTempSensor(tempSensorPins[i]);
+  }
+      Serial.println("Temperature Sensors initialized");
+
+  // Current Sensors
+  for ( int i = 0; i < CURRENT_SENSOR_COUNT; i++) {
+    arrayofCurrentSensors[i].initializeCurrentSensor(currentSensorPins[i]);
+  }
+      Serial.println("Current Sensors initialized"); 
+
   Wire.begin(8);
   Wire.onRequest(sendInfo);
   
   Serial.begin(9600);
  
-  /*for (int i = 0; i < 4; ++i) {
-    for (int j = 0; j < numCurrentValsToAverage; ++j) currentInAmps[i][j] = 0.;
-  }
-  // Initialize digital RPM timer pins as input.  (Note that the analog-read pins don't require this initialization.)
-  for (int i = 0; i < 4; ++i) {
-    pinMode(rpmTimerPin[i], INPUT);
-  }
+  
   // Initialize special SPI MISO pin = 14 as an input (to see if device has its USB port plugged in)
-  pinMode(usbInputCheckPin, INPUT);*/
+  //pinMode(usbInputCheckPin, INPUT);*/
 }
 
 void loop() {
+  Serial.println("Start of measurement");
+
+  // Temperature Sensor measurements
+  for ( int i = 0; i < TEMP_SENSOR_COUNT; i++) {
+    arrayofTempSensors[i].storeAnalogTemp();
+    arrayofTempSensors[i].calculateTemp();
+    packedTemp[i] = arrayofTempSensors[i].packTemp(arrayofTempSensors[i].tempK());
+    packedTemp_byte[i] = arrayofTempSensors[i].packTemp_byte(arrayofTempSensors[i].temp());
+  }
+
+  // Current Sensor measurements
+  for ( int i = 0; i < CURRENT_SENSOR_COUNT; i++) {
+    arrayofCurrentSensors[i].storeAnalogCurrent();
+    arrayofCurrentSensors[i].calculateCurrent();
+    packedCurrent[i] = arrayofCurrentSensors[i].packCurrent(arrayofCurrentSensors[i].current());
+    packedCurrent_byte[i] = arrayofCurrentSensors[i].packCurrent_byte(arrayofCurrentSensors[i].current());
+  }
+  
+  // RPM measurements
   current_millis = millis();
   start_millis = current_millis;
-  //qtr.read(sensorValues);
-    //Serial.println(sensorValues[0]);
-  Serial.println("Start of measurement");
-  for ( int i = 0; i < RPM_sensorCount; i++) {
-    arrayof_RPMSensors[i].resetRisingEdge_counter();
-    arrayof_RPMSensors[i].resetFallingEdge_counter();
-    Serial.print(arrayof_RPMSensors[i].analog_input_pin()); Serial.print("  ");
+
+  for ( int i = 0; i < RPM_SENSOR_COUNT; i++) {
+    arrayof_RPMSensors[i].resetRisingEdgeCounter();
+    arrayof_RPMSensors[i].resetFallingEdgeCounter();
   }
-  Serial.println(" ");
+  
   while(current_millis-start_millis < RPM_measurement_time){
-    for (int i = 0; i < RPM_sensorCount; i++) {    
-      arrayof_RPMSensors[i].store_analog_RPM();
-      arrayof_RPMSensors[i].Edge_detection();
+    for (int i = 0; i < RPM_SENSOR_COUNT; i++) {    
+      arrayof_RPMSensors[i].storeAnalogRPM();
+      arrayof_RPMSensors[i].EdgeDetection();
     }
     //Serial.println(arrayof_RPMSensors[0].analog_rpm);
     current_millis = millis();
     //Serial.print("millis: "); Serial.println(current_millis-start_millis);    
   }
   Serial.println("End of measurement ");
-    
-  Serial.println("Current RPM values: ");
-  for (int i = 0; i < RPM_sensorCount; i++) {
-    arrayof_RPMSensors[i].calculate_RPM(RPM_measurement_time);
 
-    Serial.print("# of Edges  ");
-    Serial.print(arrayof_RPMSensors[i].risingEdge_counter()); Serial.print("  ");
-    Serial.print(arrayof_RPMSensors[i].fallingEdge_counter()); Serial.print(" --> ");
+  // RPM Calculation
+  for (int i = 0; i < RPM_SENSOR_COUNT; i++) {
+    arrayof_RPMSensors[i].calculateRPM(RPM_measurement_time);
+    packedRPM[i] = arrayof_RPMSensors[i].packRPM(arrayof_RPMSensors[i].rpm());
+    packedRPS_byte[i] = arrayof_RPMSensors[i].packRPS_byte(arrayof_RPMSensors[i].rpm());
+
+  }   
+
+  // Print measurements
+  Serial.println("Temperature Sensors:");
+  for ( int i = 0; i < TEMP_SENSOR_COUNT; i++) {
+      /*for ( int j = 0; j < CURRENT_AVEREGING_WINDOW_SIZE; j++){
+        Serial.print(arrayofCurrentSensors[i].currentWindow()[j]); Serial.print(" ");
+      }*/
+      //Serial.println(" ");
+      //Serial.print(arrayofTempSensors[i].temp()); Serial.print("  ");
+      Serial.print(packedTemp[i]); Serial.print("  ");
+      Serial.print(packedTemp_byte[i]);
+      
+      Serial.print(" --> ");
+      Serial.print(arrayofTempSensors[i].temp()); Serial.println(" °C");
+
+  }
+
+  Serial.println("Current Sensors:");
+  for ( int i = 0; i < CURRENT_SENSOR_COUNT; i++) {
+      //Serial.print(arrayofCurrentSensors[i].currentWindowSum()/CURRENT_AVEREGING_WINDOW_SIZE);
+      Serial.print(packedCurrent[i]); Serial.print("  ");
+      Serial.print(packedCurrent_byte[i]); Serial.print(" --> ");
+      Serial.print(arrayofCurrentSensors[i].current()); Serial.println(" mA");
+  }
+
+  Serial.println("RPM Sensors: ");
+  for (int i = 0; i < RPM_SENSOR_COUNT; i++) {
+
+    //Serial.print("# of Edges  ");
+    //Serial.print(arrayof_RPMSensors[i].risingEdgeCounter()); Serial.print("  ");
+    //Serial.print(arrayof_RPMSensors[i].fallingEdgeCounter()); Serial.print(" --> ");
   
     //Serial.print(arrayof_RPMSensors[i]._rpm_rising); Serial.print("  "); 
     //Serial.println(arrayof_RPMSensors[i]._rpm_falling);
-  
+    Serial.print(packedRPM[i]); Serial.print("  ");
+    Serial.print(packedRPS_byte[i]); Serial.print("   ");
+
     Serial.print(arrayof_RPMSensors[i].rpm()); Serial.println(" RPM ");
-    packedRPS[i] = arrayof_RPMSensors[i].packRPS(arrayof_RPMSensors[i].rpm());
+
   }
 
   Serial.println(" ");
   Serial.println("----");
-  delay(5000);
+  delay(1000);
 
   
   
@@ -219,7 +235,15 @@ void loop() {
 }
 
 void sendInfo() {
-  for (int i = 0; i < 4; ++i) Wire.write(packedRPS[i]);
-  for (int i = 0; i < 4; ++i) Wire.write(packedCurrent[i]);
-  for (int i = 0; i < 8; ++i) Wire.write(packedTemp[i]);  
+  //Wire.write((byte*)packedTemp, TEMP_SENSOR_COUNT * sizeof(unsigned short));
+  //Wire.write((byte*)packedCurrent, CURRENT_SENSOR_COUNT * sizeof(unsigned short));
+  //Wire.write((byte*)packedRPM, RPM_SENSOR_COUNT * sizeof(unsigned short));
+
+  Wire.write((byte*)packedTemp_byte, TEMP_SENSOR_COUNT * sizeof(byte));
+  Wire.write((byte*)packedCurrent_byte, CURRENT_SENSOR_COUNT * sizeof(byte));
+  Wire.write((byte*)packedRPS_byte, RPM_SENSOR_COUNT * sizeof(byte));
+
+  //for (int i = 0; i < tempSensorCount; ++i) Wire.write((uint8_t*)packedTemp[i], sizeof(packedTemp[i]));  
+  //for (int i = 0; i < RPM_sensorCount; ++i) Wire.write(packedRPS[i], sizeof(packedRPS[i]));
+  //for (int i = 0; i < currentSensorCount; ++i) Wire.write(packedCurrent[i], sizeof(packedCurrent[i]));
 }

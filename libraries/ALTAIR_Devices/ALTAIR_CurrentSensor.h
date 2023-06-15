@@ -26,16 +26,35 @@
 
 #include "Arduino.h"
 
+#define CURRENT_SENSOR_COUNT              2
+#define CURRENT_AVEREGING_WINDOW_SIZE     100
+
 class ALTAIR_CurrentSensor {
   public:
 
-    ALTAIR_CurrentSensor() : _current(         0.       ) {                             }
+    ALTAIR_CurrentSensor();
+    //ALTAIR_CurrentSensor() :  _current(         0.    )  {                       }
 
-    float                     current(                  ) { return _current           ; }
-    void                      setCurrent( float current ) {        _current = current ; }
+    float                   current(               )  { return _current        ; }
+    int                     analogCurrent(         )  { return _analogCurrent  ; }
+    int*                     currentWindow(         )  { return _currentWindow;}
+    float                   currentWindowSum(  )  { return _currentWindowSum;}
+    int                     analogInputPin(     )  { return _analogInputPin;}    
+    //void                    setCurrent( float current )  {        _current = current ; }
+
+    void                    initializeCurrentSensor(int analogInputPin);
+    void                    storeAnalogCurrent();
+    void                    calculateCurrent(      );
+    unsigned short          packCurrent(float theCurrent);
+    byte                    packCurrent_byte(float theCurrent);
 
   private:
-    float                    _current                                                 ;    // in Amps
+    int                    _analogInputPin;
+    int                    _currentWindow[CURRENT_AVEREGING_WINDOW_SIZE];
+    float                  _currentWindowSum;
+
+    int                    _analogCurrent                                   ;   // analog input
+    float                  _current                                         ;   // in mA   // in Amperes
 
 };
 #endif    //   ifndef ALTAIR_CurrentSensor_h

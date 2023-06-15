@@ -27,6 +27,7 @@
 #include "Arduino.h"
 #include "QTRSensors.h"
 
+#define RPM_SENSOR_COUNT                 2
 #define RPM_AVEREGING_WINDOW_SIZE        3
 #define RPM_EDGE_DETECTION_THRESHOLD     100
 #define RPM_NUMBER_OF_TAPES              2
@@ -36,39 +37,38 @@ class ALTAIR_RPMSensor {
     ALTAIR_RPMSensor();
       
     float                   rpm()                       { return _rpm       ;           }
-    uint16_t                analog_rpm()                { return _analog_rpm;           }
-    int                     risingEdge_counter()        { return _risingEdge_counter;   }   // Getter for Debugging
-    void                    resetRisingEdge_counter()   { _risingEdge_counter  = 0;     }
-    int                     fallingEdge_counter()       { return _fallingEdge_counter;  }   // Getter for Debuging
-    void                    resetFallingEdge_counter()  { _fallingEdge_counter = 0;     }
-    int                     analog_input_pin()  	    { return _analog_input_pin;     } // Not needed, just for debugging
+    uint16_t                analogRPM()                { return _analogRPM;           }
+    int                     risingEdgeCounter()        { return _risingEdgeCounter;   }   // Getter for Debugging
+    void                    resetRisingEdgeCounter()   { _risingEdgeCounter  = 0;     }
+    int                     fallingEdgeCounter()       { return _fallingEdgeCounter;  }   // Getter for Debuging
+    void                    resetFallingEdgeCounter()  { _fallingEdgeCounter = 0;     }
+    int                     analogInputPin()  	    { return _analogInputPin;     } // Not needed, just for debugging
     QTRSensors*             RPMSensor()                 { return &_RPMSensor;           }
 
-    void                    initialize_QTRsensor(const uint8_t* analog_input_pin);
-    void                    store_analog_RPM(   );
-    void                    Edge_detection();
-    void                    calculate_RPM(int rpm_measurement_millis);
-    byte                    packRPS(float theRPM);
+    void                    initializeQTRsensor(const uint8_t* analog_input_pin);
+    void                    storeAnalogRPM(   );
+    void                    EdgeDetection();
+    void                    calculateRPM(int rpm_measurement_millis);
+    unsigned short          packRPM(float theRPM);
+    byte                    packRPS_byte(float theRPM);
 
     private:
-        int                 _analog_input_pin = 0;
+        int                 _analogInputPin = 0;
 
-        uint16_t            _analog_rpm = 0                                 ;
+        uint16_t            _analogRPM = 0                                 ;
         float               _rpm = 0.;
-        float               _rpm_rising = 0.;
-        float               _rpm_falling = 0.;
+        float               _rpmRising = 0.;
+        float               _rpmFalling = 0.;
         
-        int                 _window_Index = 0;
-        uint16_t            _RPM_window[RPM_AVEREGING_WINDOW_SIZE] = {0};
-        uint16_t            _RPM_windowSum = 0;
-        float               _RPM_windowAverage = 0.;
+        int                 _windowIndex = 0;
+        uint16_t            _RPMWindow[RPM_AVEREGING_WINDOW_SIZE] = {0};
+        uint16_t            _RPMWindowSum = 0;
+        float               _RPMWindowAverage = 0.;
 
-        int                 _risingEdge_counter = 0;
-        int                 _fallingEdge_counter = 0;
+        int                 _risingEdgeCounter = 0;
+        int                 _fallingEdgeCounter = 0;
         int                 _isRisingEdge = 0;
         int                 _isFallingEdge = 0;
-
-        byte                _packRPS;
 
         QTRSensors          _RPMSensor;
 

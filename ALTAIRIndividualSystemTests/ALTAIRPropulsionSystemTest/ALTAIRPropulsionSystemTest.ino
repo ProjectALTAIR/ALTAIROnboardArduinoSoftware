@@ -176,11 +176,11 @@ void loop() {
     Serial.println("RPM Values:");
     ArduinoMicro.getDataAfterInterval(RPM_measurement_interval);
 
-    Serial.println("PWM Control Values:");
+    /*Serial.println("PWM Control Values:");
     for (int i = 0; i < 4; i++) {
       Serial.print(propSystem.motors()[i].PWMValue()); Serial.print("  ");
       Serial.println(propSystem.motors()[i].PWMControlValue());
-    }
+    }*/
 
 	  Serial.println("----");
 
