@@ -16,9 +16,31 @@
 */
 /**************************************************************************/
 
-#ifndef   ALTAIR_MotorPWMSettings_h
-#define   ALTAIR_MotorPWMSettings_h
+#ifndef     ALTAIR_MotorPWMSettings_h
+#define     ALTAIR_MotorPWMSettings_h
 
+// Pins on Grand Central that the PWM signal gets routet to
+// --------CAN NOT BE CHANGED------------------------------------ 
+// since methods in the background have to be hard coded in based on Pin choice
+#define     PORT_OUTER_MOTOR_PWM_PIN        30      // PORT_PA23: TCC0, Channel 3
+#define     PORT_INNER_MOTOR_PWM_PIN        31      // PORT_PA22: TCC0, Channel 2
+#define     STBD_INNER_MOTOR_PWM_PIN        32      // PORT_PA21: TCC0, Channel 1
+#define     STBD_OUTER_MOTOR_PWM_PIN        33      // PORT_PA20: TCC0, Channel 0
+
+// PWM signal width based on relation to PWM_PERIOD. An arbritary initialization value can be chosen.
+// Motors will start spinning at certain delta from initialization value that was present at PWR ON.
+// 300 was found empirically in configuration without mounted props
+// Step Delta and safe upper limit have yet to be properly defined
+#define     PWM_PERIOD                      119999  // 6MHz/120000 = 50Hz
+#define     PWM_INITIALIZATION_VALUE        4999
+#define     PWM_THRESHOLD_DELTA             300
+#define     PWM_STEP_DELTA                  100
+
+#define     PWM_MAX_SAFE_CONTROL_VALUE      10.
+
+
+
+/* -----------OLD ATMEGA CODE------------------------------------------
 
 #define   PORT_OUTER_MOTOR_PWM_PIN      45         // The pulse-width modulation digital output pin of  
 #define   PORT_INNER_MOTOR_PWM_PIN      46         // the Arduino Mega 2560 that controls a given motor.
@@ -67,5 +89,7 @@
 #define   BLEEDVALVE_SERVO_PWMOUTPUT_REG    OCR4B 
 #define   CUTDOWN_SERVO_PWMOUTPUT_REG       OCR4C
 
+--------------------------------------------------------------------
+*/
 
 #endif    //   ifndef ALTAIR_MotorPWMSettings_h

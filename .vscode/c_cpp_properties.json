@@ -1,0 +1,88 @@
+{
+    "version": 4,
+    "configurations": [
+        {
+            "name": "Win32",
+            "compilerPath": "cl.exe",
+            "compilerArgs": [],
+            "intelliSenseMode": "windows-msvc-x64",
+            "includePath": [
+                "${workspaceFolder}/**"
+            ],
+            "forcedInclude": [],
+            "cStandard": "c17",
+            "cppStandard": "c++17",
+            "defines": [
+                "_DEBUG",
+                "UNICODE",
+                "_UNICODE"
+            ]
+        },
+        {
+            "name": "Arduino",
+            "compilerPath": "C:\\Users\\Chris\\AppData\\Local\\Arduino15\\packages\\adafruit\\tools\\arm-none-eabi-gcc\\9-2019q4\\bin\\arm-none-eabi-g++",
+            "compilerArgs": [
+                "-mcpu=cortex-m4",
+                "-mthumb",
+                "-Werror=return-type",
+                "-std=gnu++11",
+                "-ffunction-sections",
+                "-fdata-sections",
+                "-fno-threadsafe-statics",
+                "-nostdlib",
+                "--param",
+                "-fno-rtti",
+                "-fno-exceptions"
+            ],
+            "intelliSenseMode": "gcc-x64",
+            "includePath": [
+                "C:\\Users\\Chris\\AppData\\Local\\Arduino15\\packages\\adafruit\\hardware\\samd\\1.7.11\\libraries\\Adafruit_TinyUSB_Arduino\\src\\arduino",
+                "C:\\Users\\Chris\\AppData\\Local\\Arduino15\\packages\\adafruit\\hardware\\samd\\1.7.11\\libraries\\Adafruit_TinyUSB_Arduino\\src\\arduino",
+                "C:\\Users\\Chris\\AppData\\Local\\Arduino15\\packages\\adafruit\\tools\\CMSIS\\5.4.0\\CMSIS\\Core\\Include\\",
+                "C:\\Users\\Chris\\AppData\\Local\\Arduino15\\packages\\adafruit\\tools\\CMSIS\\5.4.0\\CMSIS\\DSP\\Include\\",
+                "C:\\Users\\Chris\\AppData\\Local\\Arduino15\\packages\\adafruit\\tools\\CMSIS-Atmel\\1.2.2\\CMSIS\\Device\\ATMEL\\",
+                "C:\\Users\\Chris\\AppData\\Local\\Arduino15\\packages\\adafruit\\hardware\\samd\\1.7.11\\cores\\arduino",
+                "C:\\Users\\Chris\\AppData\\Local\\Arduino15\\packages\\adafruit\\hardware\\samd\\1.7.11\\variants\\grand_central_m4",
+                "C:\\Users\\Chris\\OneDrive - bwedu\\Dokumente\\Arduino\\libraries\\QTRSensors"
+            ],
+            "forcedInclude": [
+                "C:\\Users\\Chris\\AppData\\Local\\Arduino15\\packages\\adafruit\\hardware\\samd\\1.7.11\\cores\\arduino\\Arduino.h"
+            ],
+            "cStandard": "c11",
+            "cppStandard": "c++11",
+            "defines": [
+                "__SKETCH_NAME__=\"\"\"ALTAIRPropulsionSystemTest.ino\"\"\"",
+                "F_CPU=120000000L",
+                "ARDUINO=10607",
+                "ARDUINO_GRAND_CENTRAL_M4",
+                "ARDUINO_ARCH_SAMD",
+                "ARDUINO_SAMD_ADAFRUIT",
+                "__SAMD51P20A__",
+                "ADAFRUIT_GRAND_CENTRAL_M4",
+                "__SAMD51__",
+                "__FPU_PRESENT",
+                "ARM_MATH_CM4",
+                "USB_VID=0x239A",
+                "USB_PID=0x8031",
+                "USBCON",
+                "USB_CONFIG_POWER=100",
+                "USB_MANUFACTURER=\"Adafruit\"",
+                "USB_PRODUCT=\"Grand Central M4\"",
+                "ENABLE_CACHE",
+                "VARIANT_QSPI_BAUD_DEFAULT=50000000",
+                "__SAMD51P20A__",
+                "ADAFRUIT_GRAND_CENTRAL_M4",
+                "__SAMD51__",
+                "__FPU_PRESENT",
+                "ARM_MATH_CM4",
+                "USB_VID=0x239A",
+                "USB_PID=0x8031",
+                "USBCON",
+                "USB_CONFIG_POWER=100",
+                "USB_MANUFACTURER=\"Adafruit\"",
+                "USB_PRODUCT=\"Grand Central M4\"",
+                "USBCON"
+            ]
+        }
+    ]
+}

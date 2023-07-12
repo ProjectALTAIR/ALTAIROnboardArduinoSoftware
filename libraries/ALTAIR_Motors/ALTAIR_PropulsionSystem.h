@@ -27,7 +27,13 @@
 
 #include "Arduino.h"
 #include "ALTAIR_MotorAndESC.h"
-#include "ALTAIR_PropAxleRotServo.h"
+
+//#include "ALTAIR_PropAxleRotServo.h"
+
+typedef enum {  individual ,
+                outerPair ,
+                innerPair ,
+                combined  } controlMode;
 
 class ALTAIR_PropulsionSystem {
   public:
@@ -42,25 +48,43 @@ class ALTAIR_PropulsionSystem {
     ALTAIR_MotorAndESC*      stbdInnerMotor()      { return &_motorAndESC[2]    ; }
     ALTAIR_MotorAndESC*      stbdOuterMotor()      { return &_motorAndESC[3]    ; }
     ALTAIR_MotorAndESC*      motors()              { return  _motorAndESC       ; }
+    ALTAIR_MotorAndESC*      selectedMotor()       { return _pSelectedMotor     ; }
 
+    /*  WHEN AXLEROT is included
     ALTAIR_PropAxleRotServo* axleRotServo()        { return &_propAxleRotServo  ; }
+    */
 
-    bool                     incrementPower()      { return   changePower( 1. ) ; } // Increase power to all props by 1.        Returns true if successful.
-    bool                     decrementPower()      { return   changePower(-1. ) ; } // Decrease power to all props by 1.        Returns true if successful.
-    bool                     halfIncrementPower()  { return   changePower( 0.5) ; } // Increase power to all props by 0.5.      Returns true if successful.
-    bool                     halfDecrementPower()  { return   changePower(-0.5) ; } // Decrease power to all props by 0.5.      Returns true if successful.
+    //bool                     incrementPower()      { return   changePower( 1. ) ; } // Increase power to all props by 1.        Returns true if successful.
+    //bool                     decrementPower()      { return   changePower(-1. ) ; } // Decrease power to all props by 1.        Returns true if successful.
+    //bool                     halfIncrementPower()  { return   changePower( 0.5) ; } // Increase power to all props by 0.5.      Returns true if successful.
+    //bool                     halfDecrementPower()  { return   changePower(-0.5) ; } // Decrease power to all props by 0.5.      Returns true if successful.
+    
+    bool                     incrementPWMControl(   	controlMode controlMode) ;
+    bool                     decrementPWMControl(     controlMode controlMode) ;
+    bool                     halfIncrementPWMControl( controlMode controlMode) ;
+    bool                     halfDecrementPWMControl( controlMode controlMode) ;
+    bool                     setPWMControlTo(         controlMode controlMode, 
+                                                      float newPWMControlValue) ;
+
+    
     bool                     shutDownAllProps()                                 ;   // Return power setting of all props to 0.  Returns true if successful.
 
-    void                     initializePinModes()                               ;
+    //void                     initializePinModes()                               ;  // Not needed with Grand Central
     void                     initializePropControlRegisters()                   ;
     void                     initializePWMOutputRegisters()                     ;
+    void                     selectIndividualMotor( ALTAIR_MotorAndESC* pSelectedMotor )                            ;
+
+
 
   protected:
-    bool                     changePower(            float    deltaPower      ) ;
+    //bool                     changePower(            float    deltaPower      ) ;
+    bool                     changePWMControlValue( ALTAIR_MotorAndESC* PropMotor, 
+                                                    float deltaPWMControlValue    );
 
   private:
     ALTAIR_MotorAndESC       _motorAndESC[4]                                    ;
-    ALTAIR_PropAxleRotServo  _propAxleRotServo                                  ;
+    //ALTAIR_PropAxleRotServo  _propAxleRotServo                                  ;
+    ALTAIR_MotorAndESC*      _pSelectedMotor;  
 
 };
 #endif    //   ifndef ALTAIR_PropulsionSystem_h
