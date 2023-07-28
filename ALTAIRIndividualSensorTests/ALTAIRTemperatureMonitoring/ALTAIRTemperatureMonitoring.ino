@@ -48,7 +48,7 @@ void loop() {
   for ( int i = 0; i < TEMP_SENSOR_COUNT; i++) {
       Serial.print("Averaged analog input: ");
       Serial.print(static_cast<float>(arrayofTempSensors[i].tempWindowSum())/TEMP_AVEREGING_WINDOW_SIZE);
-      Serial.print("  Packed for I2C (unsigned short/byte); ")
+      Serial.print("  Packed for I2C (unsigned short/byte); ");
       Serial.print(packedTemp[i]); Serial.print(" / ");
       Serial.print(packedTemp_byte[i]);
       

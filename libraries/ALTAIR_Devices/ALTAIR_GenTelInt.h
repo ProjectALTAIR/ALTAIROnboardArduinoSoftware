@@ -24,17 +24,26 @@
 
 #include "Arduino.h"
 
+#if defined(__AVR_ATmega2560__) || defined(Serial2) // Arduino Mega 2560     (microcontroller chip = Atmel ATmega2560)
+#else                                               // Adafruit Grand Central (microcontroller chip = SAMD)
+#define Serial2 Serial
+#define Serial3 Serial
+#endif
+
+
 #define  FAKE_RSSI_VAL     127
 #define  MAX_TERM_LENGTH   255
 #define  MAX_READ_TRIES    100
 #define  TX_START_BYTE    0xFA
 #define  RX_START_BYTE    0xFC
-#define  CALL_SIGN_STRING     " VE7XJA STATION ALTAIR "
+#define  CALL_SIGN_STRING     " VE7XJA STATION "
+#define  PAYLOAD_NAME         "ALTAIR"
 #define  END_MESSAGE_STRING   " OVER "
 
 typedef  enum { dnt900  = 0,
                 shx144  = 1,
-                rfm23bp = 2 } radio_t;
+                rfm23bp = 2,
+                m8s     = 3 } radio_t;
 
 class    ALTAIR_GPSSensor;
 class    ALTAIR_GlobalMotorControl;
@@ -56,6 +65,7 @@ class ALTAIR_GenTelInt {
     virtual bool         sendStart(                                                             ) { return send((unsigned char)  TX_START_BYTE      ) ; }
     virtual bool         sendAsIndivChars(  const    uint8_t*           aString                 ) = 0;
     virtual bool         sendCallSign(                                                          ) { return send((const uint8_t*) CALL_SIGN_STRING   ) ; }
+    virtual bool         sendPayloadName(                                                       ) { return send((const uint8_t*) PAYLOAD_NAME       ) ; }
     virtual bool         sendEndMessage(                                                        ) { return send((const uint8_t*) END_MESSAGE_STRING ) ; }
     virtual bool         available(                                                             ) = 0; // If a byte is available for reading, returns true.
     virtual bool         isBusy(                                                                ) = 0;

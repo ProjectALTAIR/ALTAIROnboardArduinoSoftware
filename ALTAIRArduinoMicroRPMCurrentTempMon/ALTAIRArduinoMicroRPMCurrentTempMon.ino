@@ -131,8 +131,8 @@ void loop() {
 
   Serial.println("Current Sensors:");
   for ( int i = 0; i < CURRENT_SENSOR_COUNT; i++) {
-      //Serial.print(arrayofCurrentSensors[i].currentWindowSum()/CURRENT_AVEREGING_WINDOW_SIZE);
-      Serial.print(packedCurrent[i]); Serial.print("  ");
+      Serial.print(arrayofCurrentSensors[i].currentWindowSum()/CURRENT_AVEREGING_WINDOW_SIZE); Serial.print("  ");
+      //Serial.print(packedCurrent[i]); Serial.print("  ");
       Serial.print(packedCurrent_byte[i]); Serial.print(" --> ");
       Serial.print(arrayofCurrentSensors[i].current()); Serial.println(" mA");
   }

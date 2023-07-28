@@ -13,6 +13,7 @@
 */
 /**************************************************************************/
 
+/*
 #include "ALTAIR_GenTelInt.h"
 #include "ALTAIR_GPSSensor.h"
 #include "ALTAIR_GlobalMotorControl.h"
@@ -20,7 +21,7 @@
 #include "ALTAIR_GlobalLightControl.h"
 #include "ALTAIR_ArduinoMicro.h"
 #include <Adafruit_BME280.h>
-
+*/
 
 /**************************************************************************/
 /*!
@@ -94,7 +95,7 @@ bool ALTAIR_GenTelInt::sendAllALTAIRInfo( ALTAIR_GlobalMotorControl&  motorContr
     uint8_t pitchUInt8  = primaryOrientSensor->pitchUInt8();
     uint8_t yawUInt8    = primaryOrientSensor->yawUInt8();
     int8_t  oSensTemp   = primaryOrientSensor->temperature();
-    uint8_t typeInfo    = primaryOrientSensor->typeAndHealth() + (8 * gps->typeAndHealth()) + (32 * radioType());
+    uint8_t typeInfo    = primaryOrientSensor->typeAndHealth() + (8 * gps->typeAndHealth()) + (32 * (1 + radioType()));
     uint8_t accelXUInt8 = primaryOrientSensor->accelXUInt8();
     uint8_t accelYUInt8 = primaryOrientSensor->accelYUInt8();
     uint8_t accelZUInt8 = primaryOrientSensor->accelZUInt8();
@@ -160,10 +161,8 @@ bool ALTAIR_GenTelInt::sendAllALTAIRInfo( ALTAIR_GlobalMotorControl&  motorContr
     sendString1[44] =       'T'                     ;
 
 //    if (send(sendString1, 45)) Serial.println(F("Successfully sent sendString1"));
-    if ((radioType() != rfm23bp) || (lastSentString2())) {
-        send(sendString1, 45);
-        if (radioType() == rfm23bp) return true;
-    }
+    if ((radioType() == dnt900) || (lastSentString2())) send(sendString1, 45);
+    if ( radioType() != dnt900)                         return true;
 
 // try moving work here (instead of a CPU-cycle-wasting delay)
 
@@ -414,16 +413,16 @@ void ALTAIR_GenTelInt::printALTAIRInfo(  )
 {
     long        readTry                  =              0 ;
 //    if (!isBusy()) {
-      Serial.print(F("Reading radio "));
-      Serial.println(radioName());
+//      Serial.print(F("Reading radio "));
+//      Serial.println(radioName());
       while (true) {
         while (!available() && readTry < MAX_READ_TRIES) {
           ++readTry;
-//           delay(5);
+           delay(5);   // needed for SHX1 testing...
         }
         if (readTry < MAX_READ_TRIES) {
           do {
-//            Serial.println(F("Reading a byte from radio"));
+            Serial.println(F("Reading a byte from radio"));
 
             byte b = read();
 
@@ -432,7 +431,7 @@ void ALTAIR_GenTelInt::printALTAIRInfo(  )
           } while (available());
         } else {
 //          Serial.println(F("Radio is not available for reading"));
-//          break;
+          break;
         }
       }
 /*
