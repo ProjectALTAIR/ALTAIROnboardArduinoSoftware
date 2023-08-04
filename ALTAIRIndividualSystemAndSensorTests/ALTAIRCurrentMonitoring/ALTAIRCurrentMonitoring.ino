@@ -11,10 +11,10 @@
 #include "ALTAIR_CurrentSensor.h"
 
 
-unsigned short          packedCurrent[CURRENT_SENSOR_COUNT];
-byte                    packedCurrent_byte[CURRENT_SENSOR_COUNT];
+unsigned short          packedCurrent_short[CURRENT_SENSOR_COUNT];
+byte                    packedCurrent[CURRENT_SENSOR_COUNT];
 
-int currentSensorPins[CURRENT_SENSOR_COUNT] = {A2, A3};
+int currentSensorPins[CURRENT_SENSOR_COUNT] = {A0, A1, A2, A3};
 
 ALTAIR_CurrentSensor  arrayofCurrentSensors[CURRENT_SENSOR_COUNT];
 
@@ -42,8 +42,8 @@ void loop() {
   for ( int i = 0; i < CURRENT_SENSOR_COUNT; i++) {
     arrayofCurrentSensors[i].storeAnalogCurrent();
     arrayofCurrentSensors[i].calculateCurrent();
+    packedCurrent_short[i] = arrayofCurrentSensors[i].packCurrent_short(arrayofCurrentSensors[i].current());
     packedCurrent[i] = arrayofCurrentSensors[i].packCurrent(arrayofCurrentSensors[i].current());
-    packedCurrent_byte[i] = arrayofCurrentSensors[i].packCurrent_byte(arrayofCurrentSensors[i].current());
   }
   Serial.println("End of measurement ");
 
@@ -52,8 +52,8 @@ void loop() {
   Serial.println("Current Sensors:");
   for ( int i = 0; i < CURRENT_SENSOR_COUNT; i++) {
       Serial.print(arrayofCurrentSensors[i].currentWindowSum()/CURRENT_AVEREGING_WINDOW_SIZE); Serial.print("  ");
-      Serial.print(packedCurrent[i]); Serial.print("  ");
-      Serial.print(packedCurrent_byte[i]); Serial.print(" --> ");
+      Serial.print(packedCurrent_short[i]); Serial.print("  ");
+      Serial.print(packedCurrent[i]); Serial.print(" --> ");
       Serial.print(arrayofCurrentSensors[i].current()); Serial.println(" mA");
   }
 
@@ -63,9 +63,9 @@ void loop() {
 }
 
 void sendInfo() {
-  //Wire.write((byte*)packedCurrent, CURRENT_SENSOR_COUNT * sizeof(unsigned short));
+  //Wire.write((byte*)packedCurrent_short, CURRENT_SENSOR_COUNT * sizeof(unsigned short));
 
-  Wire.write((byte*)packedCurrent_byte, CURRENT_SENSOR_COUNT * sizeof(byte));
+  Wire.write((byte*)packedCurrent, CURRENT_SENSOR_COUNT * sizeof(byte));
 
   //for (int i = 0; i < currentSensorCount; ++i) Wire.write(packedCurrent[i], sizeof(packedCurrent[i]));
 }

@@ -3,10 +3,10 @@
 #include <Wire.h>
 #include "ALTAIR_RPMSensor.h"
 
-unsigned short          packedRPM[RPM_SENSOR_COUNT];
-byte          packedRPS_byte[RPM_SENSOR_COUNT];
+unsigned short          packedRPM_short[RPM_SENSOR_COUNT];
+byte          packedRPS[RPM_SENSOR_COUNT];
 
-const uint8_t RPM_sensor_pins[RPM_SENSOR_COUNT] = {A0, A1};
+const uint8_t RPM_sensor_pins[RPM_SENSOR_COUNT] = {A0, A1, A2, A3};
 const int RPM_measurement_time = 500;
 
 int start_millis = 0;
@@ -60,8 +60,8 @@ void loop() {
   // RPM Calculation
   for (int i = 0; i < RPM_SENSOR_COUNT; i++) {
     arrayof_RPMSensors[i].calculateRPM(RPM_measurement_time);
-    packedRPM[i] = arrayof_RPMSensors[i].packRPM(arrayof_RPMSensors[i].rpm());
-    packedRPS_byte[i] = arrayof_RPMSensors[i].packRPS_byte(arrayof_RPMSensors[i].rpm());
+    packedRPM_short[i] = arrayof_RPMSensors[i].packRPM_short(arrayof_RPMSensors[i].rpm());
+    packedRPS[i] = arrayof_RPMSensors[i].packRPS(arrayof_RPMSensors[i].rpm());
 
   }   
 
@@ -76,8 +76,8 @@ void loop() {
   
     //Serial.print(arrayof_RPMSensors[i]._rpm_rising); Serial.print("  "); 
     //Serial.println(arrayof_RPMSensors[i]._rpm_falling);
-    //Serial.print(packedRPM[i]); Serial.print("  ");
-    //Serial.print(packedRPS_byte[i]); Serial.print("   ");
+    //Serial.print(packedRPM_short[i]); Serial.print("  ");
+    //Serial.print(packedRPS[i]); Serial.print("   ");
 
     Serial.print(arrayof_RPMSensors[i].rpm()); Serial.println(" RPM ");
 
@@ -88,4 +88,11 @@ void loop() {
   delay(1000);
 
   
+}
+
+void sendInfo() {
+  //Wire.write((byte*)packedRPM_short, RPM_SENSOR_COUNT * sizeof(unsigned short));
+
+  Wire.write((byte*)packedRPS, RPM_SENSOR_COUNT * sizeof(byte));
+
 }
