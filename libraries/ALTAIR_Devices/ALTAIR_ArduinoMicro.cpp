@@ -8,7 +8,8 @@
     and controls the 4 propulsion system RPM sensors, the 4 propulsion 
     system current sensors, and the 8 propulsion system temp sensors.
 
-    Justin Albert  jalbert@uvic.ca     began on 18 Sep. 2018
+    Justin Albert     jalbert@uvic.ca           began on 18 Sep. 2018
+    Christopher Vogt  christophervogt@uvic.ca   continued in July 2023
 
     @section  HISTORY
 
@@ -31,8 +32,11 @@ ALTAIR_ArduinoMicro::ALTAIR_ArduinoMicro(                   ) :
 
 /**************************************************************************/
 /*!
- @brief  Get the 16 packed data bytes over I2C from the physical Arduino 
+ @brief  Get the packed data bytes over I2C from the physical Arduino 
          Micro, and store that data in this ALTAIR_ArduinoMicro object.
+
+         ADJUST TRANSFER AS BYTE OR AS UNSIGNED SHORT.
+         DEPENDING ON THAT ARDUINOMICRO_DATABYTES HAS TO BE SET TO 16(BYTES) OR 32(SHORT)
 */
 /**************************************************************************/
 void ALTAIR_ArduinoMicro::getDataAfterInterval(    long interval  )
@@ -64,12 +68,12 @@ void ALTAIR_ArduinoMicro::getDataAfterInterval(    long interval  )
 
     /* Convert unsigned shorts to useful values */
     //for (int i = 0; i < TEMP_SENSOR_COUNT; ++i) Temp[i] = static_cast<float>(_packedTemp[i])/2  - 273.15;        // Rescaling in conversion in °C
-    //for (int i = 0; i < CURRENT_SENSOR_COUNT; ++i) Current[i] = static_cast<float>(_packedCurrent[i])/1000;    // Rescaling from mikroA to milliA
+    //for (int i = 0; i < CURRENT_SENSOR_COUNT; ++i) Current[i] = static_cast<float>(_packedCurrent[i])/10;    // Rescaling from 10^-4 A to milliA
     //for (int i = 0; i < RPM_SENSOR_COUNT; ++i) RPM[i] = int(_packedRPM[i]) ;                                    // No Rescaling needed, already in RPM
 
     /* Convert bytes to useful values */
     for (int i = 0; i < TEMP_SENSOR_COUNT; ++i)  if(_packedTemp_byte[i]<=127){Temp[i] = _packedTemp_byte[i];}else{Temp[i]=_packedTemp_byte[i]-256;};        // Remapping onto positive/negative °C
-    for (int i = 0; i < CURRENT_SENSOR_COUNT; ++i)  Current[i] = static_cast<float>(_packedCurrent_byte[i])/10;    // Rescaling from deciA to milliA
+    for (int i = 0; i < CURRENT_SENSOR_COUNT; ++i)  Current[i] = static_cast<float>(_packedCurrent_byte[i])*10;    // Rescaling from deciA to milliA
     for (int i = 0; i < RPM_SENSOR_COUNT; ++i)      RPM[i] = int(_packedRPS_byte[i])*60 ;                       // Rescaling from RPS to RPM
 
     /* Print the useful sensor values */

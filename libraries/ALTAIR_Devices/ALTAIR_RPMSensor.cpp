@@ -116,12 +116,12 @@ void ALTAIR_RPMSensor::calculateRPM(int rpm_measurement_millis) {
  @brief  Pack RPM for I2C transfer. (Resolution limited to 60RPM, maxes at ~7200)
 */
 /**************************************************************************/
-unsigned short ALTAIR_RPMSensor::packRPM(float theRPM) {
+unsigned short ALTAIR_RPMSensor::packRPM_short(float theRPM) {
     unsigned short thePackedRPS = theRPM;
     return thePackedRPS;
 }
 
-byte ALTAIR_RPMSensor::packRPS_byte(float theRPM) {
+byte ALTAIR_RPMSensor::packRPS(float theRPM) {
     float _theRPS = theRPM/60.;
     byte thePackedRPS;
     if (_theRPS >= 0. && _theRPS < 255.0) {

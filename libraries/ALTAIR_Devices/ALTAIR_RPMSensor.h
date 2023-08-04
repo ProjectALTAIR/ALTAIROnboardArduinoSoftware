@@ -27,7 +27,7 @@
 #include "Arduino.h"
 #include "QTRSensors.h"
 
-#define RPM_SENSOR_COUNT                 2
+#define RPM_SENSOR_COUNT                 4
 #define RPM_AVEREGING_WINDOW_SIZE        3
 #define RPM_EDGE_DETECTION_THRESHOLD     100
 #define RPM_NUMBER_OF_TAPES              2
@@ -49,8 +49,8 @@ class ALTAIR_RPMSensor {
     void                    storeAnalogRPM(   );
     void                    EdgeDetection();
     void                    calculateRPM(int rpm_measurement_millis);
-    unsigned short          packRPM(float theRPM);
-    byte                    packRPS_byte(float theRPM);
+    unsigned short          packRPM_short(float theRPM);
+    byte                    packRPS(float theRPM);
 
     private:
         int                 _analogInputPin = 0;

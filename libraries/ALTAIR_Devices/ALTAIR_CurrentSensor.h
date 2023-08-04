@@ -26,7 +26,7 @@
 
 #include "Arduino.h"
 
-#define CURRENT_SENSOR_COUNT              2
+#define CURRENT_SENSOR_COUNT              4
 #define CURRENT_AVEREGING_WINDOW_SIZE     100
 
 class ALTAIR_CurrentSensor {
@@ -45,8 +45,8 @@ class ALTAIR_CurrentSensor {
     void                    initializeCurrentSensor(int analogInputPin);
     void                    storeAnalogCurrent();
     void                    calculateCurrent(      );
-    unsigned short          packCurrent(float theCurrent);
-    byte                    packCurrent_byte(float theCurrent);
+    unsigned short          packCurrent_short(float theCurrent);
+    byte                    packCurrent(float theCurrent);
 
   private:
     int                    _analogInputPin;

@@ -57,30 +57,32 @@ void ALTAIR_CurrentSensor::storeAnalogCurrent() {
 /**************************************************************************/
 /*!
  @brief  Calculate Current in mA
-        Vout = (Load-Resistor (100kOhm) / 10kOhm) * I (Amps)
-        Range is 0 to 500mA
-        Resolution therefore is ~0.5mA
+        Vout    = (Load-Resistor (100kOhm) * Shunt-Resistor (0.001 Ohm) / 1kOhm) * I (Amps) 
+                = 0.1 (Ohm) * I (Amps)
+                = analog_input/1023 * 5
+        Range is 0 to 50A
+        Resolution therefore is ~50mA (per sensor reading)
 */
 /**************************************************************************/
 void ALTAIR_CurrentSensor::calculateCurrent() {
    
-    _current = ((_currentWindowSum  /CURRENT_AVEREGING_WINDOW_SIZE) * (static_cast<float>(5000) / 10230));
+    _current = ((_currentWindowSum  /CURRENT_AVEREGING_WINDOW_SIZE) * (static_cast<float>(50000) / 1023));
 }
 
 /**************************************************************************/
 /*!
  @brief  Pack Current for I2C transfer. Scaled down:
-            //Range is 0 to 500mA --> 0 to 124 with 4mA resolution
-        as unsigned short no scaling needed, directly mA transferred
+         
+        
 */
 /**************************************************************************/
-unsigned short ALTAIR_CurrentSensor::packCurrent(float theCurrent) {
-    unsigned short thePackedCurrent = theCurrent * 1000;       // whole numbers 0-65535 mapped onto 0.-65.535mA (65535mikroA)
+unsigned short ALTAIR_CurrentSensor::packCurrent_short(float theCurrent) {
+    unsigned short thePackedCurrent = theCurrent * 10;       // whole numbers 0-65535 mapped onto 0-6.5535A (6553.5milliA)
     return thePackedCurrent;
 }
 
-byte ALTAIR_CurrentSensor::packCurrent_byte(float theCurrent) {
-    float scaledCurrent = theCurrent * 10;      // whole numbers 0-255 mapped onto by 0-25.5mA
+byte ALTAIR_CurrentSensor::packCurrent(float theCurrent) {
+    float scaledCurrent = theCurrent / 10;      // whole numbers 0-255 mapped onto by 0-2.55A
     byte thePackedCurrent;
     if (scaledCurrent >= 0. && scaledCurrent < 255.) {
         thePackedCurrent = scaledCurrent;

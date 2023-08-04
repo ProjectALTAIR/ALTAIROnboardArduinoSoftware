@@ -75,13 +75,13 @@ void ALTAIR_TempSensor::calculateTemp() {
         Scaled by 2, because measurement resolution is ~0.5K
 */
 /**************************************************************************/
-unsigned short ALTAIR_TempSensor::packTemp(float theTemp) {
+unsigned short ALTAIR_TempSensor::packTemp_short(float theTemp) {
     unsigned short thePackedTemp;
     thePackedTemp = static_cast<unsigned short>(theTemp*2);
     return thePackedTemp;
 }
 
-byte ALTAIR_TempSensor::packTemp_byte(float theTemp) {
+byte ALTAIR_TempSensor::packTemp(float theTemp) {
     byte thePackedTemp;
     if (theTemp >= 0. && theTemp < 127.) {
         thePackedTemp = theTemp;

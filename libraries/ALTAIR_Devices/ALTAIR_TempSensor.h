@@ -19,7 +19,7 @@
 
 #include "Arduino.h"
 
-#define TEMP_SENSOR_COUNT                 4
+#define TEMP_SENSOR_COUNT                 8
 #define TEMP_AVEREGING_WINDOW_SIZE        20
 
 class ALTAIR_TempSensor {
@@ -39,8 +39,8 @@ class ALTAIR_TempSensor {
     void                    initializeTempSensor(int analogInputPin);
     void                    storeAnalogTemp();
     void                    calculateTemp(      );
-    unsigned short          packTemp(float theTemp);
-    byte                    packTemp_byte(float theTemp);
+    unsigned short          packTemp_short(float theTemp);
+    byte                    packTemp(float theTemp);
 
   private:
     int                    _analogInputPin;

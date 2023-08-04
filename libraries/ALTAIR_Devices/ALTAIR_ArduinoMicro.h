@@ -9,6 +9,7 @@
     system current sensors, and the 8 propulsion system temp sensors.
 
     Justin Albert  jalbert@uvic.ca     began on 18 Sep. 2018
+    Christopher Vogt  christophervogt@uvic.ca   continued in July 2023
 
     @section  HISTORY
 
@@ -22,12 +23,12 @@
 #include "Arduino.h"
 #include "Wire.h"
 
-#define   RPM_SENSOR_COUNT                        2
-#define   CURRENT_SENSOR_COUNT                    2
-#define   TEMP_SENSOR_COUNT                       4
+#define   RPM_SENSOR_COUNT                        4
+#define   CURRENT_SENSOR_COUNT                    4
+#define   TEMP_SENSOR_COUNT                       8
 
 #define   ARDUINOMICRO_I2CADDRESS                 0x08
-#define   ARDUINOMICRO_DATABYTES                  16
+#define   ARDUINOMICRO_DATABYTES                  16        // 32 when transfering as short
 
 
 class ALTAIR_ArduinoMicro {

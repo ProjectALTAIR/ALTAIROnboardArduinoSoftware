@@ -10,21 +10,32 @@
 #include "ALTAIR_CurrentSensor.h"
 
 
-unsigned short          packedRPM[RPM_SENSOR_COUNT];
-unsigned short          packedCurrent[CURRENT_SENSOR_COUNT];
-unsigned short          packedTemp[TEMP_SENSOR_COUNT];
 
-byte          packedRPS_byte[RPM_SENSOR_COUNT];
-byte          packedCurrent_byte[CURRENT_SENSOR_COUNT];
-byte          packedTemp_byte[TEMP_SENSOR_COUNT];
+/*  Direct Analog read for half the sensor setup
+  const uint8_t RPM_sensor_pins[RPM_SENSOR_COUNT] = {A0, A1};
 
+  int tempSensorPins[TEMP_SENSOR_COUNT] = {A4, A5, A6, A7};
 
-const uint8_t RPM_sensor_pins[RPM_SENSOR_COUNT] = {A0, A1};
+  int currentSensorPins[CURRENT_SENSOR_COUNT] = {A2, A3};
+*/
+
+// Using the 16-to-1 analog multiplexer to a common analog input A0 : CD74HC4067 Multiplexer used
+  const uint8_t RPM_sensor_pins[RPM_SENSOR_COUNT] = {A0, A0, A0, A0};
+
+  const int tempSensorPins[TEMP_SENSOR_COUNT] = {A0, A0, A0, A0, A0, A0, A0, A0};
+
+  const int currentSensorPins[CURRENT_SENSOR_COUNT] = {A0, A0, A0, A0};
+
+  const int multiplexerControlPins[4] = {5, 6, 7, 8};
+  const int multiplexerEnablePin      = 4;
+
+  /*  MULTIPLEXER LIST
+    0....7   Temperature Sensors Port(left) to Starboard(right)
+    8....11  RPM Sensors Port to Starboard
+    12...15  Current Sensors Port to Starboard
+  */
+
 const int RPM_measurement_time = 500;
-
-int tempSensorPins[TEMP_SENSOR_COUNT] = {A4, A5, A6, A7};
-
-int currentSensorPins[CURRENT_SENSOR_COUNT] = {A2, A3};
 
 int start_millis = 0;
 int current_millis = 0;
@@ -35,8 +46,27 @@ ALTAIR_TempSensor     arrayofTempSensors[TEMP_SENSOR_COUNT];
 ALTAIR_CurrentSensor  arrayofCurrentSensors[CURRENT_SENSOR_COUNT];
 
 
+// packed Sensor data for transfer to Grand Central
+
+  unsigned short    packedRPM_short[RPM_SENSOR_COUNT];
+  unsigned short    packedCurrent_short[CURRENT_SENSOR_COUNT];
+  unsigned short    packedTemp_short[TEMP_SENSOR_COUNT];
+
+
+byte              packedRPS[RPM_SENSOR_COUNT];
+byte              packedCurrent[CURRENT_SENSOR_COUNT];
+byte              packedTemp[TEMP_SENSOR_COUNT];
+
 void setup() {
   
+  // Initializing MultiplexerControlPins
+  for(int i = 0; i<4; i++) {
+    pinMode(multiplexerControlPins[i], OUTPUT);
+  }
+  pinMode(multiplexerEnablePin, OUTPUT);
+  digitalWrite(multiplexerEnablePin, LOW);    // LOW enables the Multiplexer! See logic table in datasheet
+
+
   //Serial.println("Begin Sensor initialization");
   
   // RPM Sensors
@@ -73,47 +103,60 @@ void setup() {
 void loop() {
   //Serial.println("Start of measurement");
 
-  // Temperature Sensor measurements
+  // TEMPERATURE SENSOR measurements
   for ( int i = 0; i < TEMP_SENSOR_COUNT; i++) {
+    selectMultiplexerChannel(i);
+
     arrayofTempSensors[i].storeAnalogTemp();
     arrayofTempSensors[i].calculateTemp();
-    packedTemp[i] = arrayofTempSensors[i].packTemp(arrayofTempSensors[i].tempK());
-    packedTemp_byte[i] = arrayofTempSensors[i].packTemp_byte(arrayofTempSensors[i].temp());
+    packedTemp_short[i] = arrayofTempSensors[i].packTemp_short(arrayofTempSensors[i].tempK());
+    packedTemp[i] = arrayofTempSensors[i].packTemp(arrayofTempSensors[i].temp());
+
+    //Serial.println(arrayofTempSensors[i].tempWindowSum());
   }
 
-  // Current Sensor measurements
-  for ( int i = 0; i < CURRENT_SENSOR_COUNT; i++) {
-    arrayofCurrentSensors[i].storeAnalogCurrent();
-    arrayofCurrentSensors[i].calculateCurrent();
-    packedCurrent[i] = arrayofCurrentSensors[i].packCurrent(arrayofCurrentSensors[i].current());
-    packedCurrent_byte[i] = arrayofCurrentSensors[i].packCurrent_byte(arrayofCurrentSensors[i].current());
-  }
   
-  // RPM measurements
-  current_millis = millis();
-  start_millis = current_millis;
-
+  // RPM SENSOR measurements
+  
   for ( int i = 0; i < RPM_SENSOR_COUNT; i++) {
     arrayof_RPMSensors[i].resetRisingEdgeCounter();
     arrayof_RPMSensors[i].resetFallingEdgeCounter();
   }
-  
-  while(current_millis-start_millis < RPM_measurement_time){
-    for (int i = 0; i < RPM_SENSOR_COUNT; i++) {    
+    
+  for (int i = 0; i < RPM_SENSOR_COUNT; i++) {
+    selectMultiplexerChannel(i + TEMP_SENSOR_COUNT);
+
+    current_millis = millis();
+    start_millis = current_millis;
+
+    while(current_millis-start_millis < RPM_measurement_time) {    
       arrayof_RPMSensors[i].storeAnalogRPM();
       arrayof_RPMSensors[i].EdgeDetection();
+      current_millis = millis();
     }
-    //Serial.println(arrayof_RPMSensors[0].analog_rpm);
-    current_millis = millis();
+    //Serial.println(arrayof_RPMSensors[0].analog_rpm);    
     //Serial.print("millis: "); Serial.println(current_millis-start_millis);    
   }
-  Serial.println("End of measurement ");
+  
+
+  // CURRENT SENSOR measurements
+  for ( int i = 0; i < CURRENT_SENSOR_COUNT; i++) {
+    selectMultiplexerChannel(i + TEMP_SENSOR_COUNT + RPM_SENSOR_COUNT);
+
+    arrayofCurrentSensors[i].storeAnalogCurrent();
+    arrayofCurrentSensors[i].calculateCurrent();
+    packedCurrent_short[i] = arrayofCurrentSensors[i].packCurrent_short(arrayofCurrentSensors[i].current());
+    packedCurrent[i] = arrayofCurrentSensors[i].packCurrent(arrayofCurrentSensors[i].current());
+  }
+
+  //Serial.println("End of measurement ");
+
 
   // RPM Calculation
   for (int i = 0; i < RPM_SENSOR_COUNT; i++) {
     arrayof_RPMSensors[i].calculateRPM(RPM_measurement_time);
-    packedRPM[i] = arrayof_RPMSensors[i].packRPM(arrayof_RPMSensors[i].rpm());
-    packedRPS_byte[i] = arrayof_RPMSensors[i].packRPS_byte(arrayof_RPMSensors[i].rpm());
+    packedRPM_short[i] = arrayof_RPMSensors[i].packRPM_short(arrayof_RPMSensors[i].rpm());
+    packedRPS[i] = arrayof_RPMSensors[i].packRPS(arrayof_RPMSensors[i].rpm());
 
   }   
 
@@ -121,20 +164,12 @@ void loop() {
   Serial.println("Temperature Sensors:");
   for ( int i = 0; i < TEMP_SENSOR_COUNT; i++) {
       Serial.print(static_cast<float>(arrayofTempSensors[i].tempWindowSum())/TEMP_AVEREGING_WINDOW_SIZE);
-      //Serial.print(packedTemp[i]); Serial.print("  ");
-      //Serial.print(packedTemp_byte[i]);
+      //Serial.print(packedTemp_short[i]); Serial.print("  ");
+      //Serial.print(packedTemp[i]);
       
       Serial.print(" --> ");
       Serial.print(arrayofTempSensors[i].temp()); Serial.println(" °C");
 
-  }
-
-  Serial.println("Current Sensors:");
-  for ( int i = 0; i < CURRENT_SENSOR_COUNT; i++) {
-      Serial.print(arrayofCurrentSensors[i].currentWindowSum()/CURRENT_AVEREGING_WINDOW_SIZE); Serial.print("  ");
-      //Serial.print(packedCurrent[i]); Serial.print("  ");
-      Serial.print(packedCurrent_byte[i]); Serial.print(" --> ");
-      Serial.print(arrayofCurrentSensors[i].current()); Serial.println(" mA");
   }
 
   Serial.println("RPM Sensors: ");
@@ -146,11 +181,19 @@ void loop() {
   
     //Serial.print(arrayof_RPMSensors[i]._rpm_rising); Serial.print("  "); 
     //Serial.println(arrayof_RPMSensors[i]._rpm_falling);
-    Serial.print(packedRPM[i]); Serial.print("  ");
-    Serial.print(packedRPS_byte[i]); Serial.print("   ");
+    Serial.print(packedRPM_short[i]); Serial.print("  ");
+    Serial.print(packedRPS[i]); Serial.print("   ");
 
     Serial.print(arrayof_RPMSensors[i].rpm()); Serial.println(" RPM ");
 
+  }
+
+  Serial.println("Current Sensors:");
+  for ( int i = 0; i < CURRENT_SENSOR_COUNT; i++) {
+      Serial.print(arrayofCurrentSensors[i].currentWindowSum()/CURRENT_AVEREGING_WINDOW_SIZE); Serial.print("  ");
+      //Serial.print(packedCurrent_short[i]); Serial.print("  ");
+      Serial.print(packedCurrent[i]); Serial.print(" --> ");
+      Serial.print(arrayofCurrentSensors[i].current()); Serial.println(" mA");
   }
 
   Serial.println(" ");
@@ -231,16 +274,26 @@ void loop() {
   */
 }
 
+// Wanted channel gets translated into binary with that being input to the Controls S0-S3 connected to pins 4-7 starting with LSB
+void selectMultiplexerChannel(int channel) {
+  //Serial.println(channel); 
+  //Serial.print("  ");
+  for(int i = 0; i < 4; i++) {
+    digitalWrite(multiplexerControlPins[i], bitRead(channel, i));
+    //Serial.print(bitRead(channel, i));    
+  }
+  delay(5);
+}
+
+
+// Send packed sensor data via I2C to Grand Central. Receiver side is handled in ArduinoMicro Class
 void sendInfo() {
-  //Wire.write((byte*)packedTemp, TEMP_SENSOR_COUNT * sizeof(unsigned short));
-  //Wire.write((byte*)packedCurrent, CURRENT_SENSOR_COUNT * sizeof(unsigned short));
-  //Wire.write((byte*)packedRPM, RPM_SENSOR_COUNT * sizeof(unsigned short));
+  //Wire.write((byte*)packedTemp_short, TEMP_SENSOR_COUNT * sizeof(unsigned short));
+  //Wire.write((byte*)packedCurrent_short, CURRENT_SENSOR_COUNT * sizeof(unsigned short));
+  //Wire.write((byte*)packedRPM_short, RPM_SENSOR_COUNT * sizeof(unsigned short));
 
-  Wire.write((byte*)packedTemp_byte, TEMP_SENSOR_COUNT * sizeof(byte));
-  Wire.write((byte*)packedCurrent_byte, CURRENT_SENSOR_COUNT * sizeof(byte));
-  Wire.write((byte*)packedRPS_byte, RPM_SENSOR_COUNT * sizeof(byte));
+  Wire.write((byte*)packedTemp, TEMP_SENSOR_COUNT * sizeof(byte));
+  Wire.write((byte*)packedCurrent, CURRENT_SENSOR_COUNT * sizeof(byte));
+  Wire.write((byte*)packedRPS, RPM_SENSOR_COUNT * sizeof(byte));
 
-  //for (int i = 0; i < tempSensorCount; ++i) Wire.write((uint8_t*)packedTemp[i], sizeof(packedTemp[i]));  
-  //for (int i = 0; i < RPM_sensorCount; ++i) Wire.write(packedRPS[i], sizeof(packedRPS[i]));
-  //for (int i = 0; i < currentSensorCount; ++i) Wire.write(packedCurrent[i], sizeof(packedCurrent[i]));
 }
